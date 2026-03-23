@@ -1,0 +1,1235 @@
+-- =====================================================
+
+-- Bayawan Bai Hotel Management System - Database Schema
+
+-- =====================================================
+
+ 
+
+-- Create Database
+
+CREATE DATABASE IF NOT EXISTS bayawan_hotel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE bayawan_hotel;
+
+ 
+
+-- =====================================================
+
+-- CORE TABLES
+
+-- =====================================================
+
+ 
+
+-- Users Table (Guests, Staff, Admins)
+
+CREATE TABLE users (
+
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    email VARCHAR(255) UNIQUE NOT NULL,
+
+    password VARCHAR(255) NOT NULL,
+
+    first_name VARCHAR(100) NOT NULL,
+
+    last_name VARCHAR(100) NOT NULL,
+
+    phone VARCHAR(20),
+
+    address TEXT,
+
+    city VARCHAR(100),
+
+    country VARCHAR(100),
+
+    role ENUM('guest', 'receptionist', 'manager', 'admin') DEFAULT 'guest',
+
+    status ENUM('active', 'inactive', 'banned') DEFAULT 'active',
+
+    email_verified BOOLEAN DEFAULT FALSE,
+
+    loyalty_points INT DEFAULT 0,
+
+    member_since DATE DEFAULT CURRENT_DATE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    last_login TIMESTAMP NULL
+
+);
+
+ 
+
+-- Room Categories Table
+
+CREATE TABLE room_categories (
+
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    category_name VARCHAR(100) NOT NULL,
+
+    description TEXT,
+
+    base_price DECIMAL(10,2) NOT NULL,
+
+    max_occupancy INT NOT NULL,
+
+    bed_type VARCHAR(50),
+
+    room_size_sqm INT,
+
+    amenities TEXT,
+
+    image_primary VARCHAR(255),
+
+    images_gallery TEXT,
+
+    status ENUM('active', 'inactive') DEFAULT 'active',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+ 
+
+-- Rooms Table
+
+CREATE TABLE rooms (
+
+    room_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    room_number VARCHAR(20) UNIQUE NOT NULL,
+
+    category_id INT NOT NULL,
+
+    floor INT,
+
+    status ENUM('available', 'occupied', 'maintenance', 'cleaning', 'reserved') DEFAULT 'available',
+
+    housekeeping_status ENUM('clean', 'dirty', 'inspected') DEFAULT 'clean',
+
+    special_features TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (category_id) REFERENCES room_categories(category_id)
+
+);
+
+ 
+
+-- Bookings Table
+
+CREATE TABLE bookings (
+
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    room_id INT,
+
+    category_id INT NOT NULL,
+
+    check_in DATE NOT NULL,
+
+    check_out DATE NOT NULL,
+
+    adults INT DEFAULT 1,
+
+    children INT DEFAULT 0,
+
+    nights INT NOT NULL,
+
+    room_rate DECIMAL(10,2) NOT NULL,
+
+    total_amount DECIMAL(10,2) NOT NULL,
+
+    status ENUM('pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled', 'no_show') DEFAULT 'pending',
+
+    payment_status ENUM('pending', 'partial', 'paid', 'refunded') DEFAULT 'pending',
+
+    payment_method ENUM('gcash', 'paypal', 'credit_card', 'cash', 'bank_transfer') DEFAULT 'cash',
+
+    special_requests TEXT,
+
+    booking_source ENUM('website', 'walk_in', 'phone', 'ota') DEFAULT 'website',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    checked_in_at TIMESTAMP NULL,
+
+    checked_out_at TIMESTAMP NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    FOREIGN KEY (room_id) REFERENCES rooms(room_id),
+
+    FOREIGN KEY (category_id) REFERENCES room_categories(category_id)
+
+);
+
+
+
+-- Payments Table
+
+CREATE TABLE payments (
+
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    booking_id INT NOT NULL,
+
+    user_id INT NOT NULL,
+
+    amount DECIMAL(10,2) NOT NULL,
+
+    payment_method ENUM('gcash', 'paypal', 'credit_card', 'cash', 'bank_transfer') NOT NULL,
+
+    transaction_id VARCHAR(255),
+
+    status ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    notes TEXT,
+
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+
+);
+
+
+
+-- Booking Additional Charges Table
+
+CREATE TABLE booking_charges (
+
+    charge_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    booking_id INT NOT NULL,
+
+    description VARCHAR(255) NOT NULL,
+
+    amount DECIMAL(10,2) NOT NULL,
+
+    charge_type ENUM('minibar', 'room_service', 'laundry', 'damage', 'late_checkout', 'other') DEFAULT 'other',
+
+    status ENUM('active', 'waived', 'paid') DEFAULT 'active',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    created_by INT,
+
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
+
+    FOREIGN KEY (created_by) REFERENCES users(user_id)
+
+);
+
+
+
+-- =====================================================
+
+-- HOTEL SERVICES TABLES
+
+-- =====================================================
+
+
+
+-- Dining/Restaurant Menu
+
+CREATE TABLE menu_categories (
+
+    cat_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    category_name VARCHAR(100) NOT NULL,
+
+    description TEXT,
+
+    sort_order INT DEFAULT 0
+
+);
+
+ 
+
+CREATE TABLE menu_items (
+
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    cat_id INT NOT NULL,
+
+    item_name VARCHAR(200) NOT NULL,
+
+    description TEXT,
+
+    price DECIMAL(10,2) NOT NULL,
+
+    image VARCHAR(255),
+
+    is_special BOOLEAN DEFAULT FALSE,
+
+    is_available BOOLEAN DEFAULT TRUE,
+
+    dietary_info TEXT,
+
+    FOREIGN KEY (cat_id) REFERENCES menu_categories(cat_id)
+
+);
+
+ 
+
+-- Amenities/Spa Services
+
+CREATE TABLE amenities (
+
+    amenity_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    amenity_name VARCHAR(100) NOT NULL,
+
+    category ENUM('spa', 'gym', 'pool', 'wellness', 'other') NOT NULL,
+
+    description TEXT,
+
+    price DECIMAL(10,2),
+
+    duration_minutes INT,
+
+    image VARCHAR(255),
+
+    is_available BOOLEAN DEFAULT TRUE,
+
+    operating_hours VARCHAR(100)
+
+);
+
+ 
+
+-- Events/Meetings
+
+CREATE TABLE event_spaces (
+
+    space_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    space_name VARCHAR(100) NOT NULL,
+
+    description TEXT,
+
+    capacity INT NOT NULL,
+
+    area_sqm INT,
+
+    features TEXT,
+
+    price_per_day DECIMAL(10,2),
+
+    images TEXT,
+
+    status ENUM('available', 'booked', 'maintenance') DEFAULT 'available'
+
+);
+
+ 
+
+-- Event Bookings
+
+CREATE TABLE event_bookings (
+
+    event_booking_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT,
+
+    space_id INT NOT NULL,
+
+    event_type VARCHAR(100),
+
+    event_date DATE NOT NULL,
+
+    start_time TIME,
+
+    end_time TIME,
+
+    guests_count INT,
+
+    catering_required BOOLEAN DEFAULT FALSE,
+
+    special_requests TEXT,
+
+    status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'pending',
+
+    quoted_price DECIMAL(10,2),
+
+    -- Fields for non-registered user inquiries
+
+    inquiry_name VARCHAR(200),
+
+    inquiry_email VARCHAR(255),
+
+    inquiry_phone VARCHAR(20),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    FOREIGN KEY (space_id) REFERENCES event_spaces(space_id)
+
+);
+
+
+
+-- Events Table (similar structure to rooms table)
+
+CREATE TABLE events (
+
+    event_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    event_name VARCHAR(200) NOT NULL,
+
+    category_id INT,
+
+    floor INT,
+
+    status ENUM('available', 'reserved', 'occupied') DEFAULT 'available',
+
+    maintenance_status ENUM('clean', 'under_maintenance') DEFAULT 'clean',
+
+    special_features TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (category_id) REFERENCES room_categories(category_id)
+
+);
+
+
+
+-- Gallery
+
+CREATE TABLE gallery (
+
+    image_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    title VARCHAR(200),
+
+    description TEXT,
+
+    image_path VARCHAR(255) NOT NULL,
+
+    category ENUM('rooms', 'dining', 'amenities', 'events', 'attractions', 'hotel') DEFAULT 'hotel',
+
+    is_featured BOOLEAN DEFAULT FALSE,
+
+    sort_order INT DEFAULT 0,
+
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+ 
+
+-- Reviews/Ratings
+
+CREATE TABLE reviews (
+
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    booking_id INT,
+
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+
+    review_text TEXT,
+
+    category ENUM('room', 'dining', 'service', 'amenities', 'overall') DEFAULT 'overall',
+
+    is_approved BOOLEAN DEFAULT FALSE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
+
+);
+
+ 
+
+-- =====================================================
+
+-- CONTENT MANAGEMENT TABLES
+
+-- =====================================================
+
+ 
+
+-- Homepage Slider
+
+CREATE TABLE homepage_slider (
+
+    slide_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    title VARCHAR(200),
+
+    subtitle TEXT,
+
+    image VARCHAR(255) NOT NULL,
+
+    button_text VARCHAR(50),
+
+    button_link VARCHAR(255),
+
+    sort_order INT DEFAULT 0,
+
+    is_active BOOLEAN DEFAULT TRUE
+
+);
+
+ 
+
+-- Special Offers/Promotions
+
+CREATE TABLE promotions (
+
+    promo_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    title VARCHAR(200) NOT NULL,
+
+    description TEXT,
+
+    image VARCHAR(255),
+
+    discount_percent INT,
+
+    discount_amount DECIMAL(10,2),
+
+    promo_code VARCHAR(50),
+
+    start_date DATE,
+
+    end_date DATE,
+
+    min_nights INT DEFAULT 1,
+
+    is_active BOOLEAN DEFAULT TRUE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+ 
+
+-- FAQs
+
+CREATE TABLE faqs (
+
+    faq_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    question TEXT NOT NULL,
+
+    answer TEXT NOT NULL,
+
+    category VARCHAR(100),
+
+    sort_order INT DEFAULT 0,
+
+    is_active BOOLEAN DEFAULT TRUE
+
+);
+
+ 
+
+-- =====================================================
+
+-- STAFF & OPERATIONS TABLES
+
+-- =====================================================
+
+ 
+
+-- Staff Shifts/Schedule
+
+CREATE TABLE staff_schedules (
+
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    work_date DATE NOT NULL,
+
+    shift_start TIME,
+
+    shift_end TIME,
+
+    role VARCHAR(50),
+
+    status ENUM('scheduled', 'completed', 'absent', 'leave') DEFAULT 'scheduled',
+
+    notes TEXT,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+
+);
+
+ 
+
+-- Maintenance Requests
+
+CREATE TABLE maintenance_requests (
+
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    room_id INT,
+
+    reported_by INT,
+
+    issue_type ENUM('plumbing', 'electrical', 'hvac', 'furniture', 'appliance', 'other') NOT NULL,
+
+    description TEXT NOT NULL,
+
+    priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+
+    status ENUM('pending', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    resolved_at TIMESTAMP NULL,
+
+    FOREIGN KEY (room_id) REFERENCES rooms(room_id),
+
+    FOREIGN KEY (reported_by) REFERENCES users(user_id)
+
+);
+
+ 
+
+-- Inventory
+
+CREATE TABLE inventory_categories (
+
+    inv_cat_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    category_name VARCHAR(100) NOT NULL
+
+);
+
+ 
+
+CREATE TABLE inventory_items (
+
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    inv_cat_id INT NOT NULL,
+
+    item_name VARCHAR(200) NOT NULL,
+
+    description TEXT,
+
+    unit VARCHAR(50),
+
+    quantity INT DEFAULT 0,
+
+    reorder_level INT DEFAULT 10,
+
+    unit_cost DECIMAL(10,2),
+
+    supplier VARCHAR(200),
+
+    FOREIGN KEY (inv_cat_id) REFERENCES inventory_categories(inv_cat_id)
+
+);
+
+ 
+
+-- =====================================================
+
+-- SYSTEM TABLES
+
+-- =====================================================
+
+ 
+
+-- Hotel Settings
+
+CREATE TABLE settings (
+
+    setting_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+
+    setting_value TEXT,
+
+    setting_group VARCHAR(50)
+
+);
+
+ 
+
+-- Email/SMS Logs
+
+CREATE TABLE notification_logs (
+
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT,
+
+    type ENUM('email', 'sms') NOT NULL,
+
+    subject VARCHAR(255),
+
+    content TEXT,
+
+    status ENUM('sent', 'failed', 'pending') DEFAULT 'pending',
+
+    sent_at TIMESTAMP NULL,
+
+    error_message TEXT
+
+);
+
+ 
+
+-- User Sessions
+
+CREATE TABLE user_sessions (
+
+    session_id VARCHAR(255) PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    ip_address VARCHAR(45),
+
+    user_agent TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    expires_at TIMESTAMP NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+
+);
+
+
+
+-- Booking Logs (for tracking booking status changes and activity)
+
+CREATE TABLE booking_logs (
+
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    booking_id INT NOT NULL,
+
+    action VARCHAR(50) NOT NULL,
+
+    details TEXT,
+
+    created_by INT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
+
+    FOREIGN KEY (created_by) REFERENCES users(user_id)
+
+);
+
+
+
+-- Staff Permissions Table
+
+CREATE TABLE staff_permissions (
+
+    permission_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    page_name VARCHAR(100) NOT NULL,
+
+    can_access BOOLEAN DEFAULT FALSE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    UNIQUE KEY unique_user_page (user_id, page_name)
+
+);
+
+
+
+-- Staff Permission Settings Table (for global settings)
+
+CREATE TABLE staff_permission_settings (
+
+    setting_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    setting_name VARCHAR(100) UNIQUE NOT NULL,
+
+    setting_value TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+);
+
+
+
+-- =====================================================
+
+-- INSERT SAMPLE DATA
+
+-- =====================================================
+
+ 
+
+-- Sample Admin User (password: admin123)
+
+INSERT INTO users (email, password, first_name, last_name, phone, role, status) VALUES
+
+('admin@bayawanbaihotel.com', 'admin123', 'Admin', 'User', '+63 912 345 6789', 'admin', 'active');
+
+ 
+
+-- Sample Receptionist (password: staff123)
+
+INSERT INTO users (email, password, first_name, last_name, phone, role, status) VALUES
+
+('reception@bayawanbaihotel.com', 'staff123', 'Maria', 'Santos', '+63 923 456 7890', 'receptionist', 'active'),
+
+('manager@bayawanbaihotel.com', 'manager123', 'Juan', 'Dela Cruz', '+63 934 567 8901', 'manager', 'active');
+
+ 
+
+-- Room Categories
+
+INSERT INTO room_categories (category_name, description, base_price, max_occupancy, bed_type, room_size_sqm, amenities) VALUES
+
+('Standard Room', 'Comfortable room with essential amenities perfect for budget-conscious travelers. Features city views and modern furnishings.', 2500.00, 2, 'Queen Bed', 25, 'WiFi, TV, Air Conditioning, Mini Refrigerator, Private Bathroom'),
+
+('Deluxe Room', 'Spacious room with premium amenities and bay views. Includes work desk and sitting area.', 3500.00, 3, 'King Bed', 32, 'WiFi, Smart TV, Air Conditioning, Mini Bar, Coffee Maker, Safe, Bay View'),
+
+('Suite', 'Luxurious suite with separate living area, bedroom with Jacuzzi, and panoramic ocean views.', 7500.00, 4, 'King Bed + Sofa Bed', 55, 'WiFi, Smart TV, Air Conditioning, Mini Bar, Coffee Machine, Safe, Jacuzzi, Ocean View, Living Room, Dining Area'),
+
+('Family Room', 'Spacious room designed for families with two queen beds and kid-friendly amenities.', 4500.00, 4, '2 Queen Beds', 40, 'WiFi, TV, Air Conditioning, Mini Refrigerator, Kids Amenities, Connecting Room Option');
+
+ 
+
+-- Sample Rooms
+
+INSERT INTO rooms (room_number, category_id, floor, status, housekeeping_status) VALUES
+
+('101', 1, 1, 'available', 'clean'),
+
+('102', 1, 1, 'available', 'clean'),
+
+('103', 1, 1, 'available', 'clean'),
+
+('104', 1, 1, 'maintenance', 'dirty'),
+
+('201', 2, 2, 'available', 'clean'),
+
+('202', 2, 2, 'available', 'clean'),
+
+('203', 2, 2, 'occupied', 'dirty'),
+
+('204', 2, 2, 'available', 'clean'),
+
+('301', 3, 3, 'available', 'clean'),
+
+('302', 3, 3, 'reserved', 'clean'),
+
+('303', 4, 3, 'available', 'clean'),
+
+('304', 4, 3, 'available', 'clean');
+
+ 
+
+-- Menu Categories
+
+INSERT INTO menu_categories (category_name, description, sort_order) VALUES
+
+('Breakfast', 'Start your day with our delicious breakfast options', 1),
+
+('Main Course', 'Exquisite dishes prepared by our master chefs', 2),
+
+('Desserts', 'Sweet indulgences to complete your meal', 3),
+
+('Beverages', 'Refreshing drinks and cocktails', 4);
+
+ 
+
+-- Menu Items
+
+INSERT INTO menu_items (cat_id, item_name, description, price, is_special) VALUES
+
+(1, 'Filipino Breakfast', 'Garlic rice, tocino/longganisa, fried egg, atchara, and brewed coffee', 450.00, TRUE),
+
+(1, 'Continental Breakfast', 'Fresh fruits, pastries, yogurt, and choice of juice or coffee', 380.00, FALSE),
+
+(1, 'American Breakfast', 'Eggs any style, bacon/sausage, hash browns, toast, and coffee', 520.00, FALSE),
+
+(2, 'Grilled Blue Marlin', 'Fresh catch from Bayawan Bay with garlic butter sauce, served with rice and vegetables', 680.00, TRUE),
+
+(2, 'Chicken Inasal', 'Authentic Negros-style grilled chicken with annatto oil and calamansi', 450.00, TRUE),
+
+(2, 'Beef Steak Tagalog', 'Tender beef slices in soy-calamansi marinade with caramelized onions', 580.00, FALSE),
+
+(3, 'Halo-Halo Special', 'Traditional Filipino dessert with ube, leche flan, and assorted sweet beans', 280.00, TRUE),
+
+(3, 'Mango Float', 'Layers of graham crackers, cream, and fresh mangoes', 250.00, TRUE),
+
+(4, 'Bayawan Bay Breeze', 'Refreshing tropical cocktail with rum, pineapple, and coconut', 320.00, TRUE),
+
+(4, 'Fresh Buko Juice', 'Young coconut water served in the shell', 180.00, FALSE);
+
+ 
+
+-- Amenities/Spa Services
+
+INSERT INTO amenities (amenity_name, category, description, price, duration_minutes, operating_hours) VALUES
+
+('Swedish Massage', 'spa', 'Relaxing full-body massage to relieve stress and tension', 1500.00, 60, '9:00 AM - 9:00 PM'),
+
+('Hot Stone Therapy', 'spa', 'Therapeutic massage using heated stones for deep relaxation', 2000.00, 90, '9:00 AM - 9:00 PM'),
+
+('Facial Treatment', 'spa', 'Rejuvenating facial with natural ingredients', 1200.00, 45, '10:00 AM - 8:00 PM'),
+
+('Infinity Pool Access', 'pool', 'Access to our stunning infinity pool with bay views', 0.00, NULL, '6:00 AM - 10:00 PM'),
+
+('Fitness Center', 'gym', 'State-of-the-art gym equipment and personal training', 0.00, NULL, '24 Hours'),
+
+('Yoga Session', 'wellness', 'Guided yoga session by the pool or beach', 500.00, 60, '6:00 AM - 7:00 AM Daily');
+
+ 
+
+-- Event Spaces
+
+INSERT INTO event_spaces (space_name, description, capacity, area_sqm, features, price_per_day) VALUES
+
+('Grand Ballroom', 'Elegant ballroom perfect for weddings, conferences, and galas', 300, 500, 'Stage, Sound System, Projector, Dance Floor, Bridal Suite', 50000.00),
+
+('Conference Room A', 'Professional meeting space with modern AV equipment', 50, 80, 'Projector, Whiteboard, Video Conferencing, Coffee Station', 8000.00),
+
+('Conference Room B', 'Intimate meeting room for small groups', 20, 40, 'TV Screen, Whiteboard, Coffee Station', 4000.00),
+
+('Garden Pavilion', 'Outdoor venue with stunning bay views for romantic events', 150, 300, 'Tent Options, Garden Setting, Sound System, Catering Area', 35000.00),
+
+('Rooftop Terrace', 'Exclusive rooftop space with panoramic views', 80, 150, 'City & Bay Views, Bar Area, Lounge Seating', 25000.00);
+
+
+
+-- Events Table Sample Data (similar to rooms structure)
+
+INSERT INTO events (event_name, category_id, floor, status, maintenance_status, special_features) VALUES
+
+('Conference Room A', NULL, 1, 'available', 'clean', 'Projector, Whiteboard, Video Conferencing'),
+
+('Conference Room B', NULL, 1, 'available', 'clean', 'TV Screen, Whiteboard'),
+
+('Function Hall 1', NULL, 2, 'available', 'clean', 'Stage, Sound System, Dance Floor'),
+
+('Function Hall 2', NULL, 2, 'available', 'clean', 'Stage, Sound System, Projector'),
+
+('Garden Pavilion', NULL, 0, 'available', 'clean', 'Outdoor Setup, Tent Options, Garden Setting'),
+
+('Rooftop Terrace', NULL, 5, 'available', 'clean', 'City & Bay Views, Bar Area, Lounge Seating');
+
+
+
+-- Gallery Images
+
+INSERT INTO gallery (title, description, image_path, category, is_featured, sort_order) VALUES
+
+('Hotel Exterior', 'Stunning view of Bayawan Bai Hotel facade', 'images/gallery/hotel-exterior.jpg', 'hotel', TRUE, 1),
+
+('Grand Lobby', 'Welcoming lobby with modern Filipino design', 'images/gallery/lobby.jpg', 'hotel', FALSE, 2),
+
+('Standard Room', 'Comfortable standard room with city view', 'images/gallery/standard-room.jpg', 'rooms', TRUE, 1),
+
+('Deluxe Room', 'Spacious deluxe room with bay view', 'images/gallery/deluxe-room.jpg', 'rooms', TRUE, 2),
+
+('Suite Living Area', 'Elegant living space in our suites', 'images/gallery/suite-living.jpg', 'rooms', FALSE, 3),
+
+('Suite Bedroom', 'Luxurious bedroom with ocean view', 'images/gallery/suite-bedroom.jpg', 'rooms', FALSE, 4),
+
+('Infinity Pool', 'Relax by our stunning infinity pool', 'images/gallery/pool.jpg', 'amenities', TRUE, 1),
+
+('Spa Treatment Room', 'Tranquil spa environment for relaxation', 'images/gallery/spa.jpg', 'amenities', FALSE, 2),
+
+('Restaurant', 'Fine dining at our in-house restaurant', 'images/gallery/restaurant.jpg', 'dining', TRUE, 1),
+
+('Breakfast Buffet', 'Delicious morning spread', 'images/gallery/breakfast.jpg', 'dining', FALSE, 2),
+
+('Danjugan Island', 'Explore the beautiful Danjugan Island nearby', 'images/gallery/danjugan.jpg', 'attractions', TRUE, 1),
+
+('Bayawan Bay Beach', 'Pristine beach just minutes away', 'images/gallery/bayawan-bay.jpg', 'attractions', TRUE, 2),
+
+('Mt. Talinis', 'Majestic mountain views from the region', 'images/gallery/mt-talinis.jpg', 'attractions', FALSE, 3);
+
+ 
+
+-- Homepage Slider
+
+INSERT INTO homepage_slider (title, subtitle, image, button_text, button_link, sort_order, is_active) VALUES
+
+('Welcome to Bayawan Bai Hotel', 'Experience the perfect blend of luxury and nature in Bayawan City', 'images/slider/slide1.jpg', 'Book Now', 'booking.php', 1, TRUE),
+
+('Escape to Paradise', 'Discover pristine beaches and stunning ocean views', 'images/slider/slide2.jpg', 'Explore Rooms', 'rooms.php', 2, TRUE),
+
+('Culinary Excellence', 'Savor the flavors of Negros Oriental', 'images/slider/slide3.jpg', 'View Dining', 'dining.php', 3, TRUE),
+
+('Unforgettable Events', 'Host your special moments in our elegant venues', 'images/slider/slide4.jpg', 'Plan Your Event', 'events.php', 4, TRUE);
+
+ 
+
+-- Promotions
+
+INSERT INTO promotions (title, description, discount_percent, promo_code, start_date, end_date, min_nights, is_active) VALUES
+
+('Summer Special', 'Book 3 nights and get 20% off your stay! Perfect for your summer getaway in Bayawan.', 20, 'SUMMER20', '2024-03-01', '2024-05-31', 3, TRUE),
+
+('Early Bird Discount', 'Plan ahead! Book 30 days in advance and save 15% on your reservation.', 15, 'EARLY15', '2024-01-01', '2024-12-31', 1, TRUE),
+
+('Weekend Escape', 'Special weekend rates for a relaxing break. Includes complimentary breakfast!', 25, 'WEEKEND25', '2024-01-01', '2024-12-31', 2, TRUE),
+
+('Loyalty Member Special', 'Members enjoy an extra 10% off on top of any promotion!', 10, 'LOYAL10', '2024-01-01', '2024-12-31', 1, TRUE);
+
+ 
+
+-- FAQs
+
+INSERT INTO faqs (question, answer, category, sort_order) VALUES
+
+('What are the check-in and check-out times?', 'Check-in time is 2:00 PM and check-out time is 12:00 PM (noon). Early check-in and late check-out are subject to availability and may incur additional charges.', 'reservations', 1),
+
+('Is breakfast included in the room rate?', 'Breakfast inclusion depends on your booking package. Our Bed & Breakfast rates include breakfast for all registered guests. Please check your reservation confirmation for details.', 'dining', 2),
+
+('Do you offer airport transfers?', 'Yes, we offer airport transfer services from Dumaguete Airport (Sibulan) to our hotel. Please contact our reservations team at least 24 hours in advance to arrange this service.', 'services', 3),
+
+('Is there WiFi available?', 'Complimentary high-speed WiFi is available throughout the hotel premises for all guests.', 'services', 4),
+
+('What payment methods do you accept?', 'We accept GCash, PayPal, major credit cards (Visa, Mastercard, Amex), cash, and bank transfers.', 'payments', 5),
+
+('Can I modify or cancel my reservation?', 'Yes, reservations can be modified or cancelled according to our policy. Cancellations made 48 hours prior to check-in are fully refundable. Please refer to your booking confirmation for specific terms.', 'reservations', 6),
+
+('Are pets allowed?', 'We regret that pets are not allowed in the hotel, with the exception of service animals.', 'policies', 7),
+
+('Do you have parking facilities?', 'Yes, we offer complimentary parking for our hotel guests.', 'services', 8),
+
+('What attractions are near the hotel?', 'Bayawan Bai Hotel is close to Danjugan Island Marine Reserve, Bayawan Bay Beach, and Mt. Talinis. Our concierge can help arrange tours and transportation.', 'location', 9),
+
+('Is there a gym and spa?', 'Yes, we have a 24-hour fitness center and a full-service spa offering various treatments and massages.', 'amenities', 10);
+
+ 
+
+-- Settings
+
+INSERT INTO settings (setting_key, setting_value, setting_group) VALUES
+
+('hotel_name', 'Bayawan Bai Hotel', 'general'),
+
+('hotel_address', 'Bayawan City, Negros Oriental, Philippines', 'general'),
+
+('hotel_phone', '+63 35 123 4567', 'general'),
+
+('hotel_email', 'info@bayawanbaihotel.com', 'general'),
+
+('check_in_time', '14:00', 'operations'),
+
+('check_out_time', '12:00', 'operations'),
+
+('currency', 'PHP', 'general'),
+
+('facebook_url', 'https://facebook.com/bayawanbaihotel', 'social'),
+
+('instagram_url', 'https://instagram.com/bayawanbaihotel', 'social'),
+
+('twitter_url', 'https://twitter.com/bayawanbaihotel', 'social'),
+
+('smtp_host', 'smtp.gmail.com', 'email'),
+
+('smtp_port', '587', 'email'),
+
+('smtp_username', 'bookings@bayawanbaihotel.com', 'email'),
+
+('gcash_enabled', '1', 'payments'),
+
+('paypal_enabled', '1', 'payments'),
+
+('credit_card_enabled', '1', 'payments');
+
+ 
+
+-- Inventory Categories
+
+INSERT INTO inventory_categories (category_name) VALUES
+
+('Linens & Towels'),
+
+('Toiletries'),
+
+('Cleaning Supplies'),
+
+('Minibar Items'),
+
+('Office Supplies'),
+
+('Kitchen Supplies');
+
+ 
+
+-- Inventory Items
+
+INSERT INTO inventory_items (inv_cat_id, item_name, description, unit, quantity, reorder_level, unit_cost, supplier) VALUES
+
+(1, 'Bath Towels', 'Premium white bath towels', 'piece', 200, 50, 450.00, 'Manila Textiles'),
+
+(1, 'Bed Sheets', 'Queen size white sheets', 'piece', 150, 30, 850.00, 'Manila Textiles'),
+
+(2, 'Shampoo', 'Hotel size shampoo bottles 30ml', 'bottle', 500, 100, 25.00, 'Amenities Supplier PH'),
+
+(2, 'Soap', 'Hotel size soap bars 25g', 'piece', 600, 150, 15.00, 'Amenities Supplier PH'),
+
+(3, 'All-Purpose Cleaner', 'Multi-surface cleaning solution', 'liter', 50, 10, 180.00, 'CleanPro Supplies'),
+
+(4, 'Bottled Water', '500ml mineral water', 'bottle', 300, 50, 20.00, 'Nestle Philippines'),
+
+(4, 'Snacks Assorted', 'Mixed snack items for minibar', 'pack', 100, 20, 45.00, 'Local Distributor');
+
+ 
+
+-- Food Orders Table (for room service and restaurant orders)
+
+CREATE TABLE food_orders (
+
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    booking_id INT NULL,
+
+    food_id INT NOT NULL,
+
+    quantity INT NOT NULL DEFAULT 1,
+
+    unit_price DECIMAL(10,2) NOT NULL,
+
+    total_price DECIMAL(10,2) NOT NULL,
+
+    status ENUM('pending', 'preparing', 'ready', 'delivered', 'cancelled') DEFAULT 'pending',
+
+    order_type ENUM('room_service', 'dine_in', 'takeaway') DEFAULT 'room_service',
+
+    payment_method ENUM('gcash', 'paypal', 'credit_card', 'pay_at_hotel', 'cash') DEFAULT 'pay_at_hotel',
+
+    payment_status ENUM('pending', 'paid', 'partial') DEFAULT 'pending',
+
+    room_number VARCHAR(20),
+
+    special_instructions TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    prepared_at TIMESTAMP NULL,
+
+    delivered_at TIMESTAMP NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
+
+    FOREIGN KEY (food_id) REFERENCES menu_items(item_id)
+
+);
+
+
+
+-- Foods Table (Extended menu items for inventory management)
+
+CREATE TABLE foods (
+
+    food_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    category_id INT NOT NULL,
+
+    food_name VARCHAR(200) NOT NULL,
+
+    description TEXT,
+
+    price DECIMAL(10,2) NOT NULL,
+
+    image VARCHAR(255),
+
+    is_special BOOLEAN DEFAULT FALSE,
+
+    is_available BOOLEAN DEFAULT TRUE,
+
+    dietary_info VARCHAR(255),
+
+    prep_time_minutes INT DEFAULT 20,
+
+    stock_quantity INT DEFAULT 0,
+
+    cost_price DECIMAL(10,2),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (category_id) REFERENCES menu_categories(cat_id)
+
+);
+
+
+
+-- Sample Data for Foods Table
+
+INSERT INTO foods (category_id, food_name, description, price, cost_price, is_special, is_available, dietary_info, prep_time_minutes, stock_quantity) VALUES
+
+(1, 'Filipino Breakfast Platter', 'Garlic rice, choice of tocino or longganisa, fried egg, atchara, and brewed coffee', 450.00, 180.00, TRUE, TRUE, NULL, 20, 50),
+
+(1, 'Continental Breakfast', 'Fresh seasonal fruits, assorted pastries, yogurt, and choice of juice or coffee', 380.00, 150.00, FALSE, TRUE, 'Vegetarian', 15, 40),
+
+(1, 'American Breakfast', 'Eggs any style, bacon or sausage, hash browns, toast, and coffee', 520.00, 220.00, FALSE, TRUE, NULL, 25, 35),
+
+(2, 'Grilled Blue Marlin', 'Fresh catch from Bayawan Bay with garlic butter sauce, served with rice and vegetables', 680.00, 280.00, TRUE, TRUE, NULL, 30, 25),
+
+(2, 'Chicken Inasal', 'Authentic Negros-style grilled chicken with annatto oil and calamansi', 450.00, 180.00, TRUE, TRUE, 'Gluten-Free', 25, 30),
+
+(2, 'Beef Steak Tagalog', 'Tender beef slices in soy-calamansi marinade with caramelized onions', 580.00, 240.00, FALSE, TRUE, NULL, 30, 20),
+
+(2, 'Vegetable Curry', 'Assorted vegetables in coconut curry sauce with steamed rice', 380.00, 140.00, FALSE, TRUE, 'Vegan, Gluten-Free', 25, 15),
+
+(3, 'Halo-Halo Special', 'Traditional Filipino dessert with ube, leche flan, sweet beans, and shaved ice', 280.00, 100.00, TRUE, TRUE, 'Vegetarian', 10, 45),
+
+(3, 'Mango Float', 'Layers of graham crackers, cream, and fresh sweet mangoes', 250.00, 90.00, TRUE, TRUE, 'Vegetarian', 15, 30),
+
+(3, 'Leche Flan', 'Creamy caramel custard dessert', 180.00, 70.00, FALSE, TRUE, 'Vegetarian, Gluten-Free', 10, 40),
+
+(4, 'Bayawan Bay Breeze', 'Refreshing tropical cocktail with rum, pineapple, and coconut cream', 320.00, 80.00, TRUE, TRUE, NULL, 5, 100),
+
+(4, 'Fresh Buko Juice', 'Young coconut water served fresh in the shell', 180.00, 50.00, FALSE, TRUE, 'Vegan, Gluten-Free', 5, 60),
+
+(4, 'Kapeng Barako', 'Strong Batangas brewed coffee', 120.00, 40.00, FALSE, TRUE, 'Vegan', 10, 80),
+
+(2, 'Seafood Paella', 'Spanish rice dish with shrimp, mussels, squid, and fish', 750.00, 320.00, TRUE, TRUE, NULL, 45, 20),
+
+(2, 'Pork Sinigang', 'Tamarind soup with pork and vegetables', 420.00, 160.00, FALSE, TRUE, 'Gluten-Free', 35, 25),
+
+(2, 'Grilled Salmon', 'Norwegian salmon fillet with lemon butter sauce', 850.00, 380.00, TRUE, FALSE, NULL, 25, 0),
+
+(3, 'Chocolate Lava Cake', 'Warm chocolate cake with molten center', 320.00, 120.00, FALSE, TRUE, 'Vegetarian', 20, 18);
+
+
+
+SELECT 'Food orders and foods tables created successfully!' AS message;

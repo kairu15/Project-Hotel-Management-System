@@ -1,0 +1,84 @@
+[2026-03-17 10:56:02] [User: 4] User login - User ID: 4
+[2026-03-17 10:56:54] [User: 4] User login - User ID: 4
+[2026-03-17 10:59:55] [User: 4] User login - User ID: 4
+[2026-03-17 11:00:42] [User: 4] User login - User ID: 4
+[2026-03-17 11:08:36] [User: 4] User login - User ID: 4
+[2026-03-17 11:16:12] [User: 4] Password changed - User ID: 4
+[2026-03-17 11:48:08] [User: 4] User login - User ID: 4
+[2026-03-17 11:49:39] [User: 2] User login - User ID: 2
+[2026-03-17 12:25:34] [User: 4] User login - User ID: 4
+[2026-03-17 12:26:19] [User: 1] User login - User ID: 1
+[2026-03-17 13:47:22] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 13:52:03] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 13:52:17] [User: 6] User login - User ID: 6
+[2026-03-17 13:57:08] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 13:57:23] [User: 7] User login - User ID: 7
+[2026-03-17 13:59:17] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 14:12:45] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 14:31:51] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 14:32:28] [User: 10] User login - User ID: 10
+[2026-03-17 14:53:52] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 14:54:03] [User: 11] User login - User ID: 11
+[2026-03-17 14:57:05] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:00:35] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:04:59] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:10:52] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:14:42] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:21:17] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:23:18] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:27:44] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:29:20] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-17 15:33:46] [User: 20] User login - User ID: 20
+[2026-03-17 16:03:42] [User: 1] User login - User ID: 1
+[2026-03-18 10:23:57] [User: 1] User login - User ID: 1
+[2026-03-18 10:25:09] [User: 1] User login - User ID: 1
+[2026-03-18 10:29:22] [User: 2] User login - User ID: 2
+[2026-03-18 10:31:50] [User: 1] User login - User ID: 1
+[2026-03-18 10:43:15] [User: 1] User login - User ID: 1
+[2026-03-18 10:45:33] [User: 2] User login - User ID: 2
+[2026-03-18 10:51:45] [User: 1] User login - User ID: 1
+[2026-03-18 11:21:55] [User: 1] User login - User ID: 1
+[2026-03-18 11:29:03] [User: 2] User login - User ID: 2
+[2026-03-18 11:32:49] [User: 2] User login - User ID: 2
+[2026-03-18 11:33:40] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-18 11:33:50] [User: 22] User login - User ID: 22
+[2026-03-18 11:35:26] [User: 2] User login - User ID: 2
+[2026-03-18 11:45:02] [User: 1] User login - User ID: 1
+[2026-03-18 13:05:42] [User: 22] Profile updated - User ID: 22
+[2026-03-18 13:47:51] [User: 22] Payment processed - Booking ID: 9, Method: gcash, Status: paid
+[2026-03-18 13:48:11] [User: 22] Payment processed - Booking ID: 10, Method: paypal, Status: paid
+[2026-03-18 13:51:25] [User: 22] Payment processed - Booking ID: 11, Method: gcash, Status: pending
+[2026-03-18 13:52:01] [User: 22] Payment processed - Booking ID: 12, Method: credit_card, Status: paid
+[2026-03-18 13:52:24] [User: 22] Payment processed - Booking ID: 13, Method: gcash, Status: paid
+[2026-03-18 13:57:11] [User: 22] Payment processed - Booking ID: 14, Method: gcash, Status: pending
+[2026-03-18 13:57:44] [User: 22] Payment processed - Booking ID: 15, Method: pay_at_hotel, Status: partial
+[2026-03-18 13:58:53] [User: 22] Payment processed - Booking ID: 16, Method: gcash, Status: paid
+[2026-03-18 14:46:06] [User: guest] New user registration - Email: gemdacibron@gmail.com
+[2026-03-18 14:46:30] [User: 23] User login - User ID: 23
+[2026-03-19 06:34:01] [User: 22] User login - User ID: 22
+[2026-03-19 14:51:26] [User: 22] User login - User ID: 22
+[2026-03-19 14:53:34] [User: 2] User login - User ID: 2
+[2026-03-19 15:01:02] [User: 22] Payment processed - Booking ID: 20, Method: gcash, Status: paid
+[2026-03-19 16:13:11] [User: 22] Contact form submitted - From: kylleacibron@gmail.com
+[2026-03-19 16:50:16] [User: 1] User login - User ID: 1
+[2026-03-19 17:19:02] [User: 2] User login - User ID: 2
+[2026-03-20 05:01:19] [User: 22] User login - User ID: 22
+[2026-03-21 11:38:30] [User: 1] User login - User ID: 1
+[2026-03-21 11:39:11] [User: 2] User login - User ID: 2
+[2026-03-21 11:39:28] [User: 22] User login - User ID: 22
+[2026-03-21 11:45:41] [User: 22] Payment processed - Booking ID: 21, Method: gcash, Status: paid
+[2026-03-21 11:46:59] [User: 22] Payment processed - Booking ID: 22, Method: gcash, Status: paid
+[2026-03-21 12:18:26] [User: 22] Event booking inquiry submitted - User ID: 22, Event Type: Wedding, Date: 2026-03-21
+[2026-03-21 12:55:58] [User: 2] User login - User ID: 2
+[2026-03-21 12:56:42] [User: 1] User login - User ID: 1
+[2026-03-21 16:56:43] [User: 22] Food Order Placed - Order ID: 6, User: 22, Amount: 520, Method: gcash
+[2026-03-21 17:19:31] [User: 22] Food Order Placed - Order ID: 7, User: 22, Amount: 400, Method: gcash
+[2026-03-21 17:26:38] [User: 22] User login - User ID: 22
+[2026-03-22 13:57:48] [User: 22] User login - User ID: 22
+[2026-03-22 14:23:34] [User: guest] New user registration - Email: angelitofeliciano143@gmail.com
+[2026-03-22 14:24:58] [User: 24] User login - User ID: 24
+[2026-03-22 14:28:05] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-22 14:28:20] [User: 25] User login - User ID: 25
+[2026-03-22 14:33:40] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-22 14:34:06] [User: 26] User login - User ID: 26
+[2026-03-23 10:29:02] [User: 26] User login - User ID: 26
