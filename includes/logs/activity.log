@@ -84,3 +84,10 @@
 [2026-03-23 10:29:02] [User: 26] User login - User ID: 26
 [2026-03-24 06:18:25] [User: 26] User login - User ID: 26
 [2026-03-24 11:59:38] [User: 26] User login - User ID: 26
+[2026-03-24 12:03:29] [User: 26] Payment processed - Booking ID: 23, Method: gcash, Status: paid
+[2026-03-24 12:17:07] [User: 26] Food Order Placed - Order ID: 8, User: 26, Amount: 400, Method: gcash
+[2026-03-24 12:42:40] [User: 2] User login - User ID: 2
+[2026-03-24 12:43:45] [User: 1] User login - User ID: 1
+[2026-03-24 13:04:29] [User: 26] Food Order Placed - Order ID: 9, User: 26, Amount: 400, Method: gcash
+[2026-03-24 13:29:22] [User: 26] Food Order Placed - Order ID: 10, User: 26, Amount: 400, Method: gcash
+[2026-03-25 10:01:47] [User: 26] User login - User ID: 26
