@@ -86,6 +86,71 @@ $eventSpaceStatus = $db->query("
 
 // Get pending event bookings count
 $pendingEventBookings = $db->query("SELECT COUNT(*) FROM event_bookings WHERE status = 'pending'")->fetchColumn();
+
+// Get event bookings statistics
+$eventStats = $db->query("
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+        SUM(CASE WHEN event_date >= CURDATE() AND status IN ('confirmed', 'pending') THEN 1 ELSE 0 END) as upcoming
+    FROM event_bookings
+")->fetch();
+
+// Get recent/upcoming event bookings (first 3)
+$recentEventBookings = $db->query("
+    SELECT eb.*, es.space_name, es.capacity as space_capacity
+    FROM event_bookings eb
+    JOIN event_spaces es ON eb.space_id = es.space_id
+    WHERE eb.event_date >= CURDATE() - INTERVAL 7 DAY
+    ORDER BY 
+        CASE WHEN eb.status = 'pending' THEN 0 ELSE 1 END,
+        eb.event_date ASC,
+        eb.created_at DESC
+    LIMIT 3
+")->fetchAll();
+
+// Get food orders statistics
+$foodOrderStats = $db->query("
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'preparing' THEN 1 ELSE 0 END) as preparing,
+        SUM(CASE WHEN status = 'ready' THEN 1 ELSE 0 END) as ready,
+        SUM(CASE WHEN status = 'delivered' AND DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as delivered_today,
+        SUM(CASE WHEN status != 'cancelled' THEN total_price ELSE 0 END) as total_revenue
+    FROM food_orders
+    WHERE created_at >= CURDATE() - INTERVAL 30 DAY
+")->fetch();
+
+// Get recent food orders (first 3)
+$recentFoodOrders = $db->query("
+    SELECT fo.*, mi.item_name, u.first_name, u.last_name, r.room_number as booking_room
+    FROM food_orders fo
+    JOIN menu_items mi ON fo.food_id = mi.item_id
+    JOIN users u ON fo.user_id = u.user_id
+    LEFT JOIN bookings b ON fo.booking_id = b.booking_id
+    LEFT JOIN rooms r ON b.room_id = r.room_id
+    ORDER BY FIELD(fo.status, 'pending', 'preparing', 'ready', 'delivered', 'cancelled'), fo.created_at DESC
+    LIMIT 3
+")->fetchAll();
+
+// Status color mappings for display
+$eventStatusColors = [
+    'pending' => ['#fff3cd', '#856404'],
+    'confirmed' => ['#d4edda', '#155724'],
+    'completed' => ['#cce5ff', '#004085'],
+    'cancelled' => ['#f8d7da', '#721c24']
+];
+
+$foodStatusColors = [
+    'pending' => ['#fff3cd', '#856404'],
+    'preparing' => ['#cce5ff', '#004085'],
+    'ready' => ['#d4edda', '#155724'],
+    'delivered' => ['#e2e3e5', '#383d41'],
+    'cancelled' => ['#f8d7da', '#721c24']
+];
 ?>
 <!-- Staff Content -->
 <section style="padding: 30px 0; background-color: var(--gray-light); min-height: calc(100vh - 250px);">
@@ -93,8 +158,8 @@ $pendingEventBookings = $db->query("SELECT COUNT(*) FROM event_bookings WHERE st
         <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
             <a href="walkin-booking.php" class="btn" style="background-color: white; color: var(--primary-color);"><i class="fas fa-plus"></i> Walk-in Booking</a>
         </div>
-        <!-- Quick Stats -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+        <!-- Quick Stats Row 1: Room Bookings -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
             <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--info-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -132,6 +197,149 @@ $pendingEventBookings = $db->query("SELECT COUNT(*) FROM event_bookings WHERE st
                         <h3 style="font-size: 32px; margin: 0;"><?php echo $stats['occupied_rooms']; ?></h3>
                     </div>
                     <i class="fas fa-bed" style="font-size: 40px; color: var(--success-color); opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats Row 2: Events & Food Orders -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+            <!-- Pending Event Bookings -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #6f42c1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 14px; color: #666; margin: 0 0 5px 0;">Pending Event Bookings</p>
+                        <h3 style="font-size: 32px; margin: 0;"><?php echo $eventStats['pending'] ?? 0; ?></h3>
+                    </div>
+                    <i class="fas fa-calendar-check" style="font-size: 40px; color: #6f42c1; opacity: 0.3;"></i>
+                </div>
+            </div>
+            
+            <!-- Upcoming Events -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #17a2b8;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 14px; color: #666; margin: 0 0 5px 0;">Upcoming Events</p>
+                        <h3 style="font-size: 32px; margin: 0;"><?php echo $eventStats['upcoming'] ?? 0; ?></h3>
+                    </div>
+                    <i class="fas fa-calendar-alt" style="font-size: 40px; color: #17a2b8; opacity: 0.3;"></i>
+                </div>
+            </div>
+            
+            <!-- Pending Food Orders -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--warning-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 14px; color: #666; margin: 0 0 5px 0;">Pending Food Orders</p>
+                        <h3 style="font-size: 32px; margin: 0;"><?php echo $foodOrderStats['pending'] ?? 0; ?></h3>
+                    </div>
+                    <i class="fas fa-utensils" style="font-size: 40px; color: var(--warning-color); opacity: 0.3;"></i>
+                </div>
+            </div>
+            
+            <!-- Food Orders Being Prepared -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--info-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 14px; color: #666; margin: 0 0 5px 0;">Being Prepared</p>
+                        <h3 style="font-size: 32px; margin: 0;"><?php echo $foodOrderStats['preparing'] ?? 0; ?></h3>
+                    </div>
+                    <i class="fas fa-fire" style="font-size: 40px; color: var(--info-color); opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Panels Grid: Event Bookings & Food Orders -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <!-- Recent Event Bookings Summary -->
+            <div style="background-color: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="padding: 20px 25px; border-bottom: 1px solid var(--gray-light); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-calendar-check" style="color: #6f42c1; margin-right: 10px;"></i>Recent Event Bookings</h3>
+                    <span style="background-color: #6f42c1; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px;"><?php echo $eventStats['pending'] ?? 0; ?> pending</span>
+                </div>
+                <div style="padding: 0;">
+                    <?php if (count($recentEventBookings) > 0): ?>
+                        <?php foreach ($recentEventBookings as $event): 
+                            $color = $eventStatusColors[$event['status']] ?? ['#e2e3e5', '#383d41'];
+                        ?>
+                        <div style="padding: 15px 25px; border-bottom: 1px solid var(--gray-light);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="font-size: 15px; margin: 0 0 3px 0;"><?php echo htmlspecialchars(ucfirst($event['event_type'] ?: 'General Event')); ?></h4>
+                                    <p style="font-size: 13px; color: #666; margin: 0;">
+                                        <i class="fas fa-user"></i> <?php echo htmlspecialchars($event['inquiry_name']); ?> |
+                                        <i class="fas fa-users"></i> <?php echo number_format($event['guests_count'] ?: 0); ?> guests
+                                    </p>
+                                    <p style="font-size: 12px; color: #999; margin: 3px 0 0 0;">
+                                        <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($event['space_name']); ?> |
+                                        <i class="fas fa-calendar"></i> <?php echo formatDate($event['event_date']); ?>
+                                    </p>
+                                </div>
+                                <span style="padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: 600; background-color: <?php echo $color[0]; ?>; color: <?php echo $color[1]; ?>; text-transform: capitalize;">
+                                    <?php echo $event['status']; ?>
+                                </span>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div style="padding: 40px; text-align: center;">
+                            <p style="color: #666; margin: 0;">No recent event bookings</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div style="padding: 15px 25px; border-top: 1px solid var(--gray-light); text-align: center;">
+                    <a href="staff-event-bookings.php" class="btn btn-primary" style="padding: 8px 20px; font-size: 13px;"><i class="fas fa-list"></i> View All Event Bookings</a>
+                </div>
+            </div>
+            
+            <!-- Recent Food Orders Summary -->
+            <div style="background-color: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="padding: 20px 25px; border-bottom: 1px solid var(--gray-light); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-utensils" style="color: var(--primary-color); margin-right: 10px;"></i>Recent Food Orders</h3>
+                    <span style="background-color: var(--primary-color); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px;"><?php echo $foodOrderStats['ready'] ?? 0; ?> ready</span>
+                </div>
+                <div style="padding: 0;">
+                    <?php if (count($recentFoodOrders) > 0): ?>
+                        <?php foreach ($recentFoodOrders as $order): 
+                            $status = $foodStatusColors[$order['status']] ?? $foodStatusColors['pending'];
+                            $roomDisplay = $order['room_number'] ?? ($order['booking_room'] ?? 'N/A');
+                        ?>
+                        <div style="padding: 15px 25px; border-bottom: 1px solid var(--gray-light);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <h4 style="font-size: 15px; margin: 0 0 3px 0;"><?php echo htmlspecialchars($order['item_name']); ?></h4>
+                                            <p style="font-size: 13px; color: #666; margin: 0;">
+                                                <i class="fas fa-user"></i> <?php echo htmlspecialchars($order['first_name'] . ' ' . $order['last_name']); ?> |
+                                                Qty: <?php echo $order['quantity']; ?>
+                                            </p>
+                                            <p style="font-size: 12px; color: #999; margin: 3px 0 0 0;">
+                                                <i class="fas fa-<?php echo $order['order_type'] === 'room_service' ? 'hotel' : ($order['order_type'] === 'dine_in' ? 'utensils' : 'shopping-bag'); ?>"></i>
+                                                <?php echo str_replace('_', ' ', $order['order_type']); ?>
+                                                <?php if ($order['order_type'] === 'room_service' && $roomDisplay !== 'N/A'): ?>
+                                                | Room: <?php echo htmlspecialchars($roomDisplay); ?>
+                                                <?php endif; ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p style="font-size: 14px; font-weight: 600; color: var(--primary-color); margin: 0;"><?php echo formatPrice($order['total_price']); ?></p>
+                                    <span style="display: inline-block; margin-top: 5px; padding: 3px 10px; border-radius: 15px; font-size: 11px; font-weight: 600; background-color: <?php echo $status[0]; ?>; color: <?php echo $status[1]; ?>;">
+                                        <?php echo ucfirst($order['status']); ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div style="padding: 40px; text-align: center;">
+                            <p style="color: #666; margin: 0;">No recent food orders</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div style="padding: 15px 25px; border-top: 1px solid var(--gray-light); text-align: center;">
+                    <a href="staff-foods-orders.php" class="btn btn-primary" style="padding: 8px 20px; font-size: 13px;"><i class="fas fa-list"></i> View All Food Orders</a>
                 </div>
             </div>
         </div>

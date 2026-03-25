@@ -43,53 +43,26 @@ $stmt = $db->prepare("
 $stmt->execute([$userId]);
 $bookings = $stmt->fetchAll();
 
-require_once '../includes/user-header.php';
-?>
+// Define status colors for event bookings
+$statusColors = [
+    'pending' => ['#fff3cd', '#856404'],
+    'confirmed' => ['#d4edda', '#155724'],
+    'completed' => ['#cce5ff', '#004085'],
+    'cancelled' => ['#f8d7da', '#721c24']
+];
+
+require_once '../includes/user-header.php'; ?>
 
         <!-- Page Header Actions -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <div>
                 <h2 style="margin: 0; color: var(--dark-color);">My Event Bookings</h2>
-                <p style="margin: 5px 0 0; color: #666;">Manage your event space reservations</p>
             </div>
             <div style="display: flex; gap: 15px;">
-                <a href="dashboard.php" class="btn btn-outline btn-sm">
-                    <i class="fas fa-arrow-left" style="margin-right: 5px;"></i> Dashboard
-                </a>
                 <a href="../events.php" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus" style="margin-right: 5px;"></i> Book New Event
                 </a>
             </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-            <?php
-            $statusCounts = ['pending' => 0, 'confirmed' => 0, 'completed' => 0, 'cancelled' => 0];
-            foreach ($bookings as $b) {
-                if (isset($statusCounts[$b['status']])) {
-                    $statusCounts[$b['status']]++;
-                }
-            }
-            $statusColors = [
-                'pending' => ['#fff3cd', '#856404'],
-                'confirmed' => ['#d4edda', '#155724'],
-                'completed' => ['#cce5ff', '#004085'],
-                'cancelled' => ['#f8d7da', '#721c24']
-            ];
-            foreach ($statusCounts as $status => $count):
-                $color = $statusColors[$status];
-            ?>
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid <?php echo $color[1]; ?>;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="font-size: 28px; margin: 0;"><?php echo $count; ?></h3>
-                        <p style="color: #666; margin: 5px 0 0; text-transform: capitalize;"><?php echo $status; ?></p>
-                    </div>
-                    <i class="fas fa-calendar-check" style="font-size: 32px; color: <?php echo $color[1]; ?>"></i>
-                </div>
-            </div>
-            <?php endforeach; ?>
         </div>
 
         <!-- Event Bookings -->

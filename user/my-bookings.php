@@ -286,7 +286,7 @@ if ($filter === 'upcoming') {
                         <p style="font-size: 24px; font-weight: 700; color: var(--primary-color);"><?php echo formatPrice($booking['total_amount']); ?></p>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <a href="booking-details.php?id=<?php echo $booking['booking_id']; ?>" class="btn btn-outline btn-sm">View Details</a>
+                        <a href="../user/booking-details.php?id=<?php echo $booking['booking_id']; ?>" class="btn btn-outline btn-sm">View Details</a>
                         <?php if ($canReschedule): ?>
                         <button type="button" class="btn btn-sm" style="background-color: #17a2b8; color: white;" onclick="openRescheduleModal(<?php echo $booking['booking_id']; ?>, '<?php echo $booking['check_in']; ?>', '<?php echo $booking['check_out']; ?>', <?php echo $booking['total_amount']; ?>, <?php echo $booking['room_rate']; ?>)">
                             <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>Reschedule

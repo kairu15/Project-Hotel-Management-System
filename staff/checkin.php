@@ -202,6 +202,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $db->commit();
+            
+            // Send notification to guest about check-in
+            require_once '../includes/notifications.php';
+            notifyBookingUpdate($booking['user_id'], $bookingId, 'checked_in');
+            
             $_SESSION['success'] = 'Guest checked in successfully';
             redirect('checkin.php');
             

@@ -274,6 +274,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $db->commit();
+            
+            // Send notification to guest about check-out
+            require_once '../includes/notifications.php';
+            notifyBookingUpdate($booking['user_id'], $bookingId, 'checked_out');
+            
             $_SESSION['success'] = 'Guest checked out successfully';
             redirect('checkout.php');
             

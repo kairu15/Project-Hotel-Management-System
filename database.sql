@@ -1233,3 +1233,85 @@ INSERT INTO foods (category_id, food_name, description, price, cost_price, is_sp
 
 
 SELECT 'Food orders and foods tables created successfully!' AS message;
+
+-- =====================================================
+
+-- NOTIFICATION SYSTEM TABLES
+
+-- =====================================================
+
+-- Notifications Table (for user notifications)
+
+CREATE TABLE notifications (
+
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    type ENUM('booking', 'food_order', 'payment', 'system', 'schedule', 'maintenance', 'event', 'promotion') NOT NULL,
+
+    title VARCHAR(255) NOT NULL,
+
+    message TEXT NOT NULL,
+
+    related_id INT NULL,
+
+    related_type VARCHAR(50) NULL,
+
+    status ENUM('unread', 'read') DEFAULT 'unread',
+
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+
+    action_url VARCHAR(500) NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    read_at TIMESTAMP NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+
+    INDEX idx_user_status (user_id, status),
+
+    INDEX idx_created_at (created_at),
+
+    INDEX idx_type (type)
+
+);
+
+ 
+
+-- Notification Settings Table (per user preferences)
+
+CREATE TABLE notification_settings (
+
+    setting_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+
+    notification_type ENUM('booking', 'food_order', 'payment', 'system', 'schedule', 'maintenance', 'event', 'promotion', 'all') NOT NULL,
+
+    email_enabled BOOLEAN DEFAULT TRUE,
+
+    popup_enabled BOOLEAN DEFAULT TRUE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+
+    UNIQUE KEY unique_user_type (user_id, notification_type)
+
+);
+
+ 
+
+-- Insert default notification settings for existing users
+
+INSERT INTO notification_settings (user_id, notification_type, email_enabled, popup_enabled)
+
+SELECT user_id, 'all', TRUE, TRUE FROM users;
+
+ 
+
+SELECT 'Notification system tables created successfully!' AS message;

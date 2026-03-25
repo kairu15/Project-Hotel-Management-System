@@ -2,6 +2,8 @@
         </div><!-- End main-content -->
     </div><!-- End user-wrapper -->
     
+    <?php include __DIR__ . '/chatbot-component.php'; ?>
+    
     <script>
         // Toggle sidebar on mobile
         function toggleSidebar() {

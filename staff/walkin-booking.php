@@ -126,6 +126,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $db->commit();
+            
+            // Send notification to user about their booking
+            require_once '../includes/notifications.php';
+            notifyBookingUpdate($userId, $bookingId, 'confirmed');
+            
             $_SESSION['success'] = 'Walk-in booking created successfully! Booking #' . str_pad($bookingId, 6, '0', STR_PAD_LEFT);
             redirect('staff-dashboard.php');
 

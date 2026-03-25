@@ -301,6 +301,266 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
             font-size: 14px;
         }
         
+        /* Notification Bell Styles */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        
+        .notification-bell:hover {
+            background-color: var(--gray-light);
+        }
+        
+        .notification-bell i {
+            font-size: 20px;
+            color: var(--text-color);
+        }
+        
+        .notification-bell .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: var(--danger-color);
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* Floating Notification Panel */
+        .notification-panel {
+            position: fixed;
+            top: 70px;
+            right: 30px;
+            width: 380px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .notification-panel.active {
+            display: flex;
+        }
+        
+        .notification-panel-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .notification-panel-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: white;
+            font-family: 'Lato', sans-serif;
+        }
+        
+        .notification-panel-header .actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .notification-panel-header .actions a {
+            color: white;
+            font-size: 12px;
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.2);
+            transition: background 0.3s;
+        }
+        
+        .notification-panel-header .actions a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 380px;
+        }
+        
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--gray-light);
+        }
+        
+        .notification-item.unread {
+            background-color: #f0f9ff;
+        }
+        
+        .notification-item.unread:hover {
+            background-color: #e0f2fe;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .notification-icon i {
+            font-size: 16px;
+            color: white;
+        }
+        
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .notification-content h4 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .notification-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .notification-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .notification-time {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .notification-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+        
+        .notification-status.read {
+            background-color: transparent;
+        }
+        
+        .notification-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .notification-empty i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--gray-medium);
+        }
+        
+        .notification-empty p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .notification-loading {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .notification-panel-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--gray-light);
+        }
+        
+        .notification-panel-footer a {
+            font-size: 12px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .notification-panel-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .mark-all-read {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 0;
+        }
+        
+        .mark-all-read:hover {
+            text-decoration: underline;
+        }
+        
+        /* Notification Overlay */
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-overlay.active {
+            display: block;
+        }
+        
+        @media (max-width: 480px) {
+            .notification-panel {
+                width: calc(100% - 40px);
+                right: 20px;
+                left: 20px;
+            }
+        }
+        
         /* Buttons */
         .btn {
             display: inline-block;
@@ -559,6 +819,10 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
                 </div>
                 <div class="header-actions">
                     <span class="date-display"><i class="far fa-calendar-alt"></i> <?php echo date('l, F d, Y'); ?></span>
+                    <div class="notification-bell" onclick="toggleNotifications()" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notification-badge" style="display: none;">0</span>
+                    </div>
                     <a href="staff-dashboard.php" title="Dashboard"><i class="fas fa-home"></i></a>
                     <a href="../auth/logout.php" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
@@ -572,5 +836,158 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
             </div>
             <?php endif; ?>
             
+            <!-- Notification Overlay -->
+            <div class="notification-overlay" id="notification-overlay" onclick="closeNotifications()"></div>
+            
+            <!-- Floating Notification Panel -->
+            <div class="notification-panel" id="notification-panel">
+                <div class="notification-panel-header">
+                    <h3><i class="fas fa-bell" style="margin-right: 8px;"></i>Notifications</h3>
+                    <div class="actions">
+                        <a href="notifications.php">View All</a>
+                        <a href="notification-settings.php">Settings</a>
+                    </div>
+                </div>
+                <div class="notification-list" id="notification-list">
+                    <div class="notification-loading">
+                        <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Loading...
+                    </div>
+                </div>
+                <div class="notification-panel-footer">
+                    <button class="mark-all-read" onclick="markAllAsRead()">Mark all as read</button>
+                    <span id="notification-count">0 unread</span>
+                </div>
+            </div>
+            
             <!-- Page Content -->
             <div class="page-content">
+                
+            <!-- Notification System JavaScript -->
+            <script>
+            // Notification System
+            let notificationRefreshInterval;
+            
+            // Load notifications on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchNotifications();
+                // Auto-refresh every 30 seconds
+                notificationRefreshInterval = setInterval(fetchNotifications, 30000);
+            });
+            
+            function toggleNotifications() {
+                const panel = document.getElementById('notification-panel');
+                const overlay = document.getElementById('notification-overlay');
+                
+                if (panel.classList.contains('active')) {
+                    closeNotifications();
+                } else {
+                    panel.classList.add('active');
+                    overlay.classList.add('active');
+                    fetchNotifications();
+                }
+            }
+            
+            function closeNotifications() {
+                const panel = document.getElementById('notification-panel');
+                const overlay = document.getElementById('notification-overlay');
+                panel.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+            
+            function fetchNotifications() {
+                fetch('../api/ajax-notifications.php?action=get_notifications&limit=10')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateNotificationUI(data.notifications, data.unread_count);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching notifications:', error));
+            }
+            
+            function updateNotificationUI(notifications, unreadCount) {
+                const list = document.getElementById('notification-list');
+                const badge = document.getElementById('notification-badge');
+                const countLabel = document.getElementById('notification-count');
+                
+                // Update badge
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    badge.style.display = 'block';
+                    countLabel.textContent = unreadCount + ' unread';
+                } else {
+                    badge.style.display = 'none';
+                    countLabel.textContent = 'No unread notifications';
+                }
+                
+                // Update list
+                if (notifications.length === 0) {
+                    list.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications yet</p>
+                        </div>
+                    `;
+                } else {
+                    list.innerHTML = notifications.map(n => `
+                        <div class="notification-item ${n.status === 'unread' ? 'unread' : ''}" 
+                             onclick="handleNotificationClick(${n.notification_id}, '${n.action_url || ''}')"
+                             data-id="${n.notification_id}">
+                            <div class="notification-icon" style="background-color: ${n.color};">
+                                <i class="fas fa-${n.icon}"></i>
+                            </div>
+                            <div class="notification-content">
+                                <h4>${escapeHtml(n.title)}</h4>
+                                <p>${escapeHtml(n.message)}</p>
+                                <div class="notification-meta">
+                                    <span class="notification-time">${n.time_ago}</span>
+                                    <span class="notification-status ${n.status === 'read' ? 'read' : ''}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            function handleNotificationClick(notificationId, actionUrl) {
+                // Mark as read
+                fetch('../api/ajax-notifications.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=mark_read&notification_id=${notificationId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh notifications
+                        fetchNotifications();
+                        // Navigate if action URL exists
+                        if (actionUrl) {
+                            window.location.href = actionUrl;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+            }
+            
+            function markAllAsRead() {
+                fetch('../api/ajax-notifications.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'action=mark_all_read'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchNotifications();
+                    }
+                })
+                .catch(error => console.error('Error marking all as read:', error));
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            </script>

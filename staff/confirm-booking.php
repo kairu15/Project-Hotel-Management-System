@@ -168,6 +168,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $db->commit();
+            
+            // Send notification to guest
+            require_once '../includes/notifications.php';
+            
+            if ($action === 'confirm') {
+                notifyBookingUpdate($booking['user_id'], $bookingId, 'confirmed');
+            } elseif ($action === 'cancel') {
+                notifyBookingUpdate($booking['user_id'], $bookingId, 'cancelled');
+            }
+            
             redirect('confirm-booking.php');
             
         } catch (Exception $e) {

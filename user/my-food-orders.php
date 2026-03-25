@@ -86,37 +86,6 @@ $deliveredCount = count(array_filter($orders, function($o) { return $o['status']
 $totalSpent = array_sum(array_map(function($o) { return $o['status'] !== 'cancelled' ? $o['total_price'] : 0; }, $orders));
 ?>
 
-<!-- Stats Cards -->
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-    <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--warning-color);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h3 style="font-size: 32px; margin: 0; color: var(--dark-color);"><?php echo $pendingCount; ?></h3>
-                <p style="color: #666; margin: 5px 0 0;">Pending Orders</p>
-            </div>
-            <i class="fas fa-clock" style="font-size: 40px; color: var(--warning-color);"></i>
-        </div>
-    </div>
-    <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--success-color);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h3 style="font-size: 32px; margin: 0; color: var(--dark-color);"><?php echo $deliveredCount; ?></h3>
-                <p style="color: #666; margin: 5px 0 0;">Delivered</p>
-            </div>
-            <i class="fas fa-check-circle" style="font-size: 40px; color: var(--success-color);"></i>
-        </div>
-    </div>
-    <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--primary-color);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h3 style="font-size: 32px; margin: 0; color: var(--dark-color);"><?php echo formatPrice($totalSpent); ?></h3>
-                <p style="color: #666; margin: 5px 0 0;">Total Spent</p>
-            </div>
-            <i class="fas fa-wallet" style="font-size: 40px; color: var(--primary-color);"></i>
-        </div>
-    </div>
-</div>
-
 <!-- Filter Tabs & Search -->
 <div style="background-color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">

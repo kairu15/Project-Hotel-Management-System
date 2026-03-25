@@ -182,6 +182,21 @@ try {
     
     $db->commit();
     
+    // Send notifications
+    require_once 'includes/notifications.php';
+    
+    // Notify user about their booking
+    notifyBookingUpdate($userId, $bookingId, 'pending');
+    
+    // Notify staff about new booking
+    $userStmt = $db->prepare("SELECT first_name, last_name, check_in FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
+    $userStmt->execute([$bookingId]);
+    $userData = $userStmt->fetch();
+    
+    if ($userData) {
+        notifyStaffNewBooking($bookingId, $userData['first_name'] . ' ' . $userData['last_name'], $userData['check_in']);
+    }
+    
     // Store booking info in session
     $_SESSION['booking_confirmation'] = [
         'booking_id' => $bookingId,

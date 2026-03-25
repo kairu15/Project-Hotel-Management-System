@@ -31,6 +31,18 @@ if (isset($_POST['update_status']) && is_numeric($_POST['order_id'])) {
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         
+        // Send notification to user about order status update
+        require_once '../includes/notifications.php';
+        
+        // Get user_id for this order
+        $userStmt = $db->prepare("SELECT user_id FROM food_orders WHERE order_id = ?");
+        $userStmt->execute([$orderId]);
+        $userId = $userStmt->fetchColumn();
+        
+        if ($userId && in_array($newStatus, ['preparing', 'ready', 'delivered', 'cancelled'])) {
+            notifyFoodOrderUpdate($userId, $orderId, $newStatus);
+        }
+        
         showAlert('Order status updated successfully', 'success');
     } else {
         showAlert('Invalid status', 'danger');
