@@ -17,6 +17,17 @@ if (isset($_POST['update_status'])) {
     $quotedPrice = $_POST['quoted_price'] ?? null;
 
     if ($bookingId && $status) {
+        // Get booking details before update
+        $bookingStmt = $db->prepare("
+            SELECT eb.*, u.first_name, u.last_name, u.user_id, es.space_name 
+            FROM event_bookings eb 
+            JOIN users u ON eb.user_id = u.user_id 
+            JOIN event_spaces es ON eb.space_id = es.space_id 
+            WHERE eb.event_booking_id = ?
+        ");
+        $bookingStmt->execute([$bookingId]);
+        $bookingData = $bookingStmt->fetch();
+        
         if ($quotedPrice !== null) {
             $stmt = $db->prepare("UPDATE event_bookings SET status = ?, quoted_price = ? WHERE event_booking_id = ?");
             $stmt->execute([$status, $quotedPrice, $bookingId]);
@@ -24,6 +35,35 @@ if (isset($_POST['update_status'])) {
             $stmt = $db->prepare("UPDATE event_bookings SET status = ? WHERE event_booking_id = ?");
             $stmt->execute([$status, $bookingId]);
         }
+        
+        // Send notifications
+        require_once '../includes/notifications.php';
+        
+        if ($bookingData) {
+            $userId = $bookingData['user_id'];
+            $guestName = $bookingData['first_name'] . ' ' . $bookingData['last_name'];
+            $eventName = $bookingData['event_type'] ?? 'Event';
+            $eventDate = $bookingData['event_date'];
+            $spaceName = $bookingData['space_name'] ?? '';
+            
+            // Map status to process type
+            $processType = ($status === 'confirmed') ? 'invitation' : 
+                          (($status === 'cancelled') ? 'cancelled' : 'updated');
+            
+            // Notify user about event update
+            notifyUserEventUpdate($userId, $bookingId, $processType, $eventName, $eventDate, "Location: {$spaceName}");
+            
+            // Notify admin about event update
+            $adminProcessType = ($status === 'confirmed') ? 'modified' : 
+                               (($status === 'cancelled') ? 'cancelled' : 'modified');
+            notifyAdminEventUpdate($bookingId, $adminProcessType, $eventName, $eventDate, $guestName);
+            
+            // Notify staff about event assignments
+            $staffProcessType = ($status === 'confirmed') ? 'scheduled' :
+                               (($status === 'cancelled') ? 'cancelled' : 'updated');
+            notifyStaffEventAssignment($bookingId, $staffProcessType, $eventName, $eventDate);
+        }
+        
         $_SESSION['success'] = 'Booking status updated successfully';
     }
     redirect('admin-event-bookings.php');

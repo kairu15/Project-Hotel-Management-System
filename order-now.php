@@ -104,20 +104,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updateStockStmt = $db->prepare("UPDATE foods SET stock_quantity = stock_quantity - ? WHERE food_id = ?");
                 $updateStockStmt->execute([$quantity, $itemId]);
                 
-                // Send notification to user and staff
+                // Send notification to user, staff, and admin
                 require_once 'includes/notifications.php';
                 $orderId = $db->lastInsertId();
                 
-                // Notify user about order
+                // Notify user about order placed
                 notifyFoodOrderUpdate($userId, $orderId, 'pending');
                 
-                // Get user info and notify staff
+                // Enhanced user notification
+                $foodName = $item['food_name'] ?? '';
+                notifyUserFoodOrderStatus($userId, $orderId, 'placed', $foodName, $roomNumber);
+                
+                // Get user info for staff/admin notifications
                 $userStmt = $db->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
                 $userStmt->execute([$userId]);
                 $userData = $userStmt->fetch();
                 
                 if ($userData) {
-                    notifyStaffNewFoodOrder($orderId, $userData['first_name'] . ' ' . $userData['last_name'], $roomNumber);
+                    $guestName = $userData['first_name'] . ' ' . $userData['last_name'];
+                    
+                    // Notify staff about new order
+                    notifyStaffNewFoodOrder($orderId, $guestName, $roomNumber);
+                    
+                    // Notify admin about new food order
+                    notifyAdminFoodOrderUpdate($orderId, 'placed', $guestName, "Order: {$foodName}, Qty: {$quantity}, Type: {$orderType}");
+                    
+                    // Notify staff about food order assignment
+                    notifyStaffFoodOrderAssignment($orderId, 'new_order', $guestName, $roomNumber, $foodName);
                 }
                 
                 showAlert('Order placed successfully! You can track your order in My Food Orders.', 'success');

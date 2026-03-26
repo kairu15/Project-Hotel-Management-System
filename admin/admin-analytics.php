@@ -316,6 +316,71 @@ $bookingSources = $db->prepare("
 $bookingSources->execute([$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 $bookingSourceData = $bookingSources->fetchAll(PDO::FETCH_ASSOC);
 
+// ==================== RATINGS ANALYTICS ====================
+
+// Overall ratings stats
+$ratingsStats = $db->query("
+    SELECT 
+        COUNT(*) as total_ratings,
+        AVG(rating_value) as avg_rating,
+        SUM(CASE WHEN service_type = 'room' THEN 1 ELSE 0 END) as room_ratings,
+        SUM(CASE WHEN service_type = 'event' THEN 1 ELSE 0 END) as event_ratings,
+        SUM(CASE WHEN service_type = 'food' THEN 1 ELSE 0 END) as food_ratings,
+        AVG(CASE WHEN service_type = 'room' THEN rating_value END) as room_avg,
+        AVG(CASE WHEN service_type = 'event' THEN rating_value END) as event_avg,
+        AVG(CASE WHEN service_type = 'food' THEN rating_value END) as food_avg
+    FROM ratings
+")->fetch();
+
+// Rating distribution
+$ratingsDistribution = $db->query("
+    SELECT rating_value, COUNT(*) as count
+    FROM ratings
+    GROUP BY rating_value
+    ORDER BY rating_value DESC
+")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+// Recent ratings
+$recentRatings = $db->query("
+    SELECT r.*, u.first_name, u.last_name,
+        CASE 
+            WHEN r.service_type = 'room' THEN rc.category_name
+            WHEN r.service_type = 'event' THEN es.space_name
+            WHEN r.service_type = 'food' THEN mi.item_name
+        END as item_name
+    FROM ratings r
+    JOIN users u ON r.user_id = u.user_id
+    LEFT JOIN bookings b ON r.booking_id = b.booking_id
+    LEFT JOIN room_categories rc ON b.category_id = rc.category_id
+    LEFT JOIN event_bookings eb ON r.event_booking_id = eb.event_booking_id
+    LEFT JOIN event_spaces es ON eb.space_id = es.space_id
+    LEFT JOIN food_orders fo ON r.food_order_id = fo.order_id
+    LEFT JOIN menu_items mi ON fo.food_id = mi.item_id
+    ORDER BY r.created_at DESC
+    LIMIT 10
+")->fetchAll();
+
+// Find highest and lowest rated services
+$highestRatedService = null;
+$lowestRatedService = null;
+
+foreach (['room', 'event', 'food'] as $service) {
+    $avg = $ratingsStats["{$service}_avg"] ?? 0;
+    if ($avg > 0) {
+        if (!$highestRatedService || $avg > $highestRatedService['avg']) {
+            $highestRatedService = ['service' => $service, 'avg' => $avg];
+        }
+        if (!$lowestRatedService || $avg < $lowestRatedService['avg']) {
+            $lowestRatedService = ['service' => $service, 'avg' => $avg];
+        }
+    }
+}
+
+// Low ratings count (for quick review)
+$lowRatingsCount = $db->query("
+    SELECT COUNT(*) FROM ratings WHERE rating_value <= 2
+")->fetchColumn();
+
 require_once __DIR__ . '/../includes/admin-header.php';
 ?>
 
@@ -986,6 +1051,121 @@ require_once __DIR__ . '/../includes/admin-header.php';
             <?php endforeach; ?>
         </tbody>
     </table>
+</div>
+<?php endif; ?>
+
+<!-- Ratings Analytics -->
+<div class="analytics-section">
+    <h3><i class="fas fa-star-half-alt"></i> Ratings Analytics 
+        <?php if ($lowRatingsCount > 0): ?>
+        <span class="badge badge-danger" style="margin-left: 10px;"><?php echo $lowRatingsCount; ?> Low Ratings</span>
+        <?php endif; ?>
+    </h3>
+    <div class="stat-row">
+        <span class="stat-label">Total Ratings</span>
+        <span class="stat-value"><?php echo number_format($ratingsStats['total_ratings'] ?? 0); ?></span>
+    </div>
+    <div class="stat-row">
+        <span class="stat-label">Overall Average Rating</span>
+        <span class="stat-value">
+            <?php 
+            $avgRating = $ratingsStats['avg_rating'] ?? 0;
+            echo number_format($avgRating, 1); ?>/5
+            <span class="rating-stars" style="margin-left: 10px;">
+                <?php for ($i = 1; $i <= 5; $i++): ?>
+                    <i class="fas fa-star<?php echo $i <= round($avgRating) ? '' : ' fa-star-o'; ?>"></i>
+                <?php endfor; ?>
+            </span>
+        </span>
+    </div>
+    <div class="stat-row">
+        <span class="stat-label">Room Bookings Avg</span>
+        <span class="stat-value">
+            <?php echo number_format($ratingsStats['room_avg'] ?? 0, 1); ?>/5
+            <span style="color: #666; margin-left: 5px;">(<?php echo number_format($ratingsStats['room_ratings'] ?? 0); ?> ratings)</span>
+        </span>
+    </div>
+    <div class="stat-row">
+        <span class="stat-label">Event Bookings Avg</span>
+        <span class="stat-value">
+            <?php echo number_format($ratingsStats['event_avg'] ?? 0, 1); ?>/5
+            <span style="color: #666; margin-left: 5px;">(<?php echo number_format($ratingsStats['event_ratings'] ?? 0); ?> ratings)</span>
+        </span>
+    </div>
+    <div class="stat-row">
+        <span class="stat-label">Food Orders Avg</span>
+        <span class="stat-value">
+            <?php echo number_format($ratingsStats['food_avg'] ?? 0, 1); ?>/5
+            <span style="color: #666; margin-left: 5px;">(<?php echo number_format($ratingsStats['food_ratings'] ?? 0); ?> ratings)</span>
+        </span>
+    </div>
+    <?php if ($highestRatedService): ?>
+    <div class="stat-row">
+        <span class="stat-label">Highest Rated Service</span>
+        <span class="stat-value">
+            <span class="badge badge-success"><?php echo ucfirst($highestRatedService['service']); ?> (<?php echo number_format($highestRatedService['avg'], 1); ?>/5)</span>
+        </span>
+    </div>
+    <?php endif; ?>
+    <?php if ($lowestRatedService): ?>
+    <div class="stat-row">
+        <span class="stat-label">Lowest Rated Service</span>
+        <span class="stat-value">
+            <span class="badge badge-warning"><?php echo ucfirst($lowestRatedService['service']); ?> (<?php echo number_format($lowestRatedService['avg'], 1); ?>/5)</span>
+        </span>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Recent Ratings -->
+<?php if (!empty($recentRatings)): ?>
+<div class="analytics-section">
+    <h3><i class="fas fa-comments"></i> Recent Ratings & Feedback</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Service</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($recentRatings as $rating): ?>
+            <tr <?php echo $rating['rating_value'] <= 2 ? 'style="background: #fff5f5;"' : ''; ?>>
+                <td><?php echo htmlspecialchars($rating['first_name'] . ' ' . $rating['last_name']); ?></td>
+                <td>
+                    <span class="badge" style="background: 
+                        <?php echo $rating['service_type'] === 'room' ? '#e3f2fd; color: #1976d2;' : 
+                             ($rating['service_type'] === 'event' ? '#f3e5f5; color: #7b1fa2;' : '#e8f5e9; color: #388e3c;'); ?>">
+                        <?php echo ucfirst($rating['service_type']); ?>
+                    </span>
+                    <br>
+                    <small><?php echo htmlspecialchars($rating['item_name'] ?: 'N/A'); ?></small>
+                </td>
+                <td class="rating-stars">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <i class="fas fa-star<?php echo $i <= $rating['rating_value'] ? '' : ' fa-star-o'; ?>"></i>
+                    <?php endfor; ?>
+                    <br>
+                    <small><?php echo $rating['rating_value']; ?>/5</small>
+                </td>
+                <td>
+                    <?php if ($rating['comment']): ?>
+                        <?php echo htmlspecialchars(substr($rating['comment'], 0, 50)) . (strlen($rating['comment']) > 50 ? '...' : ''); ?>
+                    <?php else: ?>
+                        <em style="color: #999;">No comment</em>
+                    <?php endif; ?>
+                </td>
+                <td><?php echo date('M d, Y', strtotime($rating['created_at'])); ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <div style="text-align: center; margin-top: 15px;">
+        <a href="admin-ratings.php" class="btn btn-outline btn-sm">View All Ratings</a>
+    </div>
 </div>
 <?php endif; ?>
 

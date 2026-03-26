@@ -96,3 +96,18 @@
 [2026-03-25 11:17:56] [User: 2] User login - User ID: 2
 [2026-03-25 11:55:38] [User: 1] User login - User ID: 1
 [2026-03-25 13:08:19] [User: 26] Payment processed - Booking ID: 24, Method: gcash, Status: paid
+[2026-03-26 06:13:12] [User: 26] User login - User ID: 26
+[2026-03-26 06:14:48] [User: 1] User login - User ID: 1
+[2026-03-26 06:22:46] [User: 24] User login - User ID: 24
+[2026-03-26 06:24:45] [User: 24] Food Order Placed - Order ID: 12, User: 24, Amount: 450, Method: gcash
+[2026-03-26 06:25:33] [User: 2] User login - User ID: 2
+[2026-03-26 06:26:16] [User: 24] Payment processed - Booking ID: 25, Method: gcash, Status: paid
+[2026-03-26 11:04:16] [User: 26] User login - User ID: 26
+[2026-03-26 11:09:54] [User: 26] Food Order Placed - Order ID: 13, User: 26, Amount: 280, Method: gcash
+[2026-03-26 11:36:01] [User: 26] Food Order Placed - Order ID: 14, User: 26, Amount: 400, Method: gcash
+[2026-03-26 11:48:28] [User: 26] Contact form submitted - From: kylleacibron@gmail.com
+[2026-03-26 12:21:48] [User: 26] Payment processed - Booking ID: 26, Method: gcash, Status: pending
+[2026-03-26 12:21:56] [User: 26] Payment processed - Booking ID: 27, Method: gcash, Status: pending
+[2026-03-26 12:23:54] [User: 26] Payment processed - Booking ID: 28, Method: gcash, Status: paid
+[2026-03-26 12:24:35] [User: 26] Payment processed - Booking ID: 29, Method: gcash, Status: paid
+[2026-03-26 13:42:43] [User: 26] Payment processed - Booking ID: 30, Method: gcash, Status: paid

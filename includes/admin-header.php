@@ -842,6 +842,9 @@ $alert = getAlert();
                     <li><a href="admin-reports.php" class="<?php echo $currentPage === 'admin-reports' ? 'active' : ''; ?>">
                         <i class="fas fa-chart-bar"></i> Reports
                     </a></li>
+                    <li><a href="admin-ratings.php" class="<?php echo $currentPage === 'admin-ratings' ? 'active' : ''; ?>">
+                        <i class="fas fa-star-half-alt"></i> Ratings
+                    </a></li>
                     
                     <li class="nav-section">System</li>
                     <li><a href="admin-settings.php" class="<?php echo $currentPage === 'admin-settings' ? 'active' : ''; ?>">

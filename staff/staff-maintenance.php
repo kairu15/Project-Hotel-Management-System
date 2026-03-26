@@ -163,9 +163,7 @@ require_once '../includes/staff-header.php';
                     </div>
                     <form method="POST" action="" style="display: flex; gap: 8px;">
                         <input type="hidden" name="request_id" value="<?php echo $request['request_id']; ?>">
-                        <?php if ($request['status'] === 'pending'): ?>
-                        <button type="submit" name="update_status" value="in_progress" class="btn btn-sm btn-primary" style="padding: 5px 12px;">Start</button>
-                        <?php elseif ($request['status'] === 'in_progress'): ?>
+                        <?php if ($request['status'] === 'in_progress'): ?>
                         <button type="submit" name="update_status" value="completed" class="btn btn-sm btn-success" style="padding: 5px 12px;">Complete</button>
                         <?php endif; ?>
                     </form>

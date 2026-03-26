@@ -414,54 +414,101 @@ function getStaffData($db, $startDate, $endDate, $staffFilter) {
 // ==================== 7. CUSTOMER FEEDBACK REPORTS ====================
 function getFeedbackData($db, $startDateTime, $endDateTime, $roomTypeFilter) {
     $data = [];
-    $stmt = $db->prepare("
-        SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews
-        FROM reviews WHERE created_at BETWEEN ? AND ? AND is_approved = 1
-    ");
-    $stmt->execute([$startDateTime, $endDateTime]);
+    
+    // Base WHERE clause for date range - fetch all ratings within the period
+    $dateWhere = "r.created_at BETWEEN ? AND ?";
+    $params = [$startDateTime, $endDateTime];
+    
+    // ==================== OVERALL RATINGS SUMMARY ====================
+    $sql = "SELECT AVG(r.rating_value) as avg_rating, COUNT(*) as total_reviews
+            FROM ratings r
+            WHERE {$dateWhere}";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $data['overall_rating'] = round($result['avg_rating'] ?? 0, 1);
     $data['total_reviews'] = $result['total_reviews'] ?? 0;
     
-    $stmt = $db->prepare("
-        SELECT rating, COUNT(*) as count FROM reviews
-        WHERE created_at BETWEEN ? AND ? AND is_approved = 1 GROUP BY rating ORDER BY rating DESC
-    ");
-    $stmt->execute([$startDateTime, $endDateTime]);
-    $data['rating_distribution'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // ==================== RATING DISTRIBUTION (1-5 stars) ====================
+    $sql = "SELECT r.rating_value as rating, COUNT(*) as count 
+            FROM ratings r
+            WHERE {$dateWhere}
+            GROUP BY r.rating_value 
+            ORDER BY r.rating_value DESC";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $distribution = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    $stmt = $db->prepare("
-        SELECT category, AVG(rating) as avg_rating, COUNT(*) as review_count FROM reviews
-        WHERE created_at BETWEEN ? AND ? AND is_approved = 1 GROUP BY category ORDER BY avg_rating DESC
-    ");
-    $stmt->execute([$startDateTime, $endDateTime]);
+    // Ensure all ratings 1-5 are represented
+    $data['rating_distribution'] = [];
+    for ($i = 5; $i >= 1; $i--) {
+        $found = false;
+        foreach ($distribution as $row) {
+            if ($row['rating'] == $i) {
+                $data['rating_distribution'][] = $row;
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $data['rating_distribution'][] = ['rating' => $i, 'count' => 0];
+        }
+    }
+    
+    // ==================== REVIEWS BY CATEGORY (Room, Event, Food) ====================
+    $sql = "SELECT 
+                CASE r.service_type 
+                    WHEN 'room' THEN 'Room Booking'
+                    WHEN 'event' THEN 'Event'
+                    WHEN 'food' THEN 'Food Order'
+                END as category,
+                AVG(r.rating_value) as avg_rating, 
+                COUNT(*) as review_count 
+            FROM ratings r
+            WHERE {$dateWhere}
+            GROUP BY r.service_type 
+            ORDER BY avg_rating DESC";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
     $data['reviews_by_category'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    $sql = "
-        SELECT rc.category_name, AVG(r.rating) as avg_rating, COUNT(*) as review_count
-        FROM reviews r JOIN bookings b ON r.booking_id = b.booking_id
-        JOIN room_categories rc ON b.category_id = rc.category_id
-        WHERE r.created_at BETWEEN ? AND ? AND r.is_approved = 1
-    ";
+    // ==================== REVIEWS BY ROOM TYPE ====================
+    $sql = "SELECT rc.category_name, AVG(r.rating_value) as avg_rating, COUNT(*) as review_count
+            FROM ratings r
+            JOIN bookings b ON r.booking_id = b.booking_id
+            JOIN room_categories rc ON b.category_id = rc.category_id
+            WHERE r.service_type = 'room' AND {$dateWhere}";
+    
+    // Add room type filter if specified
     if ($roomTypeFilter !== 'all' && is_numeric($roomTypeFilter)) {
         $sql .= " AND b.category_id = " . intval($roomTypeFilter);
     }
     $sql .= " GROUP BY rc.category_id ORDER BY avg_rating DESC";
+    
     $stmt = $db->prepare($sql);
-    $stmt->execute([$startDateTime, $endDateTime]);
+    $stmt->execute($params);
     $data['reviews_by_room_type'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    $stmt = $db->prepare("
-        SELECT SUM(CASE WHEN rating >= 4 THEN 1 ELSE 0 END) as promoters,
-               SUM(CASE WHEN rating <= 2 THEN 1 ELSE 0 END) as detractors, COUNT(*) as total
-        FROM reviews WHERE created_at BETWEEN ? AND ? AND is_approved = 1
-    ");
-    $stmt->execute([$startDateTime, $endDateTime]);
+    // ==================== NPS SCORE CALCULATION ====================
+    // Promoters: 4-5 stars, Detractors: 1-2 stars, Passives: 3 stars
+    $sql = "SELECT 
+                SUM(CASE WHEN r.rating_value >= 4 THEN 1 ELSE 0 END) as promoters,
+                SUM(CASE WHEN r.rating_value <= 2 THEN 1 ELSE 0 END) as detractors, 
+                COUNT(*) as total
+            FROM ratings r
+            WHERE {$dateWhere}";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
     $npsData = $stmt->fetch(PDO::FETCH_ASSOC);
     $promoters = $npsData['promoters'] ?? 0;
     $detractors = $npsData['detractors'] ?? 0;
     $total = max(1, $npsData['total'] ?? 1);
     $data['nps_score'] = round((($promoters - $detractors) / $total) * 100, 1);
+    
+    // Store raw counts for detailed display
+    $data['nps_promoters'] = $promoters;
+    $data['nps_detractors'] = $detractors;
+    $data['nps_passives'] = $total - $promoters - $detractors;
     
     return $data;
 }
@@ -560,9 +607,35 @@ function exportToCSV($data, $type) {
             }
             break;
         case 'feedback':
+            // Overall Summary
+            fputcsv($output, ['RATINGS SUMMARY']);
+            fputcsv($output, ['Metric', 'Value']);
+            fputcsv($output, ['Average Rating', $data['overall_rating'] . '/5']);
+            fputcsv($output, ['Total Reviews', $data['total_reviews']]);
+            fputcsv($output, ['NPS Score', $data['nps_score']]);
+            fputcsv($output, []);
+            
+            // Rating Distribution
+            fputcsv($output, ['RATING DISTRIBUTION']);
+            fputcsv($output, ['Rating', 'Count']);
+            foreach ($data['rating_distribution'] ?? [] as $row) {
+                fputcsv($output, [$row['rating'] . ' Star' . ($row['rating'] > 1 ? 's' : ''), $row['count']]);
+            }
+            fputcsv($output, []);
+            
+            // Reviews by Category
+            fputcsv($output, ['REVIEWS BY CATEGORY']);
             fputcsv($output, ['Category', 'Avg Rating', 'Reviews']);
             foreach ($data['reviews_by_category'] ?? [] as $row) {
                 fputcsv($output, [$row['category'], round($row['avg_rating'], 1), $row['review_count']]);
+            }
+            fputcsv($output, []);
+            
+            // Reviews by Room Type
+            fputcsv($output, ['REVIEWS BY ROOM TYPE']);
+            fputcsv($output, ['Room Type', 'Avg Rating', 'Review Count']);
+            foreach ($data['reviews_by_room_type'] ?? [] as $row) {
+                fputcsv($output, [$row['category_name'], round($row['avg_rating'], 1), $row['review_count']]);
             }
             break;
         default:
@@ -601,6 +674,35 @@ function exportTableData($data, $type) {
             echo "<tr><th>Category</th><th>Revenue</th></tr>";
             foreach ($data['revenue_by_room_type'] ?? [] as $row) {
                 echo "<tr><td>" . htmlspecialchars($row['category_name']) . "</td><td>₱" . number_format($row['revenue'], 2) . "</td></tr>";
+            }
+            break;
+        case 'feedback':
+            // Ratings Summary
+            echo "<tr><th colspan='2' style='background:#367D8A;'>RATINGS SUMMARY</th></tr>";
+            echo "<tr><th>Metric</th><th>Value</th></tr>";
+            echo "<tr><td>Average Rating</td><td>" . $data['overall_rating'] . "/5</td></tr>";
+            echo "<tr><td>Total Reviews</td><td>" . $data['total_reviews'] . "</td></tr>";
+            echo "<tr><td>NPS Score</td><td>" . $data['nps_score'] . "</td></tr>";
+            
+            // Rating Distribution
+            echo "<tr><th colspan='2' style='background:#367D8A;'>RATING DISTRIBUTION</th></tr>";
+            echo "<tr><th>Rating</th><th>Count</th></tr>";
+            foreach ($data['rating_distribution'] ?? [] as $row) {
+                echo "<tr><td>" . $row['rating'] . " Star" . ($row['rating'] > 1 ? 's' : '') . "</td><td>" . $row['count'] . "</td></tr>";
+            }
+            
+            // Reviews by Category
+            echo "<tr><th colspan='3' style='background:#367D8A;'>REVIEWS BY CATEGORY</th></tr>";
+            echo "<tr><th>Category</th><th>Avg Rating</th><th>Reviews</th></tr>";
+            foreach ($data['reviews_by_category'] ?? [] as $row) {
+                echo "<tr><td>" . htmlspecialchars($row['category']) . "</td><td>" . round($row['avg_rating'], 1) . "</td><td>" . $row['review_count'] . "</td></tr>";
+            }
+            
+            // Reviews by Room Type
+            echo "<tr><th colspan='3' style='background:#367D8A;'>REVIEWS BY ROOM TYPE</th></tr>";
+            echo "<tr><th>Room Type</th><th>Avg Rating</th><th>Review Count</th></tr>";
+            foreach ($data['reviews_by_room_type'] ?? [] as $row) {
+                echo "<tr><td>" . htmlspecialchars($row['category_name']) . "</td><td>" . round($row['avg_rating'], 1) . "</td><td>" . $row['review_count'] . "</td></tr>";
             }
             break;
         default:

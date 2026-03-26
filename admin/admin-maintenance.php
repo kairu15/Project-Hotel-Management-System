@@ -17,12 +17,36 @@ if (isset($_POST['update_status'])) {
     $priority = $_POST['priority'] ?? '';
 
     if ($requestId) {
+        // Get current request details before update
+        $reqStmt = $db->prepare("SELECT mr.*, r.room_number, u.first_name, u.last_name FROM maintenance_requests mr LEFT JOIN rooms r ON mr.room_id = r.room_id LEFT JOIN users u ON mr.reported_by = u.user_id WHERE mr.request_id = ?");
+        $reqStmt->execute([$requestId]);
+        $requestData = $reqStmt->fetch();
+        
         if ($status === 'completed') {
             $stmt = $db->prepare("UPDATE maintenance_requests SET status = ?, priority = ?, resolved_at = NOW() WHERE request_id = ?");
         } else {
             $stmt = $db->prepare("UPDATE maintenance_requests SET status = ?, priority = ?, resolved_at = NULL WHERE request_id = ?");
         }
         $stmt->execute([$status, $priority, $requestId]);
+        
+        // Send notifications
+        require_once '../includes/notifications.php';
+        
+        if ($requestData) {
+            $roomNumber = $requestData['room_number'] ?? '';
+            $issueType = $requestData['issue_type'] ?? 'maintenance';
+            $processType = ($status === 'completed') ? 'resolved' : 'updated';
+            
+            // Notify admin about maintenance update
+            notifyAdminMaintenanceUpdate($requestId, $processType, $issueType, $priority, $roomNumber);
+            
+            // Notify staff about maintenance update if assigned
+            if ($requestData['reported_by']) {
+                $staffIds = [$requestData['reported_by']];
+                notifyStaffMaintenanceAssignment($requestId, $processType === 'resolved' ? 'completed' : 'in_progress', $issueType, $roomNumber, $staffIds, $priority);
+            }
+        }
+        
         $_SESSION['success'] = 'Maintenance request updated successfully';
     }
     redirect('admin-maintenance.php');

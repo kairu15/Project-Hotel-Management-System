@@ -640,3 +640,767 @@ function notifyMaintenanceRequest($requestId, $issueType, $priority, $roomNumber
         ]
     );
 }
+
+// ============================================
+// ADMIN NOTIFICATIONS - All 8 Categories
+// ============================================
+
+/**
+ * Notify admin about booking status changes
+ * Categories: Bookings
+ * Processes: new, updated, confirmed, cancelled
+ * 
+ * @param int $bookingId Booking ID
+ * @param string $processType Type of booking process (created, updated, confirmed, cancelled)
+ * @param string $guestName Guest name
+ * @param string $details Additional details
+ * @return int Number of admins notified
+ */
+function notifyAdminBookingUpdate($bookingId, $processType, $guestName, $details = '') {
+    $titles = [
+        'created' => 'New Booking Created',
+        'updated' => 'Booking Updated',
+        'confirmed' => 'Booking Confirmed',
+        'cancelled' => 'Booking Cancelled'
+    ];
+    
+    $messages = [
+        'created' => "New booking from {$guestName}. {$details}",
+        'updated' => "Booking for {$guestName} has been updated. {$details}",
+        'confirmed' => "Booking for {$guestName} has been confirmed. {$details}",
+        'cancelled' => "Booking for {$guestName} has been cancelled. {$details}"
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'booking',
+        $titles[$processType] ?? 'Booking Update',
+        $messages[$processType] ?? "Booking update for {$guestName}",
+        [
+            'related_id' => $bookingId,
+            'related_type' => 'booking',
+            'priority' => $processType === 'cancelled' ? 'high' : 'medium',
+            'action_url' => '/bayawanhotel/admin/admin-bookings.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about food order status changes
+ * Categories: Food Orders
+ * Processes: placed, updated, completed
+ * 
+ * @param int $orderId Order ID
+ * @param string $processType Type of order process (placed, updated, completed)
+ * @param string $guestName Guest name
+ * @param string $details Order details
+ * @return int Number of admins notified
+ */
+function notifyAdminFoodOrderUpdate($orderId, $processType, $guestName, $details = '') {
+    $titles = [
+        'placed' => 'New Food Order Placed',
+        'updated' => 'Food Order Updated',
+        'completed' => 'Food Order Completed'
+    ];
+    
+    $messages = [
+        'placed' => "New food order from {$guestName}. {$details}",
+        'updated' => "Food order for {$guestName} has been updated. {$details}",
+        'completed' => "Food order for {$guestName} has been completed. {$details}"
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'food_order',
+        $titles[$processType] ?? 'Food Order Update',
+        $messages[$processType] ?? "Food order update for {$guestName}",
+        [
+            'related_id' => $orderId,
+            'related_type' => 'food_order',
+            'priority' => 'medium',
+            'action_url' => '/bayawanhotel/admin/admin-foods-inventory.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about payment status changes
+ * Categories: Payments
+ * Processes: made, pending, failed
+ * 
+ * @param int $paymentId Payment ID
+ * @param string $processType Type of payment process (made, pending, failed)
+ * @param string $guestName Guest name
+ * @param float $amount Payment amount
+ * @param string $paymentMethod Payment method used
+ * @return int Number of admins notified
+ */
+function notifyAdminPaymentUpdate($paymentId, $processType, $guestName, $amount = 0, $paymentMethod = '') {
+    $formattedAmount = '₱' . number_format($amount, 2);
+    $methodText = $paymentMethod ? " via {$paymentMethod}" : '';
+    
+    $titles = [
+        'made' => 'Payment Received',
+        'pending' => 'Payment Pending',
+        'failed' => 'Payment Failed'
+    ];
+    
+    $messages = [
+        'made' => "Payment of {$formattedAmount}{$methodText} received from {$guestName}.",
+        'pending' => "Payment of {$formattedAmount} from {$guestName} is pending processing.",
+        'failed' => "Payment of {$formattedAmount} from {$guestName} has failed."
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'payment',
+        $titles[$processType] ?? 'Payment Update',
+        $messages[$processType] ?? "Payment update for {$guestName}",
+        [
+            'related_id' => $paymentId,
+            'related_type' => 'payment',
+            'priority' => $processType === 'failed' ? 'high' : 'medium',
+            'action_url' => '/bayawanhotel/admin/admin-payments.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about system updates, errors, or important alerts
+ * Categories: System
+ * Processes: updates, errors, important alerts
+ * 
+ * @param string $processType Type of system process (update, error, alert)
+ * @param string $title Alert title
+ * @param string $message Alert message
+ * @param string $priority Alert priority (low, medium, high)
+ * @return int Number of admins notified
+ */
+function notifyAdminSystemUpdate($processType, $title, $message, $priority = 'medium') {
+    $defaultTitles = [
+        'update' => 'System Update Available',
+        'error' => 'System Error Detected',
+        'alert' => 'Important System Alert'
+    ];
+    
+    $finalTitle = $title ?: ($defaultTitles[$processType] ?? 'System Notification');
+    
+    return createRoleNotifications(
+        ['admin'],
+        'system',
+        $finalTitle,
+        $message,
+        [
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/admin/admin-dashboard.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about schedule changes or updates
+ * Categories: Schedule
+ * Processes: changes, updates in schedules
+ * 
+ * @param int $scheduleId Schedule ID
+ * @param string $processType Type of schedule process (created, updated, deleted)
+ * @param string $staffName Staff member name
+ * @param string $scheduleDate Schedule date
+ * @return int Number of admins notified
+ */
+function notifyAdminScheduleUpdate($scheduleId, $processType, $staffName, $scheduleDate) {
+    $titles = [
+        'created' => 'New Staff Schedule Created',
+        'updated' => 'Staff Schedule Updated',
+        'deleted' => 'Staff Schedule Deleted'
+    ];
+    
+    $formattedDate = date('M d, Y', strtotime($scheduleDate));
+    
+    $messages = [
+        'created' => "New schedule created for {$staffName} on {$formattedDate}.",
+        'updated' => "Schedule for {$staffName} on {$formattedDate} has been updated.",
+        'deleted' => "Schedule for {$staffName} on {$formattedDate} has been deleted."
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'schedule',
+        $titles[$processType] ?? 'Schedule Update',
+        $messages[$processType] ?? "Schedule update for {$staffName}",
+        [
+            'related_id' => $scheduleId,
+            'related_type' => 'staff_schedule',
+            'priority' => 'medium',
+            'action_url' => '/bayawanhotel/admin/admin-staff-schedules.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about maintenance request submissions or updates
+ * Categories: Maintenance
+ * Processes: submitted, updated
+ * 
+ * @param int $requestId Maintenance request ID
+ * @param string $processType Type of maintenance process (submitted, updated, resolved)
+ * @param string $issueType Type of issue
+ * @param string $priority Request priority
+ * @param string $roomNumber Room number (if applicable)
+ * @param string $assignedStaff Staff assigned to handle the request
+ * @return int Number of admins notified
+ */
+function notifyAdminMaintenanceUpdate($requestId, $processType, $issueType, $priority, $roomNumber = '', $assignedStaff = '') {
+    $location = $roomNumber ? " in Room {$roomNumber}" : '';
+    $assignee = $assignedStaff ? " Assigned to: {$assignedStaff}." : '';
+    
+    $titles = [
+        'submitted' => 'New Maintenance Request Submitted',
+        'updated' => 'Maintenance Request Updated',
+        'resolved' => 'Maintenance Request Resolved'
+    ];
+    
+    $messages = [
+        'submitted' => "New {$issueType} maintenance request submitted{$location}. Priority: {$priority}.{$assignee}",
+        'updated' => "{$issueType} maintenance request{$location} has been updated. Priority: {$priority}.{$assignee}",
+        'resolved' => "{$issueType} maintenance request{$location} has been resolved.{$assignee}"
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'maintenance',
+        $titles[$processType] ?? 'Maintenance Update',
+        $messages[$processType] ?? "Maintenance update for {$issueType} issue",
+        [
+            'related_id' => $requestId,
+            'related_type' => 'maintenance_request',
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/admin/admin-maintenance.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about new events created or modified
+ * Categories: Events
+ * Processes: created, modified
+ * 
+ * @param int $eventId Event ID
+ * @param string $processType Type of event process (created, modified, cancelled)
+ * @param string $eventName Event name
+ * @param string $eventDate Event date
+ * @param string $bookedBy Person who booked the event
+ * @return int Number of admins notified
+ */
+function notifyAdminEventUpdate($eventId, $processType, $eventName, $eventDate, $bookedBy = '') {
+    $titles = [
+        'created' => 'New Event Created',
+        'modified' => 'Event Modified',
+        'cancelled' => 'Event Cancelled'
+    ];
+    
+    $formattedDate = date('M d, Y', strtotime($eventDate));
+    $bookerText = $bookedBy ? " by {$bookedBy}" : '';
+    
+    $messages = [
+        'created' => "New event '{$eventName}' scheduled for {$formattedDate}{$bookerText}.",
+        'modified' => "Event '{$eventName}' on {$formattedDate} has been modified{$bookerText}.",
+        'cancelled' => "Event '{$eventName}' scheduled for {$formattedDate} has been cancelled{$bookerText}."
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'event',
+        $titles[$processType] ?? 'Event Update',
+        $messages[$processType] ?? "Event update for {$eventName}",
+        [
+            'related_id' => $eventId,
+            'related_type' => 'event',
+            'priority' => $processType === 'cancelled' ? 'high' : 'medium',
+            'action_url' => '/bayawanhotel/admin/admin-event-bookings.php'
+        ]
+    );
+}
+
+/**
+ * Notify admin about promotions added, updated, or expired
+ * Categories: Promotions
+ * Processes: added, updated, expired
+ * 
+ * @param int $promoId Promotion ID
+ * @param string $processType Type of promotion process (added, updated, expired, activated)
+ * @param string $promoTitle Promotion title
+ * @param string $promoCode Promotion code
+ * @return int Number of admins notified
+ */
+function notifyAdminPromotionUpdate($promoId, $processType, $promoTitle, $promoCode = '') {
+    $codeText = $promoCode ? " (Code: {$promoCode})" : '';
+    
+    $titles = [
+        'added' => 'New Promotion Added',
+        'updated' => 'Promotion Updated',
+        'expired' => 'Promotion Expired',
+        'activated' => 'Promotion Activated'
+    ];
+    
+    $messages = [
+        'added' => "New promotion '{$promoTitle}'{$codeText} has been added.",
+        'updated' => "Promotion '{$promoTitle}'{$codeText} has been updated.",
+        'expired' => "Promotion '{$promoTitle}'{$codeText} has expired and is no longer active.",
+        'activated' => "Promotion '{$promoTitle}'{$codeText} is now active and available for guests."
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager'],
+        'promotion',
+        $titles[$processType] ?? 'Promotion Update',
+        $messages[$processType] ?? "Promotion update for {$promoTitle}",
+        [
+            'related_id' => $promoId,
+            'related_type' => 'promotion',
+            'priority' => 'low',
+            'action_url' => '/bayawanhotel/admin/admin-promotions.php'
+        ]
+    );
+}
+
+// ============================================
+// STAFF NOTIFICATIONS - 5 Categories
+// ============================================
+
+/**
+ * Notify staff about bookings assigned to them
+ * Categories: Bookings
+ * Processes: new, updated, cancelled bookings assigned to staff
+ * 
+ * @param int $bookingId Booking ID
+ * @param string $processType Type of booking process (assigned, updated, cancelled)
+ * @param string $guestName Guest name
+ * @param string $checkInDate Check-in date
+ * @param array $staffIds Array of staff user IDs to notify
+ * @return int Number of staff notified
+ */
+function notifyStaffBookingAssignment($bookingId, $processType, $guestName, $checkInDate, $staffIds = []) {
+    $titles = [
+        'assigned' => 'New Booking Assigned to You',
+        'updated' => 'Assigned Booking Updated',
+        'cancelled' => 'Assigned Booking Cancelled'
+    ];
+    
+    $formattedDate = date('M d, Y', strtotime($checkInDate));
+    
+    $messages = [
+        'assigned' => "You have been assigned to handle the booking for {$guestName} on {$formattedDate}.",
+        'updated' => "The booking for {$guestName} on {$formattedDate} (assigned to you) has been updated.",
+        'cancelled' => "The booking for {$guestName} on {$formattedDate} (assigned to you) has been cancelled."
+    ];
+    
+    $count = 0;
+    foreach ($staffIds as $staffId) {
+        $result = createNotification($staffId, 'booking', 
+            $titles[$processType] ?? 'Booking Assignment Update',
+            $messages[$processType] ?? "Booking update for {$guestName}",
+            [
+                'related_id' => $bookingId,
+                'related_type' => 'booking',
+                'priority' => $processType === 'cancelled' ? 'high' : 'medium',
+                'action_url' => '/bayawanhotel/staff/staff-bookings.php'
+            ]
+        );
+        if ($result) $count++;
+    }
+    return $count;
+}
+
+/**
+ * Notify staff about new food orders placed
+ * Categories: Food Orders
+ * Processes: new orders placed, need preparation or delivery
+ * 
+ * @param int $orderId Order ID
+ * @param string $processType Type of order process (new_order, preparation_ready, delivered)
+ * @param string $guestName Guest name
+ * @param string $roomNumber Room number
+ * @param string $foodItems Summary of food items ordered
+ * @return int Number of staff notified
+ */
+function notifyStaffFoodOrderAssignment($orderId, $processType, $guestName, $roomNumber = '', $foodItems = '') {
+    $location = $roomNumber ? " (Room {$roomNumber})" : ' (Dine-in)';
+    $itemsText = $foodItems ? " Order: {$foodItems}" : '';
+    
+    $titles = [
+        'new_order' => 'New Food Order - Needs Preparation',
+        'preparation_ready' => 'Food Order Ready for Delivery',
+        'delivered' => 'Food Order Delivered'
+    ];
+    
+    $messages = [
+        'new_order' => "New order from {$guestName}{$location}.{$itemsText} Please prepare immediately.",
+        'preparation_ready' => "Order from {$guestName}{$location} is ready. Please deliver to guest.",
+        'delivered' => "Order from {$guestName}{$location} has been successfully delivered."
+    ];
+    
+    return createRoleNotifications(
+        ['admin', 'manager', 'receptionist'],
+        'food_order',
+        $titles[$processType] ?? 'Food Order Update',
+        $messages[$processType] ?? "Food order update from {$guestName}",
+        [
+            'related_id' => $orderId,
+            'related_type' => 'food_order',
+            'priority' => 'medium',
+            'action_url' => '/bayawanhotel/staff/staff-foods-orders.php'
+        ]
+    );
+}
+
+/**
+ * Notify staff about payment confirmations or verifications needed
+ * Categories: Payments
+ * Processes: payments confirmed, require verification
+ * 
+ * @param int $paymentId Payment ID
+ * @param string $processType Type of payment process (confirmed, needs_verification, verified)
+ * @param string $guestName Guest name
+ * @param float $amount Payment amount
+ * @param string $paymentMethod Payment method
+ * @param array $staffIds Specific staff to notify (optional)
+ * @return int Number of staff notified
+ */
+function notifyStaffPaymentUpdate($paymentId, $processType, $guestName, $amount = 0, $paymentMethod = '', $staffIds = []) {
+    $formattedAmount = '₱' . number_format($amount, 2);
+    $methodText = $paymentMethod ? " via {$paymentMethod}" : '';
+    
+    $titles = [
+        'confirmed' => 'Payment Confirmed - Action May Be Needed',
+        'needs_verification' => 'Payment Requires Verification',
+        'verified' => 'Payment Verified Successfully'
+    ];
+    
+    $messages = [
+        'confirmed' => "Payment of {$formattedAmount}{$methodText} from {$guestName} has been confirmed. Please update records if needed.",
+        'needs_verification' => "URGENT: Payment of {$formattedAmount}{$methodText} from {$guestName} requires manual verification.",
+        'verified' => "Payment of {$formattedAmount} from {$guestName} has been verified and approved."
+    ];
+    
+    $priority = ($processType === 'needs_verification') ? 'high' : 'medium';
+    
+    if (!empty($staffIds)) {
+        $count = 0;
+        foreach ($staffIds as $staffId) {
+            $result = createNotification($staffId, 'payment',
+                $titles[$processType] ?? 'Payment Update',
+                $messages[$processType] ?? "Payment update for {$guestName}",
+                [
+                    'related_id' => $paymentId,
+                    'related_type' => 'payment',
+                    'priority' => $priority,
+                    'action_url' => '/bayawanhotel/staff/staff-dashboard.php'
+                ]
+            );
+            if ($result) $count++;
+        }
+        return $count;
+    }
+    
+    return createRoleNotifications(
+        ['admin', 'manager', 'receptionist'],
+        'payment',
+        $titles[$processType] ?? 'Payment Update',
+        $messages[$processType] ?? "Payment update for {$guestName}",
+        [
+            'related_id' => $paymentId,
+            'related_type' => 'payment',
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/staff/staff-dashboard.php'
+        ]
+    );
+}
+
+/**
+ * Notify staff about assigned maintenance tasks or updates
+ * Categories: Maintenance
+ * Processes: assigned maintenance tasks, updates
+ * 
+ * @param int $requestId Maintenance request ID
+ * @param string $processType Type of maintenance process (assigned, in_progress, completed)
+ * @param string $issueType Type of issue
+ * @param string $roomNumber Room number
+ * @param array $staffIds Array of staff IDs to notify
+ * @param string $priority Request priority
+ * @return int Number of staff notified
+ */
+function notifyStaffMaintenanceAssignment($requestId, $processType, $issueType, $roomNumber, $staffIds, $priority = 'medium') {
+    $location = $roomNumber ? " in Room {$roomNumber}" : '';
+    
+    $titles = [
+        'assigned' => 'New Maintenance Task Assigned to You',
+        'in_progress' => 'Maintenance Task In Progress',
+        'completed' => 'Maintenance Task Completed'
+    ];
+    
+    $messages = [
+        'assigned' => "You have been assigned to handle a {$issueType} issue{$location}. Priority: {$priority}. Please attend to this as soon as possible.",
+        'in_progress' => "The {$issueType} maintenance{$location} you are working on is now in progress.",
+        'completed' => "The {$issueType} maintenance{$location} has been marked as completed. Thank you for your work."
+    ];
+    
+    $count = 0;
+    foreach ($staffIds as $staffId) {
+        $result = createNotification($staffId, 'maintenance',
+            $titles[$processType] ?? 'Maintenance Task Update',
+            $messages[$processType] ?? "Maintenance update for {$issueType}",
+            [
+                'related_id' => $requestId,
+                'related_type' => 'maintenance_request',
+                'priority' => $priority,
+                'action_url' => '/bayawanhotel/staff/staff-maintenance.php'
+            ]
+        );
+        if ($result) $count++;
+    }
+    return $count;
+}
+
+/**
+ * Notify staff about event schedules, updates, and assigned responsibilities
+ * Categories: Events
+ * Processes: event schedules, updates, assigned responsibilities
+ * 
+ * @param int $eventId Event ID
+ * @param string $processType Type of event process (scheduled, updated, assigned_responsibility, cancelled)
+ * @param string $eventName Event name
+ * @param string $eventDate Event date
+ * @param array $staffIds Staff IDs to notify (for specific assignments)
+ * @param string $responsibility Specific responsibility assigned
+ * @return int Number of staff notified
+ */
+function notifyStaffEventAssignment($eventId, $processType, $eventName, $eventDate, $staffIds = [], $responsibility = '') {
+    $formattedDate = date('M d, Y', strtotime($eventDate));
+    $responsibilityText = $responsibility ? " Your responsibility: {$responsibility}." : '';
+    
+    $titles = [
+        'scheduled' => 'New Event Scheduled',
+        'updated' => 'Event Schedule Updated',
+        'assigned_responsibility' => 'Event Responsibility Assigned to You',
+        'cancelled' => 'Event Cancelled'
+    ];
+    
+    $messages = [
+        'scheduled' => "New event '{$eventName}' scheduled for {$formattedDate}.{$responsibilityText}",
+        'updated' => "Event '{$eventName}' on {$formattedDate} has been updated. Please review the changes.{$responsibilityText}",
+        'assigned_responsibility' => "You have been assigned responsibilities for event '{$eventName}' on {$formattedDate}.{$responsibilityText}",
+        'cancelled' => "Event '{$eventName}' scheduled for {$formattedDate} has been cancelled.{$responsibilityText}"
+    ];
+    
+    $priority = ($processType === 'cancelled') ? 'high' : 'medium';
+    
+    if (!empty($staffIds)) {
+        $count = 0;
+        foreach ($staffIds as $staffId) {
+            $result = createNotification($staffId, 'event',
+                $titles[$processType] ?? 'Event Update',
+                $messages[$processType] ?? "Event update for {$eventName}",
+                [
+                    'related_id' => $eventId,
+                    'related_type' => 'event',
+                    'priority' => $priority,
+                    'action_url' => '/bayawanhotel/staff/staff-event-bookings.php'
+                ]
+            );
+            if ($result) $count++;
+        }
+        return $count;
+    }
+    
+    return createRoleNotifications(
+        ['admin', 'manager', 'receptionist'],
+        'event',
+        $titles[$processType] ?? 'Event Update',
+        $messages[$processType] ?? "Event update for {$eventName}",
+        [
+            'related_id' => $eventId,
+            'related_type' => 'event',
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/staff/staff-event-bookings.php'
+        ]
+    );
+}
+
+// ============================================
+// USER NOTIFICATIONS - 3 Categories
+// ============================================
+
+/**
+ * Notify users when their bookings are confirmed, updated, or cancelled
+ * Categories: Bookings
+ * Processes: confirmed, updated, cancelled
+ * 
+ * @param int $userId User ID
+ * @param int $bookingId Booking ID
+ * @param string $processType Type of booking process (confirmed, updated, cancelled, reminder)
+ * @param string $details Additional details about the booking
+ * @param string $checkInDate Check-in date (for reminders)
+ * @return bool|int Notification ID
+ */
+function notifyUserBookingUpdate($userId, $bookingId, $processType, $details = '', $checkInDate = '') {
+    $titles = [
+        'confirmed' => 'Your Booking is Confirmed!',
+        'updated' => 'Your Booking Has Been Updated',
+        'cancelled' => 'Your Booking Has Been Cancelled',
+        'reminder' => 'Upcoming Stay Reminder'
+    ];
+    
+    $messages = [
+        'confirmed' => "Great news! Your booking has been confirmed. {$details} We look forward to welcoming you to Bayawan Bai Hotel!",
+        'updated' => "Your booking details have been updated. {$details} Please review the changes.",
+        'cancelled' => "Your booking has been cancelled. {$details} If you have any questions, please contact us.",
+        'reminder' => $checkInDate ? "Reminder: Your stay at Bayawan Bai Hotel is coming up on " . date('M d, Y', strtotime($checkInDate)) . ". {$details} We can't wait to see you!" : "Your stay is coming up soon!"
+    ];
+    
+    $priority = ($processType === 'cancelled') ? 'high' : 'medium';
+    
+    return createNotification($userId, 'booking',
+        $titles[$processType] ?? 'Booking Update',
+        $messages[$processType] ?? "Your booking has been updated. {$details}",
+        [
+            'related_id' => $bookingId,
+            'related_type' => 'booking',
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/user/my-bookings.php'
+        ]
+    );
+}
+
+/**
+ * Notify users about food order status (placed, preparing, delivered)
+ * Categories: Food Orders
+ * Processes: placed, preparing, ready, delivered
+ * 
+ * @param int $userId User ID
+ * @param int $orderId Order ID
+ * @param string $processType Type of order process (placed, preparing, ready, delivered, cancelled)
+ * @param string $foodItems Summary of ordered items
+ * @param string $roomNumber Room number for delivery
+ * @return bool|int Notification ID
+ */
+function notifyUserFoodOrderStatus($userId, $orderId, $processType, $foodItems = '', $roomNumber = '') {
+    $itemsText = $foodItems ? " Items: {$foodItems}." : '';
+    $roomText = $roomNumber ? " We'll deliver to Room {$roomNumber}." : '';
+    
+    $titles = [
+        'placed' => 'Your Order Has Been Placed',
+        'preparing' => 'Your Order is Being Prepared',
+        'ready' => 'Your Order is Ready!',
+        'delivered' => 'Your Order Has Been Delivered',
+        'cancelled' => 'Your Order Has Been Cancelled'
+    ];
+    
+    $messages = [
+        'placed' => "Thank you for your order!{$itemsText} Our kitchen has received it and will start preparing soon.",
+        'preparing' => "Good news! Our chefs are now preparing your order.{$itemsText} It will be ready shortly.",
+        'ready' => "Your order is ready!{$itemsText}{$roomText} Please collect it or wait for delivery to your room.",
+        'delivered' => "Enjoy your meal! Your order has been delivered to you.{$itemsText} Thank you for dining with us!",
+        'cancelled' => "Your order has been cancelled.{$itemsText} If you did not request this, please contact the front desk."
+    ];
+    
+    $priority = ($processType === 'cancelled') ? 'high' : 'low';
+    
+    return createNotification($userId, 'food_order',
+        $titles[$processType] ?? 'Order Update',
+        $messages[$processType] ?? "Your order status has been updated.{$itemsText}",
+        [
+            'related_id' => $orderId,
+            'related_type' => 'food_order',
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/user/my-food-orders.php'
+        ]
+    );
+}
+
+/**
+ * Notify users about new events, updates, or reminders
+ * Categories: Events
+ * Processes: new events, updates, reminders
+ * 
+ * @param int $userId User ID
+ * @param int $eventId Event ID
+ * @param string $processType Type of event process (invitation, reminder, cancelled, updated)
+ * @param string $eventName Event name
+ * @param string $eventDate Event date
+ * @param string $eventDetails Event details/location
+ * @return bool|int Notification ID
+ */
+function notifyUserEventUpdate($userId, $eventId, $processType, $eventName, $eventDate = '', $eventDetails = '') {
+    $dateText = $eventDate ? " on " . date('M d, Y', strtotime($eventDate)) : '';
+    $detailsText = $eventDetails ? " {$eventDetails}" : '';
+    
+    $titles = [
+        'invitation' => "You're Invited: {$eventName}",
+        'reminder' => "Reminder: {$eventName} Coming Up",
+        'cancelled' => "Event Cancelled: {$eventName}",
+        'updated' => "Event Updated: {$eventName}"
+    ];
+    
+    $messages = [
+        'invitation' => "You're invited to '{$eventName}'{$dateText}!{$detailsText} We hope you can join us for this special event.",
+        'reminder' => "Just a friendly reminder that '{$eventName}' is coming up{$dateText}.{$detailsText} Don't forget to attend!",
+        'cancelled' => "We regret to inform you that '{$eventName}'{$dateText} has been cancelled.{$detailsText} We apologize for any inconvenience.",
+        'updated' => "There have been some changes to '{$eventName}'{$dateText}.{$detailsText} Please review the updated details."
+    ];
+    
+    $priority = ($processType === 'cancelled') ? 'high' : 'medium';
+    
+    return createNotification($userId, 'event',
+        $titles[$processType] ?? 'Event Update',
+        $messages[$processType] ?? "Event update for {$eventName}",
+        [
+            'related_id' => $eventId,
+            'related_type' => 'event',
+            'priority' => $priority,
+            'action_url' => '/bayawanhotel/user/my-event-bookings.php'
+        ]
+    );
+}
+
+/**
+ * Send promotional notifications to users
+ * Categories: Promotions (for users - optional)
+ * Processes: new promotions available
+ * 
+ * @param int $userId User ID (or array of user IDs)
+ * @param int $promoId Promotion ID
+ * @param string $promoTitle Promotion title
+ * @param string $promoDescription Promotion description
+ * @param string $promoCode Promotion code
+ * @return bool|int Notification ID or count
+ */
+function notifyUserNewPromotion($userId, $promoId, $promoTitle, $promoDescription = '', $promoCode = '') {
+    $codeText = $promoCode ? " Use code: {$promoCode}." : '';
+    
+    $notification = [
+        'related_id' => $promoId,
+        'related_type' => 'promotion',
+        'priority' => 'low',
+        'action_url' => '/bayawanhotel/promotions.php'
+    ];
+    
+    if (is_array($userId)) {
+        $count = 0;
+        foreach ($userId as $uid) {
+            $result = createNotification($uid, 'promotion',
+                "Special Offer: {$promoTitle}",
+                "{$promoDescription}{$codeText} Book now and enjoy exclusive savings!",
+                $notification
+            );
+            if ($result) $count++;
+        }
+        return $count;
+    }
+    
+    return createNotification($userId, 'promotion',
+        "Special Offer: {$promoTitle}",
+        "{$promoDescription}{$codeText} Book now and enjoy exclusive savings!",
+        $notification
+    );
+}

@@ -242,6 +242,8 @@ if ($filter === 'upcoming') {
         // Check if actions available (only for pending status)
         $canCancel = $booking['status'] === 'pending';
         $canReschedule = $booking['status'] === 'pending';
+        $canRate = $booking['status'] === 'checked_out' && !isItemRated('room', $booking['booking_id'], $userId);
+        $isRated = $booking['status'] === 'checked_out' && isItemRated('room', $booking['booking_id'], $userId);
     ?>
     <div style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
         <div style="display: flex;">
@@ -296,6 +298,16 @@ if ($filter === 'upcoming') {
                         <button type="button" class="btn btn-sm" style="background-color: #dc3545; color: white;" onclick="openCancelModal(<?php echo $booking['booking_id']; ?>, <?php echo $booking['total_amount']; ?>)">
                             <i class="fas fa-times" style="margin-right: 5px;"></i>Cancel
                         </button>
+                        <?php endif; ?>
+                        <?php if ($canRate): ?>
+                        <button type="button" class="btn btn-sm" style="background-color: #ffc107; color: #000;" onclick="openRateNowModal('room', <?php echo $booking['booking_id']; ?>, '<?php echo htmlspecialchars($booking['category_name']); ?>')">
+                            <i class="fas fa-star" style="margin-right: 5px;"></i>Rate Now
+                        </button>
+                        <?php endif; ?>
+                        <?php if ($isRated): ?>
+                        <span class="btn btn-sm" style="background-color: #28a745; color: white; cursor: default;">
+                            <i class="fas fa-check" style="margin-right: 5px;"></i>Rated
+                        </span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -690,6 +702,187 @@ document.getElementById('rescheduleForm').addEventListener('submit', function(e)
         return false;
     }
 });
+
+// Rate Now Modal Functions
+function openRateNowModal(serviceType, itemId, itemName) {
+    // Create rating modal HTML if it doesn't exist
+    let modal = document.getElementById('rateNowModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'rateNowModal';
+        modal.className = 'rating-modal-overlay';
+        modal.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.6);z-index:10000;justify-content:center;align-items:center;';
+        modal.innerHTML = `
+            <div class="rating-modal" style="background:white;border-radius:16px;width:90%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.4s ease;overflow:hidden;">
+                <div class="rating-modal-header" style="background:linear-gradient(135deg,#367D8A,#285F6B);color:white;padding:20px 25px;display:flex;justify-content:space-between;align-items:center;">
+                    <h3 style="margin:0;font-size:18px;font-weight:600;"><i class="fas fa-star" style="margin-right:8px;color:#ffc107;"></i> Rate Your Experience</h3>
+                    <button type="button" onclick="closeRateNowModal()" style="background:none;border:none;color:white;font-size:28px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;">&times;</button>
+                </div>
+                <div class="rating-modal-body" style="padding:25px;">
+                    <div class="rating-service-info" style="display:flex;align-items:center;gap:15px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
+                        <div class="rating-service-icon" style="width:60px;height:60px;background:linear-gradient(135deg,#f8f9fa,#e9ecef);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas" id="rateNowIcon" style="font-size:28px;color:#367D8A;"></i>
+                        </div>
+                        <div class="rating-service-details">
+                            <h4 id="rateNowItemName" style="margin:0 0 5px 0;font-size:16px;color:#333;"></h4>
+                            <p id="rateNowServiceTypeLabel" style="margin:0 0 3px 0;font-size:13px;color:#666;text-transform:uppercase;letter-spacing:0.5px;"></p>
+                        </div>
+                    </div>
+                    <p style="text-align:center;color:#555;margin-bottom:25px;font-size:15px;line-height:1.5;">How would you rate your experience?</p>
+                    <form id="rateNowForm" onsubmit="submitRateNow(event)">
+                        <input type="hidden" name="service_type" id="rateNowServiceTypeInput">
+                        <input type="hidden" name="item_id" id="rateNowItemId">
+                        <div style="text-align:center;margin-bottom:25px;">
+                            <div class="star-rating" style="display:flex;flex-direction:row-reverse;justify-content:center;gap:8px;margin-bottom:10px;">
+                                <input type="radio" id="rnstar5" name="rating" value="5" required style="display:none;">
+                                <label for="rnstar5" title="5 stars" style="cursor:pointer;font-size:36px;color:#ddd;transition:all 0.2s;padding:5px;"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="rnstar4" name="rating" value="4" style="display:none;">
+                                <label for="rnstar4" title="4 stars" style="cursor:pointer;font-size:36px;color:#ddd;transition:all 0.2s;padding:5px;"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="rnstar3" name="rating" value="3" style="display:none;">
+                                <label for="rnstar3" title="3 stars" style="cursor:pointer;font-size:36px;color:#ddd;transition:all 0.2s;padding:5px;"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="rnstar2" name="rating" value="2" style="display:none;">
+                                <label for="rnstar2" title="2 stars" style="cursor:pointer;font-size:36px;color:#ddd;transition:all 0.2s;padding:5px;"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="rnstar1" name="rating" value="1" style="display:none;">
+                                <label for="rnstar1" title="1 star" style="cursor:pointer;font-size:36px;color:#ddd;transition:all 0.2s;padding:5px;"><i class="fas fa-star"></i></label>
+                            </div>
+                            <div id="rateNowRatingLabel" style="font-size:14px;color:#666;min-height:20px;transition:color 0.2s;">Select a rating</div>
+                        </div>
+                        <div style="margin-bottom:25px;">
+                            <label for="rateNowComment" style="display:block;font-size:14px;font-weight:500;color:#333;margin-bottom:8px;">Add a comment (optional)</label>
+                            <textarea id="rateNowComment" name="comment" rows="3" placeholder="Tell us about your experience..." maxlength="500" style="width:100%;padding:12px 15px;border:2px solid #e0e0e0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;transition:border-color 0.2s;"></textarea>
+                            <div style="text-align:right;font-size:12px;color:#999;margin-top:5px;"><span id="rateNowCharCount">0</span>/500</div>
+                        </div>
+                        <div style="display:flex;gap:12px;justify-content:space-between;">
+                            <button type="button" onclick="closeRateNowModal()" style="flex:1;padding:14px 24px;background:#f5f5f5;border:2px solid #ddd;border-radius:10px;font-size:14px;font-weight:500;color:#666;cursor:pointer;transition:all 0.2s;">Cancel</button>
+                            <button type="submit" id="rateNowSubmitBtn" disabled style="flex:2;padding:14px 24px;background:linear-gradient(135deg,#367D8A,#285F6B);border:none;border-radius:10px;font-size:14px;font-weight:600;color:white;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 15px rgba(54,125,138,0.3);">Submit Rating</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add star rating styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: #ffc107 !important; transform: scale(1.1); }
+            .star-rating label:hover { text-shadow: 0 0 10px rgba(255,193,7,0.5); }
+            #rateNowRatingLabel.rated { color: #367D8A; font-weight: 600; }
+        `;
+        document.head.appendChild(style);
+        
+        // Add rating input listeners
+        const ratingInputs = modal.querySelectorAll('.star-rating input');
+        const ratingLabel = document.getElementById('rateNowRatingLabel');
+        const submitBtn = document.getElementById('rateNowSubmitBtn');
+        const ratingLabels = { 1: 'Poor - 1 star', 2: 'Fair - 2 stars', 3: 'Good - 3 stars', 4: 'Very Good - 4 stars', 5: 'Excellent - 5 stars' };
+        
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                ratingLabel.textContent = ratingLabels[this.value];
+                ratingLabel.classList.add('rated');
+                submitBtn.disabled = false;
+            });
+        });
+        
+        // Character counter
+        const commentTextarea = document.getElementById('rateNowComment');
+        const charCount = document.getElementById('rateNowCharCount');
+        commentTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+    }
+    
+    // Set modal content
+    document.getElementById('rateNowServiceTypeInput').value = serviceType;
+    document.getElementById('rateNowItemId').value = itemId;
+    document.getElementById('rateNowItemName').textContent = itemName;
+    
+    const serviceLabels = { 'room': 'Room Booking', 'event': 'Event Booking', 'food': 'Food Order' };
+    const serviceIcons = { 'room': 'fa-bed', 'event': 'fa-calendar-alt', 'food': 'fa-utensils' };
+    document.getElementById('rateNowServiceTypeLabel').textContent = serviceLabels[serviceType];
+    document.getElementById('rateNowIcon').className = 'fas ' + serviceIcons[serviceType];
+    
+    // Reset form
+    document.getElementById('rateNowForm').reset();
+    document.getElementById('rateNowRatingLabel').textContent = 'Select a rating';
+    document.getElementById('rateNowRatingLabel').classList.remove('rated');
+    document.getElementById('rateNowCharCount').textContent = '0';
+    document.getElementById('rateNowSubmitBtn').disabled = true;
+    
+    // Show modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRateNowModal() {
+    const modal = document.getElementById('rateNowModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function submitRateNow(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('rateNowForm');
+    const formData = new FormData(form);
+    const submitBtn = document.getElementById('rateNowSubmitBtn');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    
+    const data = {
+        action: 'submit',
+        service_type: formData.get('service_type'),
+        item_id: formData.get('item_id'),
+        rating: formData.get('rating'),
+        comment: formData.get('comment')
+    };
+    
+    fetch('<?php echo SITE_URL; ?>/api/submit-rating.php', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Thank You!';
+            submitBtn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                closeRateNowModal();
+                location.reload();
+            }, 1500);
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Rating';
+            alert(data.message || 'Failed to submit rating. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Submit Rating';
+        alert('An error occurred. Please try again.');
+    });
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        closeModal(event.target.id);
+    }
+    if (event.target.id === 'rateNowModal') {
+        closeRateNowModal();
+    }
+}
 </script>
+
+<?php require_once '../includes/rating-prompt.php'; ?>
 
 <?php require_once '../includes/user-footer.php'; ?>

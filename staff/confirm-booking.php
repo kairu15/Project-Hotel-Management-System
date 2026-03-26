@@ -169,13 +169,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $db->commit();
             
-            // Send notification to guest
+            // Send notifications to guest and admin
             require_once '../includes/notifications.php';
             
+            $guestName = $booking['first_name'] . ' ' . $booking['last_name'];
+            $checkInDate = $booking['check_in'];
+            
             if ($action === 'confirm') {
+                // Notify user about confirmation
                 notifyBookingUpdate($booking['user_id'], $bookingId, 'confirmed');
+                // Notify admin about confirmation
+                notifyAdminBookingUpdate($bookingId, 'confirmed', $guestName, "Check-in: " . date('M d, Y', strtotime($checkInDate)));
             } elseif ($action === 'cancel') {
+                // Notify user about cancellation
                 notifyBookingUpdate($booking['user_id'], $bookingId, 'cancelled');
+                // Notify admin about cancellation
+                notifyAdminBookingUpdate($bookingId, 'cancelled', $guestName, "Booking was cancelled by staff");
             }
             
             redirect('confirm-booking.php');

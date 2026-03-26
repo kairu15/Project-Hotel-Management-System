@@ -48,11 +48,27 @@ if (isset($_POST['save_promotion'])) {
                 $stmt->execute([$title, $description, $discountPercent, $discountAmount, $promoCode, $startDate, $endDate, $minNights, $isActive, $promoId]);
             }
             $_SESSION['success'] = 'Promotion updated successfully';
+            
+            // Send notification
+            require_once '../includes/notifications.php';
+            
+            // Notify admin about promotion update
+            $processType = $isActive ? 'activated' : 'updated';
+            notifyAdminPromotionUpdate($promoId, $processType, $title, $promoCode);
+            
         } else {
             // Add new promotion
             $stmt = $db->prepare("INSERT INTO promotions (title, description, discount_percent, discount_amount, promo_code, start_date, end_date, min_nights, image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$title, $description, $discountPercent, $discountAmount, $promoCode, $startDate, $endDate, $minNights, $image, $isActive]);
+            $newPromoId = $db->lastInsertId();
             $_SESSION['success'] = 'Promotion added successfully';
+            
+            // Send notification
+            require_once '../includes/notifications.php';
+            
+            // Notify admin about new promotion
+            $processType = $isActive ? 'activated' : 'added';
+            notifyAdminPromotionUpdate($newPromoId, $processType, $title, $promoCode);
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';

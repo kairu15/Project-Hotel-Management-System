@@ -22,16 +22,42 @@ if (isset($_POST['save_schedule'])) {
     $notes = $_POST['notes'] ?? '';
 
     if ($userId && $workDate && $shiftStart && $shiftEnd) {
+        // Get staff name for notifications
+        $staffStmt = $db->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
+        $staffStmt->execute([$userId]);
+        $staffData = $staffStmt->fetch();
+        $staffName = $staffData ? $staffData['first_name'] . ' ' . $staffData['last_name'] : 'Staff Member';
+        
         if ($scheduleId) {
             // Update existing schedule
             $stmt = $db->prepare("UPDATE staff_schedules SET user_id = ?, work_date = ?, shift_start = ?, shift_end = ?, role = ?, status = ?, notes = ? WHERE schedule_id = ?");
             $stmt->execute([$userId, $workDate, $shiftStart, $shiftEnd, $role, $status, $notes, $scheduleId]);
             $_SESSION['success'] = 'Schedule updated successfully';
+            
+            // Send notifications
+            require_once '../includes/notifications.php';
+            
+            // Notify admin about schedule update
+            notifyAdminScheduleUpdate($scheduleId, 'updated', $staffName, $workDate);
+            
+            // Notify staff about schedule change
+            notifyScheduleChange($userId, 'modified', $workDate);
+            
         } else {
             // Add new schedule
             $stmt = $db->prepare("INSERT INTO staff_schedules (user_id, work_date, shift_start, shift_end, role, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$userId, $workDate, $shiftStart, $shiftEnd, $role, $status, $notes]);
+            $newScheduleId = $db->lastInsertId();
             $_SESSION['success'] = 'Schedule added successfully';
+            
+            // Send notifications
+            require_once '../includes/notifications.php';
+            
+            // Notify admin about new schedule
+            notifyAdminScheduleUpdate($newScheduleId, 'created', $staffName, $workDate);
+            
+            // Notify staff about new schedule
+            notifyScheduleChange($userId, 'added', $workDate);
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';

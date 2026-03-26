@@ -185,17 +185,37 @@ try {
     // Send notifications
     require_once 'includes/notifications.php';
     
-    // Notify user about their booking
-    notifyBookingUpdate($userId, $bookingId, 'pending');
-    
-    // Notify staff about new booking
+    // Get user details for notifications
     $userStmt = $db->prepare("SELECT first_name, last_name, check_in FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
     $userStmt->execute([$bookingId]);
     $userData = $userStmt->fetch();
+    $guestName = $userData ? $userData['first_name'] . ' ' . $userData['last_name'] : 'Guest';
+    $checkInDate = $userData ? $userData['check_in'] : '';
     
-    if ($userData) {
-        notifyStaffNewBooking($bookingId, $userData['first_name'] . ' ' . $userData['last_name'], $userData['check_in']);
+    // Notify user about their booking
+    notifyBookingUpdate($userId, $bookingId, 'pending');
+    
+    // Notify user about payment status
+    if ($paymentStatus === 'paid' || $paymentStatus === 'partial') {
+        notifyPaymentUpdate($userId, $paymentId ?? $bookingId, 'completed', $amountPaid);
+    } elseif ($paymentStatus === 'failed') {
+        notifyPaymentUpdate($userId, $paymentId ?? $bookingId, 'failed', $totalAmount);
+    } else {
+        notifyPaymentUpdate($userId, $paymentId ?? $bookingId, 'pending', $totalAmount);
     }
+    
+    // Notify staff about new booking
+    if ($userData) {
+        notifyStaffNewBooking($bookingId, $guestName, $checkInDate);
+    }
+    
+    // Notify admin about payment
+    $paymentProcessType = ($paymentStatus === 'paid' || $paymentStatus === 'partial') ? 'made' : 
+                         ($paymentStatus === 'failed' ? 'failed' : 'pending');
+    notifyAdminPaymentUpdate($paymentId ?? $bookingId, $paymentProcessType, $guestName, $amountPaid, $paymentMethod);
+    
+    // Notify admin about new booking
+    notifyAdminBookingUpdate($bookingId, 'created', $guestName, "Check-in: " . date('M d, Y', strtotime($checkInDate ?: 'today')));
     
     // Store booking info in session
     $_SESSION['booking_confirmation'] = [

@@ -31,16 +31,47 @@ if (isset($_POST['update_status']) && is_numeric($_POST['order_id'])) {
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         
-        // Send notification to user about order status update
+        // Send notifications to user, staff, and admin
         require_once '../includes/notifications.php';
         
-        // Get user_id for this order
-        $userStmt = $db->prepare("SELECT user_id FROM food_orders WHERE order_id = ?");
-        $userStmt->execute([$orderId]);
-        $userId = $userStmt->fetchColumn();
+        // Get order details for notifications
+        $orderStmt = $db->prepare("
+            SELECT fo.*, u.first_name, u.last_name, u.user_id, mi.item_name, r.room_number
+            FROM food_orders fo
+            JOIN users u ON fo.user_id = u.user_id
+            JOIN menu_items mi ON fo.food_id = mi.item_id
+            LEFT JOIN bookings b ON fo.booking_id = b.booking_id
+            LEFT JOIN rooms r ON b.room_id = r.room_id
+            WHERE fo.order_id = ?
+        ");
+        $orderStmt->execute([$orderId]);
+        $orderData = $orderStmt->fetch();
         
-        if ($userId && in_array($newStatus, ['preparing', 'ready', 'delivered', 'cancelled'])) {
-            notifyFoodOrderUpdate($userId, $orderId, $newStatus);
+        if ($orderData) {
+            $userId = $orderData['user_id'];
+            $guestName = $orderData['first_name'] . ' ' . $orderData['last_name'];
+            $roomNumber = $orderData['room_number'] ?? '';
+            $foodItems = $orderData['item_name'] ?? '';
+            
+            // Notify user about order status update
+            if (in_array($newStatus, ['preparing', 'ready', 'delivered', 'cancelled'])) {
+                notifyFoodOrderUpdate($userId, $orderId, $newStatus);
+                
+                // Enhanced user notification with more details
+                notifyUserFoodOrderStatus($userId, $orderId, $newStatus, $foodItems, $roomNumber);
+            }
+            
+            // Notify admin about order status changes
+            $processType = $newStatus === 'preparing' ? 'updated' : 
+                          ($newStatus === 'delivered' ? 'completed' : 'updated');
+            notifyAdminFoodOrderUpdate($orderId, $processType, $guestName, "Status changed to: {$newStatus}");
+            
+            // Notify staff about order status changes
+            if (in_array($newStatus, ['preparing', 'ready', 'delivered'])) {
+                $staffProcessType = $newStatus === 'preparing' ? 'new_order' :
+                                   ($newStatus === 'ready' ? 'preparation_ready' : 'delivered');
+                notifyStaffFoodOrderAssignment($orderId, $staffProcessType, $guestName, $roomNumber, $foodItems);
+            }
         }
         
         showAlert('Order status updated successfully', 'success');
