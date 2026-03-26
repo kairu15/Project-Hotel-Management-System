@@ -765,6 +765,9 @@ $alert = getAlert();
                     <li><a href="admin-dashboard.php" class="<?php echo $currentPage === 'admin-dashboard' ? 'active' : ''; ?>">
                         <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a></li>
+                    <li><a href="admin-calendar.php" class="<?php echo $currentPage === 'admin-calendar' ? 'active' : ''; ?>">
+                        <i class="fas fa-calendar-alt"></i> Calendar
+                    </a></li>
                     <li><a href="admin-bookings.php" class="<?php echo $currentPage === 'admin-bookings' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-check"></i> Bookings
                     </a></li>

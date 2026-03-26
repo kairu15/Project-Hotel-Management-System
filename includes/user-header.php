@@ -998,6 +998,11 @@ $initials = strtoupper(substr($_SESSION['first_name'], 0, 1) . substr($_SESSION[
                             <i class="fas fa-tachometer-alt"></i> Dashboard Overview
                         </a>
                     </li>
+                    <li>
+                        <a href="user-calendar.php" class="<?php echo $currentPage === 'user-calendar' ? 'active' : ''; ?>">
+                            <i class="fas fa-calendar-alt"></i> My Calendar
+                        </a>
+                    </li>
                     <li class="nav-section">My Reservations</li>
                     <li>
                         <a href="my-bookings.php" class="<?php echo $currentPage === 'my-bookings' ? 'active' : ''; ?>">

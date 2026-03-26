@@ -763,6 +763,9 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
                     <li><a href="staff-dashboard.php" class="<?php echo $currentPage === 'staff-dashboard' ? 'active' : ''; ?>">
                         <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a></li>
+                    <li><a href="staff-calendar.php" class="<?php echo $currentPage === 'staff-calendar' ? 'active' : ''; ?>">
+                        <i class="fas fa-calendar-alt"></i> My Calendar
+                    </a></li>
                     <li><a href="checkin.php" class="<?php echo $currentPage === 'checkin' ? 'active' : ''; ?>">
                         <i class="fas fa-sign-in-alt"></i> Check-In
                     </a></li>
