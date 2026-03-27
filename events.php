@@ -124,10 +124,23 @@ $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDE
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">
-            <?php foreach ($spaces as $index => $space): ?>
+            <?php foreach ($spaces as $index => $space): 
+                // Get primary image or use default
+                $primaryImage = $space['image_primary'] ?? '';
+                if ($primaryImage) {
+                    // Add assets/ prefix if not already there
+                    if (strpos($primaryImage, 'http') !== 0 && strpos($primaryImage, 'assets/') !== 0) {
+                        $primaryImage = 'assets/' . $primaryImage;
+                    }
+                } else {
+                    // Default placeholder images
+                    $defaultImages = ['1519167758481-83f550bb49b3','1540575462033-afcf0b7f5a67','1531058020387-3be67869e66f','1464369063991-193918d63341'];
+                    $primaryImage = 'https://images.unsplash.com/photo-' . $defaultImages[$index % 4] . '?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                }
+            ?>
             <div style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
                 <div style="position: relative; height: 250px; overflow: hidden;">
-                    <img src="https://images.unsplash.com/photo-<?php echo ['1519167758481-83f550bb49b3','1540575462033-afcf0b7f5a67','1531058020387-3be67869e66f','1464369063991-193918d63341'][$index % 4] ?>?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="<?php echo htmlspecialchars($primaryImage); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                     <div style="position: absolute; top: 20px; right: 20px; background-color: var(--primary-color); color: white; padding: 10px 20px; border-radius: 5px; font-weight: 600;">
                         Up to <?php echo $space['capacity']; ?> guests
                     </div>
@@ -155,7 +168,7 @@ $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDE
                     </div>
                     <?php endif; ?>
                     
-                    <a href="#inquiry" onclick="prefillSpace(<?php echo $space['space_id']; ?>, '<?php echo htmlspecialchars($space['space_name']); ?>')" class="btn btn-primary" style="display: block; text-align: center;">Request Quotation</a>
+                    <a href="event-space-details.php?id=<?php echo $space['space_id']; ?>" class="btn btn-primary" style="display: block; text-align: center;">View Details & Book</a>
                 </div>
             </div>
             <?php endforeach; ?>

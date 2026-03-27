@@ -782,6 +782,9 @@ $alert = getAlert();
                     <li><a href="admin-room-categories.php" class="<?php echo $currentPage === 'admin-room-categories' ? 'active' : ''; ?>">
                         <i class="fas fa-layer-group"></i> Room Categories
                     </a></li>
+                    <li><a href="admin-virtual-tours.php" class="<?php echo $currentPage === 'admin-virtual-tours' ? 'active' : ''; ?>">
+                        <i class="fas fa-vr-cardboard"></i> Virtual Tours
+                    </a></li>
                     <li><a href="admin-amenities.php" class="<?php echo $currentPage === 'admin-amenities' ? 'active' : ''; ?>">
                         <i class="fas fa-spa"></i> Amenities
                     </a></li>
@@ -795,6 +798,9 @@ $alert = getAlert();
                     </a></li>
                     <li><a href="admin-event-bookings.php" class="<?php echo $currentPage === 'admin-event-bookings' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i> Event Bookings
+                    </a></li>
+                    <li><a href="admin-event-virtual-tours.php" class="<?php echo $currentPage === 'admin-event-virtual-tours' ? 'active' : ''; ?>">
+                        <i class="fas fa-vr-cardboard"></i> Event Virtual Tours
                     </a></li>
                     <li><a href="admin-menu-categories.php" class="<?php echo $currentPage === 'admin-menu-categories' ? 'active' : ''; ?>">
                         <i class="fas fa-utensils"></i> Menu Categories

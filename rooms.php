@@ -96,11 +96,23 @@ $filterBed = $_GET['bed'] ?? '';
                 
                 if ($show):
                     $amenities = explode(', ', $room['amenities']);
+                    // Get primary image or use default
+                    $primaryImage = $room['image_primary'] ?? '';
+                    if ($primaryImage) {
+                        // Add assets/ prefix if not already there
+                        if (strpos($primaryImage, 'http') !== 0 && strpos($primaryImage, 'assets/') !== 0) {
+                            $primaryImage = 'assets/' . $primaryImage;
+                        }
+                    } else {
+                        // Default placeholder images
+                        $defaultImages = ['1631049307260-da0c0f11336a','1566666208517-13f42e1e3c2c','1590490360182-c33d57733427','1582719478250-c89cae141e86'];
+                        $primaryImage = 'https://images.unsplash.com/photo-' . $defaultImages[$index % 4] . '?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    }
             ?>
             <div style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: grid; grid-template-columns: 1fr 1fr;">
                 <!-- Image -->
                 <div style="position: relative; overflow: hidden;">
-                    <img src="https://images.unsplash.com/photo-<?php echo ['1631049307260-da0c0f11336a','1566666208517-13f42e1e3c2c','1590490360182-c33d57733427','1582719478250-c89cae141e86'][$index % 4] ?>?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="<?php echo htmlspecialchars($room['category_name']); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="<?php echo htmlspecialchars($primaryImage); ?>" alt="<?php echo htmlspecialchars($room['category_name']); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                     <div style="position: absolute; top: 15px; left: 15px; background-color: var(--primary-color); color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: 600;">
                         From <?php echo formatPrice($room['base_price']); ?>
                     </div>

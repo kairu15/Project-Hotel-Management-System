@@ -1440,3 +1440,201 @@ CREATE TABLE IF NOT EXISTS chatbot_context (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SELECT 'Chatbot tables created successfully!' AS message;
+
+-- =====================================================
+-- ADDITIONAL SCHEMA FILES COMBINED BELOW
+-- =====================================================
+
+-- =====================================================
+-- UPDATE: Add image_primary column to event_spaces table
+-- =====================================================
+ALTER TABLE event_spaces ADD COLUMN image_primary VARCHAR(255) AFTER price_per_day;
+
+-- =====================================================
+-- RATINGS TABLE SCHEMA
+-- =====================================================
+
+-- Ratings Table for Bayawan Bai Hotel
+-- Stores user ratings for Room Bookings, Events, and Food Orders
+
+CREATE TABLE ratings (
+    rating_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    service_type ENUM('room', 'event', 'food') NOT NULL,
+    booking_id INT NULL,
+    event_booking_id INT NULL,
+    food_order_id INT NULL,
+    rating_value TINYINT NOT NULL CHECK (rating_value BETWEEN 1 AND 5),
+    comment TEXT NULL,
+    is_rated TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Ensure only one rating per service item per user
+    UNIQUE KEY unique_room_rating (user_id, booking_id),
+    UNIQUE KEY unique_event_rating (user_id, event_booking_id),
+    UNIQUE KEY unique_food_rating (user_id, food_order_id),
+    
+    -- Foreign key constraints
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE SET NULL,
+    FOREIGN KEY (event_booking_id) REFERENCES event_bookings(event_booking_id) ON DELETE SET NULL,
+    FOREIGN KEY (food_order_id) REFERENCES food_orders(order_id) ON DELETE SET NULL
+);
+
+-- Index for efficient queries
+CREATE INDEX idx_service_type ON ratings(service_type);
+CREATE INDEX idx_rating_value ON ratings(rating_value);
+CREATE INDEX idx_created_at ON ratings(created_at);
+
+-- Table to track which items need to be rated (for pending rating prompts)
+-- This helps determine when to show the rating popup
+CREATE TABLE rating_eligibility (
+    eligibility_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    service_type ENUM('room', 'event', 'food') NOT NULL,
+    booking_id INT NULL,
+    event_booking_id INT NULL,
+    food_order_id INT NULL,
+    status VARCHAR(20) NOT NULL, -- 'pending', 'shown', 'completed', 'skipped'
+    eligible_at TIMESTAMP NULL, -- When the item became eligible for rating
+    shown_at TIMESTAMP NULL, -- When the rating prompt was shown
+    completed_at TIMESTAMP NULL, -- When the rating was submitted
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE KEY unique_eligibility (user_id, booking_id, event_booking_id, food_order_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_eligibility_status ON rating_eligibility(status);
+CREATE INDEX idx_eligible_at ON rating_eligibility(eligible_at);
+
+-- =====================================================
+-- VIRTUAL TOUR TABLES FOR BAYAWAN BAI HOTEL
+-- =====================================================
+
+-- Table to store 360-degree panorama images for each room category
+CREATE TABLE IF NOT EXISTS room_virtual_tours (
+    tour_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT NOT NULL,
+    panorama_image VARCHAR(255) NOT NULL COMMENT 'Path to 360-degree equirectangular image',
+    thumbnail_image VARCHAR(255) COMMENT 'Optional thumbnail preview',
+    title VARCHAR(100) NOT NULL DEFAULT 'Virtual Tour',
+    description TEXT,
+    hotspot_config JSON COMMENT 'Hotspot configuration for interactive elements',
+    is_active TINYINT(1) DEFAULT 1,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES room_categories(category_id) ON DELETE CASCADE,
+    INDEX idx_category_active (category_id, is_active),
+    INDEX idx_display_order (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='360-degree virtual tours for room categories';
+
+-- Table to store hotspots within virtual tours (interactive points)
+CREATE TABLE IF NOT EXISTS virtual_tour_hotspots (
+    hotspot_id INT AUTO_INCREMENT PRIMARY KEY,
+    tour_id INT NOT NULL,
+    hotspot_type ENUM('info', 'scene', 'link') DEFAULT 'info',
+    pitch DECIMAL(8,4) NOT NULL COMMENT 'Vertical angle in degrees (-90 to 90)',
+    yaw DECIMAL(8,4) NOT NULL COMMENT 'Horizontal angle in degrees (-180 to 180)',
+    text VARCHAR(255) COMMENT 'Tooltip text',
+    target_tour_id INT NULL COMMENT 'For scene type - target tour ID to navigate to',
+    target_url VARCHAR(255) NULL COMMENT 'For link type - external URL',
+    css_class VARCHAR(50) DEFAULT 'custom-hotspot',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tour_id) REFERENCES room_virtual_tours(tour_id) ON DELETE CASCADE,
+    FOREIGN KEY (target_tour_id) REFERENCES room_virtual_tours(tour_id) ON DELETE SET NULL,
+    INDEX idx_tour_position (tour_id, pitch, yaw)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert sample data for each room category
+-- Note: These use placeholder image paths. Replace with actual 360 images
+
+INSERT INTO room_virtual_tours (category_id, panorama_image, thumbnail_image, title, description, is_active, display_order) VALUES
+(1, 'uploads/virtual_tours/standard_room_360.jpg', 'uploads/virtual_tours/standard_room_thumb.jpg', 'Standard Room - 360° View', 'Experience our comfortable Standard Room with a full 360-degree panoramic view. Perfect for budget-conscious travelers.', 1, 1),
+(2, 'uploads/virtual_tours/deluxe_room_360.jpg', 'uploads/virtual_tours/deluxe_room_thumb.jpg', 'Deluxe Room - 360° View', 'Explore our spacious Deluxe Room with premium amenities and stunning bay views from every angle.', 1, 1),
+(3, 'uploads/virtual_tours/suite_room_360.jpg', 'uploads/virtual_tours/suite_room_thumb.jpg', 'Suite - 360° View', 'Take a virtual tour of our luxurious Suite featuring a separate living area, bedroom, and panoramic ocean views.', 1, 1),
+(4, 'uploads/virtual_tours/family_room_360.jpg', 'uploads/virtual_tours/family_room_thumb.jpg', 'Family Room - 360° View', 'Discover our Family Room designed for comfort with ample space for the whole family.', 1, 1);
+
+-- Sample hotspots for the Deluxe Room tour (tour_id 2)
+INSERT INTO virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text, css_class) VALUES
+(2, 'info', -5.0, 45.0, 'King-size bed with premium linens', 'info-hotspot'),
+(2, 'info', -10.0, -30.0, 'Work desk with bay view', 'info-hotspot'),
+(2, 'info', 0.0, 90.0, 'Private balcony access', 'info-hotspot');
+
+-- Sample hotspots for the Suite tour (tour_id 3)
+INSERT INTO virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text, css_class) VALUES
+(3, 'info', -5.0, 0.0, 'Luxurious King Bed', 'info-hotspot'),
+(3, 'info', 0.0, -90.0, 'Living room area', 'info-hotspot'),
+(3, 'info', 10.0, 45.0, 'Jacuzzi tub', 'info-hotspot');
+
+-- =====================================================
+-- EVENT VIRTUAL TOUR TABLES FOR BAYAWAN BAI HOTEL
+-- =====================================================
+
+-- Table to store 360-degree panorama images for each event space
+CREATE TABLE IF NOT EXISTS event_virtual_tours (
+    tour_id INT AUTO_INCREMENT PRIMARY KEY,
+    space_id INT NOT NULL,
+    panorama_image VARCHAR(255) NOT NULL COMMENT 'Path to 360-degree equirectangular image',
+    thumbnail_image VARCHAR(255) COMMENT 'Optional thumbnail preview',
+    title VARCHAR(100) NOT NULL DEFAULT 'Virtual Tour',
+    description TEXT,
+    hotspot_config JSON COMMENT 'Hotspot configuration for interactive elements',
+    is_active TINYINT(1) DEFAULT 1,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (space_id) REFERENCES event_spaces(space_id) ON DELETE CASCADE,
+    INDEX idx_space_active (space_id, is_active),
+    INDEX idx_display_order (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='360-degree virtual tours for event spaces';
+
+-- Table to store hotspots within event virtual tours (interactive points)
+CREATE TABLE IF NOT EXISTS event_virtual_tour_hotspots (
+    hotspot_id INT AUTO_INCREMENT PRIMARY KEY,
+    tour_id INT NOT NULL,
+    hotspot_type ENUM('info', 'scene', 'link') DEFAULT 'info',
+    pitch DECIMAL(8,4) NOT NULL COMMENT 'Vertical angle in degrees (-90 to 90)',
+    yaw DECIMAL(8,4) NOT NULL COMMENT 'Horizontal angle in degrees (-180 to 180)',
+    text VARCHAR(255) COMMENT 'Tooltip text',
+    target_tour_id INT NULL COMMENT 'For scene type - target tour ID to navigate to',
+    target_url VARCHAR(255) NULL COMMENT 'For link type - external URL',
+    css_class VARCHAR(50) DEFAULT 'custom-hotspot',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tour_id) REFERENCES event_virtual_tours(tour_id) ON DELETE CASCADE,
+    FOREIGN KEY (target_tour_id) REFERENCES event_virtual_tours(tour_id) ON DELETE SET NULL,
+    INDEX idx_tour_position (tour_id, pitch, yaw)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert sample data for each event space
+-- Note: These use placeholder image paths. Replace with actual 360 images
+
+INSERT INTO event_virtual_tours (space_id, panorama_image, thumbnail_image, title, description, is_active, display_order) VALUES
+(1, 'assets/uploads/event_virtual_tours/grand_ballroom_360.jpg', 'assets/uploads/event_virtual_tours/grand_ballroom_thumb.jpg', 'Grand Ballroom - 360° View', 'Experience our elegant Grand Ballroom, perfect for weddings, conferences, and galas. Full 360-degree panoramic view.', 1, 1),
+(2, 'assets/uploads/event_virtual_tours/conference_a_360.jpg', 'assets/uploads/event_virtual_tours/conference_a_thumb.jpg', 'Conference Room A - 360° View', 'Professional meeting space with modern AV equipment. Explore the room in full 360° view.', 1, 1),
+(3, 'assets/uploads/event_virtual_tours/conference_b_360.jpg', 'assets/uploads/event_virtual_tours/conference_b_thumb.jpg', 'Conference Room B - 360° View', 'Intimate meeting room for small groups with professional setup.', 1, 1),
+(4, 'assets/uploads/event_virtual_tours/garden_pavilion_360.jpg', 'assets/uploads/event_virtual_tours/garden_pavilion_thumb.jpg', 'Garden Pavilion - 360° View', 'Outdoor venue with stunning bay views for romantic events and celebrations.', 1, 1),
+(5, 'assets/uploads/event_virtual_tours/rooftop_terrace_360.jpg', 'assets/uploads/event_virtual_tours/rooftop_terrace_thumb.jpg', 'Rooftop Terrace - 360° View', 'Exclusive rooftop space with panoramic city and bay views.', 1, 1);
+
+-- Sample hotspots for Grand Ballroom tour (tour_id 1)
+INSERT INTO event_virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text, css_class) VALUES
+(1, 'info', -5.0, 0.0, 'Main stage area with professional lighting', 'info-hotspot'),
+(1, 'info', -10.0, 45.0, 'Dance floor and entertainment area', 'info-hotspot'),
+(1, 'info', 0.0, -90.0, 'Bridal suite entrance', 'info-hotspot'),
+(1, 'info', 5.0, 120.0, 'Catering preparation area', 'info-hotspot');
+
+-- Sample hotspots for Garden Pavilion tour (tour_id 4)
+INSERT INTO event_virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text, css_class) VALUES
+(4, 'info', -5.0, 0.0, 'Main ceremony area with garden backdrop', 'info-hotspot'),
+(4, 'info', 0.0, 90.0, 'Bay view dining setup', 'info-hotspot'),
+(4, 'info', -10.0, -45.0, 'Catering and buffet area', 'info-hotspot');
+
+-- Sample hotspots for Rooftop Terrace tour (tour_id 5)
+INSERT INTO event_virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text, css_class) VALUES
+(5, 'info', -5.0, 0.0, 'Lounge seating area', 'info-hotspot'),
+(5, 'info', 10.0, 90.0, 'Panoramic city view', 'info-hotspot'),
+(5, 'info', -10.0, -90.0, 'Bar and cocktail area', 'info-hotspot');
+
+SELECT 'All additional tables and data combined successfully!' AS message;

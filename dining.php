@@ -92,10 +92,23 @@ foreach ($menuItems as $item) {
         
         <!-- Menu Items Grid -->
         <div id="menuGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">
-            <?php foreach ($menuItems as $item): ?>
+            <?php foreach ($menuItems as $item): 
+                // Get item image or use default
+                $itemImage = $item['image'] ?? '';
+                if ($itemImage) {
+                    // Add assets/ prefix if not already there
+                    if (strpos($itemImage, 'http') !== 0 && strpos($itemImage, 'assets/') !== 0) {
+                        $itemImage = 'assets/' . $itemImage;
+                    }
+                } else {
+                    // Default placeholder images
+                    $defaultImages = ['1504674900247-0877df9cc836','1540189549336-e6e99c3679fe','1565299624946-b28f40a0ae38','1567620905732-2d1ec7ab7445'];
+                    $itemImage = 'https://images.unsplash.com/photo-' . $defaultImages[$item['item_id'] % 4] . '?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
+                }
+            ?>
             <div class="menu-item" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" style="background-color: white; border-radius: 10px; overflow: hidden; display: flex; box-shadow: 0 5px 20px rgba(0,0,0,0.08); transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
                 <div style="width: 150px; min-height: 150px;">
-                    <img src="https://images.unsplash.com/photo-<?php echo ['1504674900247-0877df9cc836','1540189549336-e6e99c3679fe','1565299624946-b28f40a0ae38','1567620905732-2d1ec7ab7445'][$item['item_id'] % 4] ?>?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img src="<?php echo htmlspecialchars($itemImage); ?>" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 <div style="flex: 1; padding: 25px; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
