@@ -27,6 +27,7 @@ A comprehensive, full-featured Hotel Management System for Bayawan Bai Hotel bui
 - [📞 Support](#-support)
 - [📄 License](#-license)
 - [🏆 Credits](#-credits)
+- [📝 Recent Updates](#-recent-updates)
 
 ## 🏨 Project Overview
 
@@ -1181,7 +1182,250 @@ For system-wide outages or critical security issues:
 
 ---
 
-**🏨 Bayawan Bai Hotel Management System**  
+## 📝 Recent Updates
+
+This section documents all recently added features, modified files, and system improvements.
+
+**Last Updated**: March 28, 2026
+
+---
+
+### 🌟 New Features
+
+#### 1. **360° Virtual Tour System**
+**New Files:**
+- `virtual-tour.php` - Guest-facing virtual tour viewer with panoramic room exploration
+- `event-virtual-tour.php` - 360° virtual tours for event spaces
+- `admin/admin-virtual-tours.php` - Admin panel for managing virtual tours
+
+**Description**: Immersive 360-degree panoramic viewing system allowing guests to explore rooms and event spaces before booking. Uses Pannellum library for interactive viewing with hotspot navigation.
+
+**Key Features:**
+- Full 360° rotation (left, right, up, down)
+- Interactive hotspots with information tooltips
+- Room-to-room scene navigation
+- Mobile responsive design
+- Admin CRUD operations for tour management
+
+---
+
+#### 2. **Calendar & Scheduling System**
+**New Files:**
+- `admin/admin-calendar.php` - Admin calendar dashboard for bookings and events
+- `staff/staff-calendar.php` - Staff calendar view for daily operations
+- `user/user-calendar.php` - User calendar showing personal bookings
+- `api/calendar-events.php` - API endpoint for calendar event data
+
+**Description**: Comprehensive calendar system for visualizing bookings, events, staff schedules, and maintenance tasks across different user roles.
+
+---
+
+#### 3. **Guest Rating & Review System**
+**New Files:**
+- `admin/admin-ratings.php` - Admin interface for managing guest ratings and reviews
+- `api/submit-rating.php` - API endpoint for submitting ratings
+- `includes/rating-prompt.php` - Component for prompting guests to rate their stay
+
+**Description**: Post-stay rating system allowing guests to provide feedback on their experience. Includes admin moderation tools and automated rating prompts.
+
+---
+
+#### 4. **Event Space Details Page**
+**New Files:**
+- `event-space-details.php` - Detailed event space information with amenities and pricing
+
+**Description**: Enhanced event space showcase with detailed capacity information, amenities, pricing tiers, and virtual tour integration.
+
+---
+
+### 🔄 Updated Files
+
+#### Admin Module Updates
+| File | Changes Made |
+|------|-------------|
+| `admin/admin-analytics.php` | Enhanced reporting with new metrics and visualization improvements |
+| `admin/admin-event-bookings.php` | Updated booking management interface with status tracking |
+| `admin/admin-maintenance.php` | Added maintenance scheduling and staff assignment features |
+| `admin/admin-promotions.php` | Improved promotional campaign management tools |
+| `admin/admin-reports.php` | Added new report types and export functionality |
+| `admin/admin-staff-schedules.php` | Enhanced scheduling interface with calendar integration |
+| `admin/admin-header.php` | Updated navigation to include new calendar and virtual tour sections |
+
+#### Staff Module Updates
+| File | Changes Made |
+|------|-------------|
+| `staff/confirm-booking.php` | Improved booking confirmation workflow with email notifications |
+| `staff/staff-foods-orders.php` | Enhanced food order management with status tracking |
+| `staff/staff-maintenance.php` | Updated maintenance request handling and completion tracking |
+| `includes/staff-header.php` | Added calendar navigation for staff schedule viewing |
+
+#### User Module Updates
+| File | Changes Made |
+|------|-------------|
+| `user/my-bookings.php` | Added booking status indicators and quick action buttons |
+| `user/my-event-bookings.php` | Enhanced event booking display with cancellation options |
+| `user/my-food-orders.php` | Improved food order history with reorder functionality |
+| `includes/user-header.php` | Added calendar link for personal booking overview |
+
+#### Core System Updates
+| File | Changes Made |
+|------|-------------|
+| `includes/config.php` | Added new configuration constants for virtual tours and ratings |
+| `includes/notifications.php` | Enhanced notification system with new alert types |
+| `includes/logs/activity.log` | Activity logging updates for new features |
+| `rooms.php` | Integrated virtual tour preview thumbnails |
+| `room-details.php` | Added 360° virtual tour viewer integration |
+| `events.php` | Updated event space listings with virtual tour links |
+| `event-space-details.php` | Added detailed capacity and pricing information |
+| `dining.php` | Enhanced menu display with improved categorization |
+| `foods-details.php` | Updated food item presentation with nutritional info |
+| `gallery.php` | Improved image gallery with categorization |
+| `order-now.php` | Enhanced food ordering flow with real-time availability |
+| `payment-process.php` | Updated payment handling with new gateway integrations |
+| `food-order-payment-process.php` | Improved food order payment processing |
+
+---
+
+### 🐛 Bug Fixes
+
+| Issue | Resolution |
+|-------|-----------|
+| Calendar date parsing | Fixed timezone handling for booking dates |
+| Virtual tour image loading | Resolved path issues for uploaded panorama images |
+| Rating submission validation | Added proper input sanitization and validation |
+| Staff schedule conflicts | Fixed overlapping shift detection logic |
+| Notification delivery | Corrected email notification triggers for bookings |
+
+---
+
+### 🗄️ Database Changes
+
+#### New Tables Added
+
+**`room_virtual_tours`** - Stores 360° virtual tour data
+- `tour_id` (Primary Key)
+- `category_id` (Foreign Key to room_categories)
+- `panorama_image` - Path to equirectangular image
+- `thumbnail_image` - Preview thumbnail path
+- `title`, `description` - Tour metadata
+- `is_active`, `display_order` - Display controls
+
+**`virtual_tour_hotspots`** - Interactive hotspot definitions
+- `hotspot_id` (Primary Key)
+- `tour_id` (Foreign Key)
+- `hotspot_type` - Type (info, scene, link)
+- `pitch`, `yaw` - Spatial coordinates
+- `text`, `target_tour_id`, `target_url` - Interaction data
+
+**`event_virtual_tours`** - Event space virtual tours
+- Similar structure to room_virtual_tours
+- Links to event_spaces table
+
+**`guest_ratings`** - Guest review and rating storage
+- `rating_id` (Primary Key)
+- `booking_id`, `user_id` (Foreign Keys)
+- `rating` - Numerical rating (1-5)
+- `review_text` - Written feedback
+- `status` - Moderation status
+- `created_at`, `updated_at` - Timestamps
+
+#### Modified Tables
+
+**`database.sql`** - Updated schema including:
+- New virtual tour tables
+- Guest ratings table
+- Additional indexes for performance
+- Updated foreign key constraints
+
+---
+
+### 🖼️ New Assets Added
+
+**Image Uploads:**
+- Room category images (`assets/images/rooms/`)
+- Event space photos (`assets/images/events/`)
+- Food and menu images (`assets/images/foods/`, `assets/images/menu/`)
+- Gallery images (`assets/images/gallery/`)
+- Amenity photos (`assets/images/amenities/`)
+
+**Virtual Tour Assets:**
+- 360° panorama images (`assets/uploads/virtual_tours/`)
+- Event space panoramas (`assets/uploads/event_virtual_tours/`)
+- Thumbnail previews for all tours
+
+---
+
+### 📋 Setup Instructions for New Features
+
+#### Virtual Tour Setup
+
+1. **Database**: Ensure `room_virtual_tours` and `virtual_tour_hotspots` tables exist
+2. **Upload Directory**: Create `assets/uploads/virtual_tours/` with write permissions
+3. **Dependencies**: Pannellum library loads via CDN (no local installation needed)
+4. **Admin Access**: Navigate to Admin > Virtual Tours to add tours
+
+**Image Requirements:**
+- Format: Equirectangular projection (2:1 aspect ratio)
+- Resolution: Minimum 4096x2048px recommended
+- File Size: Under 5MB for optimal loading
+- Format: JPG or PNG
+
+#### Calendar System Setup
+
+1. **Database**: Ensure calendar-related tables are present in schema
+2. **Permissions**: Staff and admin accounts need calendar access permissions
+3. **API Access**: Verify `api/calendar-events.php` is accessible for AJAX loading
+
+#### Rating System Setup
+
+1. **Database**: Run schema update to create `guest_ratings` table
+2. **Configuration**: Set rating display options in `includes/config.php`
+3. **Email Templates**: Customize rating request emails in notification settings
+
+---
+
+### 🔧 Configuration Updates
+
+Add these new constants to `includes/config.php`:
+
+```php
+// Virtual Tour Configuration
+define('VIRTUAL_TOUR_ENABLED', true);
+define('VIRTUAL_TOUR_UPLOAD_PATH', 'assets/uploads/virtual_tours/');
+define('VIRTUAL_TOUR_MAX_SIZE', 5242880); // 5MB
+
+// Rating System Configuration
+define('RATINGS_ENABLED', true);
+define('MIN_RATING_PROMPT_DAYS', 1); // Days after checkout to prompt
+define('MAX_RATING_PROMPT_DAYS', 7); // Maximum days to show prompt
+```
+
+---
+
+### 🚀 Migration Notes
+
+For existing installations, follow these steps to enable new features:
+
+1. **Update Database Schema**:
+   ```bash
+   mysql -u root -p bayawan_hotel < database/database.sql
+   ```
+
+2. **Create Upload Directories**:
+   ```bash
+   mkdir -p assets/uploads/virtual_tours
+   mkdir -p assets/uploads/event_virtual_tours
+   chmod 755 assets/uploads/virtual_tours
+   chmod 755 assets/uploads/event_virtual_tours
+   ```
+
+3. **Clear Browser Cache**: Users should clear cache to load updated CSS/JS
+
+4. **Review Permissions**: Ensure staff roles have appropriate access to new features
+
+---
+
+**Bayawan Bai Hotel Management System**  
 *Complete Hotel Management Solution*  
 © 2026 Bayawan Bai Hotel. All rights reserved.
 

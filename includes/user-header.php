@@ -976,7 +976,12 @@ $initials = strtoupper(substr($_SESSION['first_name'], 0, 1) . substr($_SESSION[
             
             <!-- User Profile -->
             <div class="sidebar-user">
-                <div class="avatar"><?php echo $initials; ?></div>
+                <?php if (!empty($user['profile_picture']) && file_exists('../' . $user['profile_picture'])): ?>
+                    <img src="../<?php echo htmlspecialchars($user['profile_picture']); ?>" alt="Profile Picture" 
+                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+                <?php else: ?>
+                    <div class="avatar"><?php echo $initials; ?></div>
+                <?php endif; ?>
                 <div class="user-info">
                     <h4><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></h4>
                     <p><?php echo htmlspecialchars($user['email']); ?></p>

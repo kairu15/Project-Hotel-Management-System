@@ -7,6 +7,17 @@ require_once __DIR__ . '/config.php';
 
 // Get alert if any
 $alert = getAlert();
+
+// Get user info for profile picture
+$userProfilePicture = null;
+if (isLoggedIn()) {
+    $db = getDB();
+    $userId = getUserId();
+    $userStmt = $db->prepare("SELECT profile_picture FROM users WHERE user_id = ?");
+    $userStmt->execute([$userId]);
+    $userData = $userStmt->fetch();
+    $userProfilePicture = $userData['profile_picture'] ?? null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -584,7 +595,12 @@ $alert = getAlert();
                 <?php if (isLoggedIn()): ?>
                     <div class="user-menu">
                         <div class="user-menu-btn" onclick="toggleUserMenu()">
-                            <div class="user-avatar"><?php echo substr($_SESSION['first_name'], 0, 1); ?></div>
+                            <?php if (!empty($userProfilePicture) && file_exists($userProfilePicture)): ?>
+                                <img src="<?php echo htmlspecialchars($userProfilePicture); ?>" alt="Profile Picture" 
+                                     style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color);">
+                            <?php else: ?>
+                                <div class="user-avatar"><?php echo substr($_SESSION['first_name'], 0, 1); ?></div>
+                            <?php endif; ?>
                             <span><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
                             <i class="fas fa-chevron-down"></i>
                         </div>

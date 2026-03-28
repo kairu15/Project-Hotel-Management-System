@@ -151,27 +151,169 @@ require_once 'includes/header.php';
 </section>
 
 <!-- Local Attractions -->
-<section style="padding: 80px 0; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-    <div class="container" style="text-align: center;">
-        <h2 style="color: white; font-size: 42px; margin-bottom: 15px;">Explore Bayawan City</h2>
-        <p style="color: rgba(255,255,255,0.9); font-size: 18px; margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto;">
-            Our hotel is perfectly situated to help you discover the natural wonders of Negros Oriental
-        </p>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
-            <div style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 10px; color: white;">
-                <i class="fas fa-water" style="font-size: 40px; margin-bottom: 20px;"></i>
-                <h4 style="font-size: 22px; margin-bottom: 15px; color: white;">Danjugan Island</h4>
-                <p style="font-size: 15px; line-height: 1.6; opacity: 0.9;">A marine sanctuary offering world-class diving and snorkeling experiences just a short boat ride away.</p>
+<section style="padding: 80px 0; background-color: var(--light-color);">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 50px;">
+            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Explore</p>
+            <h2 style="font-size: 42px; margin-bottom: 20px;">Bayawan City Attractions</h2>
+            <p style="font-size: 16px; color: #666; max-width: 700px; margin: 0 auto;">Discover the best spots in Bayawan — from city landmarks to nature escapes</p>
+        </div>
+
+        <!-- City Proper / Easy-to-Access Spots -->
+        <div style="margin-bottom: 60px;">
+            <h3 style="font-size: 28px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-city" style="color: var(--primary-color);"></i>
+                City Proper / Easy-to-Access Spots
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-tree" style="color: var(--primary-color);"></i>
+                        Bayawan City Plaza
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">The heart of the city. Perfect for chill walks, jogging, and hangouts at night. Features events, lights, and local vibe. Considered a major landmark and community hub.</p>
+                    <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock" style="margin-right: 8px;"></i>Best time: late afternoon to evening</p>
+                </div>
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-water" style="color: var(--primary-color);"></i>
+                        Bayawan City Boulevard
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">Coastal road with a nice sea view. Good for sunset watching, relaxing, and street food. One of the most visited public spots in the city.</p>
+                    <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-camera" style="margin-right: 8px;"></i>Best for: sunset photos</p>
+                </div>
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-landmark" style="color: var(--primary-color);"></i>
+                        Bayawan City Hall
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">Not just government — also a clean, aesthetic area. Nice for photos especially at night with lights illuminating the building.</p>
+                </div>
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-shopping-basket" style="color: var(--primary-color);"></i>
+                        Bayawan City Public Market
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">Experience local life and food trip. Fresh seafood, street foods, and local delicacies. Important economic hub of the city.</p>
+                </div>
             </div>
-            <div style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 10px; color: white;">
-                <i class="fas fa-mountain" style="font-size: 40px; margin-bottom: 20px;"></i>
-                <h4 style="font-size: 22px; margin-bottom: 15px; color: white;">Mt. Talinis</h4>
-                <p style="font-size: 15px; line-height: 1.6; opacity: 0.9;">The "Cuernos de Negros" offers challenging hikes and breathtaking views of the region.</p>
+        </div>
+
+        <!-- Nature Spots -->
+        <div style="margin-bottom: 60px;">
+            <h3 style="font-size: 28px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-leaf" style="color: var(--primary-color);"></i>
+                Nature Spots (Near Proper but Worth It)
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-water" style="color: var(--primary-color);"></i>
+                        Niludhan Falls
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">One of the most famous attractions in Bayawan. Clear water and relaxing environment. Short trek (10–15 minutes) before reaching the falls.</p>
+                    <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-swimmer" style="margin-right: 8px;"></i>Best for: swimming and barkada trips</p>
+                </div>
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-tint" style="color: var(--primary-color);"></i>
+                        Mantapi Falls
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">Closer to the city (around 4 km). Natural swimming pool vibe. Great for a quick getaway from the city proper.</p>
+                </div>
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-water" style="color: var(--primary-color);"></i>
+                        Lourdes Falls
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">Multi-level waterfall. Peaceful and less crowded. Good for picnics with family and friends.</p>
+                </div>
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-mountain" style="color: var(--primary-color);"></i>
+                        Cabuag Falls
+                    </h4>
+                    <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 10px;">Tall and more "hidden" waterfall. Less touristy, more adventure feel. Perfect for those seeking tranquility.</p>
+                </div>
             </div>
-            <div style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 10px; color: white;">
-                <i class="fas fa-umbrella-beach" style="font-size: 40px; margin-bottom: 20px;"></i>
-                <h4 style="font-size: 22px; margin-bottom: 15px; color: white;">Bayawan Bay</h4>
-                <p style="font-size: 15px; line-height: 1.6; opacity: 0.9;">Pristine beaches perfect for swimming, sunbathing, and enjoying spectacular sunsets.</p>
+        </div>
+
+        <!-- Chill & Scenic Spots -->
+        <div style="margin-bottom: 60px;">
+            <h3 style="font-size: 28px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-camera-retro" style="color: var(--primary-color);"></i>
+                Chill and Scenic Spots
+            </h3>
+            <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                <h4 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-tractor" style="color: var(--primary-color);"></i>
+                    Rice Fields / Countryside Views
+                </h4>
+                <p style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 15px;">Bayawan is known as an agricultural city with wide farmlands. Perfect for:</p>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 20px;">
+                    <li style="display: flex; align-items: center; gap: 8px; font-size: 15px; color: #666;"><i class="fas fa-car" style="color: var(--primary-color);"></i>Road trips</li>
+                    <li style="display: flex; align-items: center; gap: 8px; font-size: 15px; color: #666;"><i class="fas fa-sun" style="color: var(--primary-color);"></i>Sunset drives</li>
+                    <li style="display: flex; align-items: center; gap: 8px; font-size: 15px; color: #666;"><i class="fas fa-image" style="color: var(--primary-color);"></i>Photography</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Quick Recommendations -->
+        <div style="margin-bottom: 60px;">
+            <h3 style="font-size: 28px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-route" style="color: var(--primary-color);"></i>
+                Quick Recommendations (if 1-day visit)
+            </h3>
+            <div style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); padding: 30px; border-radius: 10px; color: white;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                    <div>
+                        <h4 style="font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-sun" style="font-size: 24px;"></i>
+                            Morning
+                        </h4>
+                        <p style="font-size: 15px; line-height: 1.6; opacity: 0.9;">Mantapi Falls or Niludhan Falls</p>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-cloud-sun" style="font-size: 24px;"></i>
+                            Afternoon
+                        </h4>
+                        <p style="font-size: 15px; line-height: 1.6; opacity: 0.9;">City Plaza + Market</p>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-moon" style="font-size: 24px;"></i>
+                            Evening
+                        </h4>
+                        <p style="font-size: 15px; line-height: 1.6; opacity: 0.9;">Boulevard (sunset + food trip)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Why Bayawan -->
+        <div>
+            <h3 style="font-size: 28px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-thumbs-up" style="color: var(--primary-color);"></i>
+                Why Bayawan is Worth Visiting
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                <div style="text-align: center; padding: 25px; background-color: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <i class="fas fa-user-friends" style="font-size: 30px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                    <p style="font-size: 14px; color: #666; line-height: 1.5;">Not crowded (underrated destination)</p>
+                </div>
+                <div style="text-align: center; padding: 25px; background-color: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <i class="fas fa-spa" style="font-size: 30px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                    <p style="font-size: 14px; color: #666; line-height: 1.5;">Mix of nature + city chill vibe</p>
+                </div>
+                <div style="text-align: center; padding: 25px; background-color: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <i class="fas fa-coins" style="font-size: 30px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                    <p style="font-size: 14px; color: #666; line-height: 1.5;">Budget-friendly compared to big tourist cities</p>
+                </div>
+                <div style="text-align: center; padding: 25px; background-color: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                    <i class="fas fa-heart" style="font-size: 30px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                    <p style="font-size: 14px; color: #666; line-height: 1.5;">Authentic local experience</p>
+                </div>
             </div>
         </div>
     </div>
