@@ -566,7 +566,7 @@ if (isLoggedIn()) {
                 <a href="#"><i class="fab fa-twitter"></i></a>
                 <?php if (isLoggedIn()): ?>
                     <span style="margin: 0 15px;">|</span>
-                    <span><i class="fas fa-user"></i> Welcome, <?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
+                    <span><i class="fas fa-user"></i> Welcome, <?php echo htmlspecialchars($_SESSION['first_name'] ?? 'Guest'); ?></span>
                 <?php endif; ?>
             </div>
         </div>
@@ -599,9 +599,9 @@ if (isLoggedIn()) {
                                 <img src="<?php echo htmlspecialchars($userProfilePicture); ?>" alt="Profile Picture" 
                                      style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color);">
                             <?php else: ?>
-                                <div class="user-avatar"><?php echo substr($_SESSION['first_name'], 0, 1); ?></div>
+                                <div class="user-avatar"><?php echo substr($_SESSION['first_name'] ?? 'G', 0, 1); ?></div>
                             <?php endif; ?>
-                            <span><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
+                            <span><?php echo htmlspecialchars($_SESSION['first_name'] ?? 'Guest'); ?></span>
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="user-dropdown" id="userDropdown">

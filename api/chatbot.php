@@ -117,45 +117,114 @@ function getOrCreateSession($db, $userId, $sessionToken = null) {
 }
 
 /**
- * Generate bot response based on user message
+ * Generate bot response using Google Gemini AI
  */
 function generateBotResponse($db, $message, $userId) {
     $messageLower = strtolower($message);
     
-    // Get all active knowledge base entries
-    $stmt = $db->prepare("SELECT * FROM chatbot_knowledge WHERE is_active = 1 ORDER BY priority DESC");
-    $stmt->execute();
-    $knowledge = $stmt->fetchAll();
-    
-    // Try to match patterns
-    foreach ($knowledge as $entry) {
-        $pattern = '/' . $entry['question_pattern'] . '/i';
-        if (preg_match($pattern, $messageLower)) {
-            return [
-                'message' => $entry['answer'],
-                'intent' => $entry['category']
-            ];
-        }
-    }
-    
-    // Check for specific contextual queries
+    // Check for specific contextual queries first (bookings, orders, loyalty, time)
     $contextResponse = checkContextualQueries($db, $messageLower, $userId);
     if ($contextResponse) {
         return $contextResponse;
     }
     
-    // Fallback responses
+    // Use Gemini AI for general queries
+    try {
+        $geminiResponse = callGeminiAPI($message);
+        if ($geminiResponse) {
+            return [
+                'message' => $geminiResponse,
+                'intent' => 'gemini_ai'
+            ];
+        }
+    } catch (Exception $e) {
+        error_log("Gemini API Error: " . $e->getMessage());
+        // Fall back if API fails
+    }
+    
+    // Fallback responses if AI fails
     $fallbacks = [
         "I'm not sure I understand. Could you rephrase that? I can help with bookings, room information, dining, amenities, and general hotel inquiries.",
         "I didn't quite catch that. Try asking about our rooms, dining options, amenities, or how to make a booking!",
-        "Hmm, I'm not familiar with that request. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information",
-        "I'm still learning! For now, I can help with common hotel questions. What would you like to know about our services?"
+        "Hmm, I'm having trouble processing that. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information",
+        "I'm currently unavailable. Please contact our front desk at +63 (XX) XXXX-XXXX for immediate assistance!"
     ];
     
     return [
         'message' => $fallbacks[array_rand($fallbacks)],
-        'intent' => 'unknown'
+        'intent' => 'fallback'
     ];
+}
+
+/**
+ * Call Google Gemini API
+ */
+function callGeminiAPI($userMessage) {
+    $apiKey = GEMINI_API_KEY;
+    
+    // Check if API key is set
+    if ($apiKey === 'YOUR_GEMINI_API_KEY_HERE' || empty($apiKey)) {
+        throw new Exception("Gemini API key not configured. Set GEMINI_API_KEY in config.php");
+    }
+    
+    // Build the system prompt with hotel context
+    $systemPrompt = "You are a helpful hotel assistant for Bayawan Bai Hotel. You are knowledgeable about:
+- Room types, rates, and availability
+- Hotel amenities and facilities
+- Restaurant and dining services
+- Event spaces and hosting
+- Booking and check-in procedures
+- Hotel policies and guidelines
+- Local attractions and information
+
+Be friendly, professional, and concise in your responses. Keep replies under 200 words. If asked about something outside your scope, politely redirect to appropriate hotel services.";
+    
+    // Prepare API request
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . urlencode($apiKey);
+    
+    $payload = [
+        'contents' => [
+            [
+                'parts' => [
+                    [
+                        'text' => $systemPrompt . "\n\nUser: " . $userMessage
+                    ]
+                ]
+            ]
+        ],
+        'generationConfig' => [
+            'temperature' => 0.7,
+            'topK' => 40,
+            'topP' => 0.95,
+            'maxOutputTokens' => 1024
+        ]
+    ];
+    
+    // Make API call
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode !== 200) {
+        throw new Exception("Gemini API returned HTTP $httpCode");
+    }
+    
+    $result = json_decode($response, true);
+    
+    // Extract the text response
+    if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+        return $result['candidates'][0]['content']['parts'][0]['text'];
+    }
+    
+    throw new Exception("Invalid response from Gemini API");
 }
 
 /**

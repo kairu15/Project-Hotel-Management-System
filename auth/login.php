@@ -279,6 +279,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             transition: all 0.3s;
             font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: inherit;
         }
         
         .social-btn:hover {
@@ -441,12 +447,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="social-login">
-                    <button class="social-btn" onclick="alert('Google login coming soon!')">
+                    <a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=<?php echo GOOGLE_CLIENT_ID; ?>&redirect_uri=<?php echo urlencode(GOOGLE_REDIRECT_URI); ?>&response_type=code&scope=openid%20email%20profile" class="social-btn" title="Login with Google">
                         <i class="fab fa-google"></i> Google
-                    </button>
-                    <button class="social-btn" onclick="alert('Facebook login coming soon!')">
+                    </a>
+                    <a href="https://www.facebook.com/v18.0/dialog/oauth?client_id=<?php echo FACEBOOK_APP_ID; ?>&redirect_uri=<?php echo urlencode(FACEBOOK_REDIRECT_URI); ?>&scope=email,public_profile&response_type=code" class="social-btn" title="Login with Facebook">
                         <i class="fab fa-facebook-f"></i> Facebook
-                    </button>
+                    </a>
                 </div>
                 
                 <p class="signup-link">

@@ -19,7 +19,9 @@ $userStmt->execute([$userId]);
 $user = $userStmt->fetch();
 
 // Generate initials
-$initials = strtoupper(substr($_SESSION['first_name'], 0, 1) . substr($_SESSION['last_name'], 0, 1));
+$firstName = $_SESSION['first_name'] ?? '';
+$lastName = $_SESSION['last_name'] ?? '';
+$initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -970,7 +972,7 @@ $initials = strtoupper(substr($_SESSION['first_name'], 0, 1) . substr($_SESSION[
             
             <!-- Welcome Message -->
             <div class="welcome-section">
-                <h3><i class="fas fa-hand-sparkles" style="color: var(--primary-color); margin-right: 8px;"></i>Welcome, <?php echo htmlspecialchars($_SESSION['first_name']); ?>!</h3>
+                <h3><i class="fas fa-hand-sparkles" style="color: var(--primary-color); margin-right: 8px;"></i>Welcome, <?php echo htmlspecialchars($_SESSION['first_name'] ?? 'Guest'); ?>!</h3>
                 <p>Member since <?php echo date('M Y', strtotime($user['member_since'] ?? 'now')); ?></p>
             </div>
             
@@ -983,7 +985,7 @@ $initials = strtoupper(substr($_SESSION['first_name'], 0, 1) . substr($_SESSION[
                     <div class="avatar"><?php echo $initials; ?></div>
                 <?php endif; ?>
                 <div class="user-info">
-                    <h4><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></h4>
+                    <h4><?php echo htmlspecialchars(($_SESSION['first_name'] ?? '') . ' ' . ($_SESSION['last_name'] ?? '')); ?></h4>
                     <p><?php echo htmlspecialchars($user['email']); ?></p>
                     <p class="member-since"><i class="fas fa-crown" style="margin-right: 4px;"></i><?php echo number_format($user['loyalty_points'] ?? 0); ?> Points</p>
                 </div>
@@ -1057,7 +1059,7 @@ $initials = strtoupper(substr($_SESSION['first_name'], 0, 1) . substr($_SESSION[
                 </div>
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <span class="welcome-message">
-                        Welcome back, <strong><?php echo htmlspecialchars($_SESSION['first_name']); ?>!</strong>
+                        Welcome back, <strong><?php echo htmlspecialchars($_SESSION['first_name'] ?? 'Guest'); ?>!</strong>
                     </span>
                     <div class="header-actions">
                         <div class="notification-bell" onclick="toggleNotifications()" title="Notifications">
