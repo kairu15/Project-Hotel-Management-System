@@ -1,0 +1,161 @@
+@startuml UseCase_Diagram
+
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+skinparam rectangle {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    BackgroundColor<<system>> #FCE4EC
+    BorderColor<<system>> #C2185B
+}
+
+skinparam usecase {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+}
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+}
+
+skinparam package {
+    BackgroundColor #FFFFFF
+    BorderColor #424242
+}
+
+' ============================================
+' USE CASE DIAGRAM
+' ============================================
+left to right direction
+
+' Actors
+actor "Guest" as Guest
+actor "Staff\n(Reception/Manager)" as Staff
+actor "Admin\n(System Manager)" as Admin
+actor "Payment Gateway" as PayGW #LightBlue
+actor "Social Provider" as Social #LightBlue
+actor "Chatbot Service" as Chatbot #LightBlue
+
+' System Boundary
+rectangle "Bayawan Bai Hotel Management System" as System <<system>> {
+    
+    ' Guest Use Cases
+    package "Guest Functions" {
+        usecase "Register Account" as UC1
+        usecase "Login" as UC2
+        usecase "Browse Rooms" as UC3
+        usecase "Check Availability" as UC4
+        usecase "Book Room" as UC5
+        usecase "Modify Booking" as UC6
+        usecase "Cancel Booking" as UC7
+        usecase "Make Payment" as UC8
+        usecase "View Booking History" as UC9
+        usecase "Order Food" as UC10
+        usecase "Track Order" as UC11
+        usecase "Book Event Space" as UC12
+        usecase "Submit Review" as UC13
+        usecase "Contact Hotel" as UC14
+        usecase "Virtual Tour" as UC15
+    }
+    
+    ' Staff Use Cases
+    package "Staff Functions" {
+        usecase "Process Walk-in" as UC16
+        usecase "Check In Guest" as UC17
+        usecase "Check Out Guest" as UC18
+        usecase "QR Code Scan" as UC19
+        usecase "View Bookings" as UC20
+        usecase "Manage Food Orders" as UC21
+        usecase "Manage Event Bookings" as UC22
+        usecase "Manage Inventory" as UC23
+        usecase "Maintenance Request" as UC24
+        usecase "Manage Booking Charges" as UC25
+    }
+    
+    ' Admin Use Cases
+    package "Admin Functions" {
+        usecase "Manage Rooms" as UC26
+        usecase "Configure Pricing" as UC27
+        usecase "Manage Promotions" as UC28
+        usecase "Manage Users" as UC29
+        usecase "Staff Schedules" as UC30
+        usecase "View Analytics" as UC31
+        usecase "Generate Reports" as UC32
+        usecase "Configure System" as UC33
+        usecase "Manage Content" as UC34
+        usecase "Manage Permissions" as UC35
+        usecase "Manage Reviews" as UC36
+    }
+    
+    ' System Use Cases
+    package "System Functions" {
+        usecase "Send Notifications" as UC37
+        usecase "Process Webhook" as UC38
+        usecase "Generate QR Codes" as UC39
+        usecase "Chatbot Response" as UC40
+    }
+}
+
+' Guest Relationships
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+Guest --> UC7
+Guest --> UC8
+Guest --> UC9
+Guest --> UC10
+Guest --> UC11
+Guest --> UC12
+Guest --> UC13
+Guest --> UC14
+Guest --> UC15
+
+' Staff Relationships
+Staff --> UC2
+Staff --> UC16
+Staff --> UC17
+Staff --> UC18
+Staff --> UC19
+Staff --> UC20
+Staff --> UC21
+Staff --> UC22
+Staff --> UC23
+Staff --> UC24
+Staff --> UC25
+
+' Admin Relationships
+Admin --> UC2
+Admin --> UC26
+Admin --> UC27
+Admin --> UC28
+Admin --> UC29
+Admin --> UC30
+Admin --> UC31
+Admin --> UC32
+Admin --> UC33
+Admin --> UC34
+Admin --> UC35
+Admin --> UC36
+
+' External Actor Relationships
+PayGW --> UC38
+Social --> UC2
+Chatbot --> UC40
+
+' Include Relationships
+UC5 ..> UC4 : <<include>>
+UC5 ..> UC8 : <<include>>
+UC17 ..> UC19 : <<include>>
+UC10 ..> UC11 : <<include>>
+
+' Extend Relationships
+UC5 ..> UC28 : <<extend>>
+UC7 ..> UC8 : <<extend>>
+UC6 ..> UC5 : <<extend>>
+
+@enduml

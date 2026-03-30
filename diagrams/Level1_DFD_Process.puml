@@ -1,0 +1,132 @@
+@startuml Level1_DFD_Process
+
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+skinparam rectangle {
+    BackgroundColor<<entity>> #E3F2FD
+    BorderColor<<entity>> #1565C0
+    BackgroundColor<<process>> #FFF3E0
+    BorderColor<<process>> #E65100
+    BackgroundColor<<store>> #E8F5E9
+    BorderColor<<store>> #2E7D32
+    BackgroundColor<<system>> #FCE4EC
+    BorderColor<<system>> #C2185B
+}
+
+skinparam package {
+    BackgroundColor #FFFFFF
+    BorderColor #424242
+}
+
+skinparam arrow {
+    Color #424242
+}
+
+' ============================================
+' LEVEL 1 DFD - PROCESS DECOMPOSITION
+' ============================================
+package "Level 1 DFD - Process Decomposition" as L1 {
+
+    ' External Entities
+    rectangle "Guest" as G1 <<entity>>
+    rectangle "Staff" as S1 <<entity>>
+    rectangle "Admin" as A1 <<entity>>
+    rectangle "Payment\nGateways" as PG1 <<entity>>
+    
+    ' Process 1.0 - User Management
+    rectangle "1.0\nUSER MANAGEMENT &\nAUTHENTICATION" as P1 <<process>>
+    rectangle "D1\nUSERS TABLE" as D1 <<store>>
+    
+    ' Process 2.0 - Room Booking
+    rectangle "2.0\nROOM BOOKING\nMANAGEMENT" as P2 <<process>>
+    rectangle "D2\nROOMS" as D2 <<store>>
+    rectangle "D3\nBOOKINGS" as D3 <<store>>
+    rectangle "D4\nCALENDAR" as D4 <<store>>
+    
+    ' Process 3.0 - Admin & Configuration
+    rectangle "3.0\nADMIN &\nCONFIGURATION" as P3 <<process>>
+    rectangle "D5\nSETTINGS" as D5 <<store>>
+    
+    ' Process 4.0 - Food Services
+    rectangle "4.0\nFOOD SERVICES" as P4 <<process>>
+    rectangle "D6\nMENU ITEMS" as D6 <<store>>
+    rectangle "D7\nFOOD ORDERS" as D7 <<store>>
+    
+    ' Process 5.0 - Payment Processing
+    rectangle "5.0\nPAYMENT\nPROCESSING" as P5 <<process>>
+    rectangle "D8\nPAYMENTS" as D8 <<store>>
+    
+    ' Process 6.0 - Event Management
+    rectangle "6.0\nEVENT MANAGEMENT" as P6 <<process>>
+    rectangle "D9\nEVENT SPACES" as D9 <<store>>
+    rectangle "D10\nEVENT BOOKINGS" as D10 <<store>>
+    
+    ' Process 7.0 - Inventory Management
+    rectangle "7.0\nINVENTORY\nMANAGEMENT" as P7 <<process>>
+    rectangle "D11\nINVENTORY ITEMS" as D11 <<store>>
+    
+    ' Process 8.0 - Content Management
+    rectangle "8.0\nCONTENT MANAGEMENT" as P8 <<process>>
+    rectangle "D12\nGALLERY" as D12 <<store>>
+    rectangle "D13\nVIRTUAL TOURS" as D13 <<store>>
+    
+    ' Process 9.0 - Chatbot Service
+    rectangle "9.0\nCHATBOT SERVICE" as P9 <<process>>
+    
+    ' Process 10.0 - Notification System
+    rectangle "10.0\nNOTIFICATION\nSYSTEM" as P10 <<process>>
+    rectangle "D14\nNOTIFICATION LOGS" as D14 <<store>>
+    
+    ' Data Flows - Guest Interactions
+    G1 --> P1 : Registration/Login
+    G1 --> P2 : Room Inquiries/Bookings
+    G1 --> P4 : Food Orders
+    G1 --> P6 : Event Bookings
+    
+    ' Data Flows - Staff Interactions
+    S1 --> P1 : Login
+    S1 --> P2 : Check-in/Check-out
+    S1 --> P2 : Walk-in Booking
+    S1 --> P4 : Order Management
+    S1 --> P6 : Event Management
+    S1 --> P7 : Inventory Updates
+    
+    ' Data Flows - Admin Interactions
+    A1 --> P1 : User Management
+    A1 --> P3 : System Configuration
+    A1 --> P7 : Inventory Control
+    A1 --> P8 : Content Management
+    
+    ' Process to Data Store Flows
+    P1 <--> D1 : Read/Write Users
+    P2 <--> D2 : Read Rooms
+    P2 <--> D3 : Manage Bookings
+    P2 <--> D4 : Update Calendar
+    P3 <--> D1 : Manage Users
+    P3 <--> D2 : Configure Rooms
+    P3 <--> D5 : Settings
+    P4 <--> D6 : Read Menu
+    P4 <--> D7 : Manage Orders
+    P5 <--> D8 : Record Payments
+    P6 <--> D9 : Manage Spaces
+    P6 <--> D10 : Manage Events
+    P7 <--> D11 : Track Inventory
+    P8 <--> D12 : Manage Gallery
+    P8 <--> D13 : Manage Tours
+    P10 <--> D14 : Log Notifications
+    
+    ' Inter-process Flows
+    P2 --> P5 : Booking Amount
+    P4 --> P5 : Order Total
+    P6 --> P5 : Event Cost
+    P1 --> P10 : User Events
+    P2 --> P10 : Booking Events
+    P5 --> P2 : Payment Status
+    P5 --> P10 : Payment Confirmations
+    P9 --> P2 : Booking Suggestions
+}
+
+@enduml

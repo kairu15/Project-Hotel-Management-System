@@ -1,0 +1,76 @@
+@startuml Level0_DFD_Context
+
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+skinparam rectangle {
+    BackgroundColor<<entity>> #E3F2FD
+    BorderColor<<entity>> #1565C0
+    BackgroundColor<<process>> #FFF3E0
+    BorderColor<<process>> #E65100
+    BackgroundColor<<store>> #E8F5E9
+    BorderColor<<store>> #2E7D32
+    BackgroundColor<<system>> #FCE4EC
+    BorderColor<<system>> #C2185B
+}
+
+skinparam package {
+    BackgroundColor #FFFFFF
+    BorderColor #424242
+}
+
+skinparam arrow {
+    Color #424242
+}
+
+' ============================================
+' LEVEL 0 DFD - CONTEXT DIAGRAM
+' ============================================
+package "Level 0 DFD - Context Diagram" as L0 {
+
+    rectangle "Guest\n(Customer)" as Guest <<entity>>
+    rectangle "Staff\n(Reception/Manager)" as Staff <<entity>>
+    rectangle "Admin\n(System Manager)" as Admin <<entity>>
+    rectangle "Social Providers\n(Facebook/Google)" as Social <<entity>>
+    rectangle "Payment Gateways\n(GCash/PayPal/CC)" as PaymentGW <<entity>>
+    rectangle "Chatbot Service\n(Gemini AI)" as Chatbot <<entity>>
+    rectangle "Suppliers\n(Inventory)" as Suppliers <<entity>>
+    
+    rectangle "HOTEL MANAGEMENT\nSYSTEM\n(Process 0)" as HMS <<system>>
+    
+    rectangle "Hotel Database\n(MySQL)" as DB <<store>>
+    
+    Guest <--> HMS : Registration/Login
+    Guest <--> HMS : Booking Requests
+    Guest <--> HMS : Event Bookings
+    Guest <--> HMS : Food Orders
+    Guest <--> HMS : Payments
+    Guest <--> HMS : Reviews/Feedback
+    
+    Staff <--> HMS : Login Credentials
+    Staff <--> HMS : Check-in/Check-out
+    Staff <--> HMS : Walk-in Bookings
+    Staff <--> HMS : QR Scans
+    Staff <--> HMS : Maintenance Requests
+    
+    Admin <--> HMS : User Management
+    Admin <--> HMS : Room/Event Config
+    Admin <--> HMS : Reports/Analytics
+    Admin <--> HMS : System Settings
+    Admin <--> HMS : Permissions
+    
+    Social <--> HMS : OAuth Tokens
+    
+    PaymentGW <--> HMS : Payment Requests/Confirmations
+    
+    Chatbot <--> HMS : Queries/Responses
+    
+    Suppliers <--> HMS : Inventory Data
+    
+    HMS --> DB : Read/Write Data
+    DB --> HMS : Data Retrieval
+}
+
+@enduml
