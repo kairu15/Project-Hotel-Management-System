@@ -52,6 +52,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $phone
             ]);
             
+            $eventBookingId = $db->lastInsertId();
+            
+            // Send event inquiry confirmation email
+            require_once 'includes/email_notifications.php';
+            
+            // Get space name if selected
+            $spaceName = 'To be determined';
+            if ($spaceId) {
+                $spaceStmt = $db->prepare("SELECT space_name FROM event_spaces WHERE space_id = ?");
+                $spaceStmt->execute([$spaceId]);
+                $spaceData = $spaceStmt->fetch();
+                if ($spaceData) {
+                    $spaceName = $spaceData['space_name'];
+                }
+            }
+            
+            $eventData = [
+                'inquiry_id' => $eventBookingId,
+                'event_type' => $eventType,
+                'event_date' => $eventDate,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'guests_count' => $guests,
+                'space_name' => $spaceName,
+                'inquiry_name' => $name,
+                'special_requests' => $message
+            ];
+            sendEventInquiryConfirmationEmail($email, $eventData);
+            
             $success = 'Thank you for your inquiry! Our events team will contact you within 24 hours with a customized quotation.';
         } catch (PDOException $e) {
             $error = 'An error occurred while saving your inquiry. Please try again.';

@@ -109,6 +109,40 @@ try {
     // Generate transaction reference
     $transactionRef = 'FOD' . date('Ymd') . strtoupper(substr(uniqid(), -6));
     
+    // Send food order confirmation email
+    require_once 'includes/email_notifications.php';
+    
+    // Get user email
+    $userStmt = $db->prepare("SELECT email, first_name, last_name FROM users WHERE user_id = ?");
+    $userStmt->execute([$userId]);
+    $userData = $userStmt->fetch();
+    
+    if ($userData) {
+        // Calculate estimated time based on order type
+        $estimatedTime = '20-30 minutes';
+        if (($orderData['order_type'] ?? 'dine_in') === 'room_service') {
+            $estimatedTime = '30-45 minutes';
+        } elseif (($orderData['order_type'] ?? 'dine_in') === 'takeaway') {
+            $estimatedTime = '15-25 minutes';
+        }
+        
+        $emailData = [
+            'order_id' => $orderId,
+            'transaction_ref' => $transactionRef,
+            'item_name' => $item['food_name'],
+            'quantity' => $quantity,
+            'unit_price' => $unitPrice,
+            'total_price' => $totalPrice,
+            'order_type' => $orderData['order_type'] ?? 'dine_in',
+            'payment_method' => $paymentMethod,
+            'payment_status' => $paymentStatus,
+            'room_number' => $roomNumber,
+            'special_instructions' => $specialInstructions,
+            'estimated_time' => $estimatedTime
+        ];
+        sendFoodOrderConfirmationEmail($userData['email'], $emailData);
+    }
+    
     // Log activity
     logActivity('Food Order Placed', "Order ID: $orderId, User: $userId, Amount: $totalPrice, Method: $paymentMethod");
     

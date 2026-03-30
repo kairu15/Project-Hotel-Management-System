@@ -136,3 +136,14 @@
 [2026-03-29 16:36:52] [User: 26] User login - User ID: 26
 [2026-03-29 16:38:38] [User: 26] User login - User ID: 26
 [2026-03-29 16:40:22] [User: 26] User login - User ID: 26
+[2026-03-30 02:52:14] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-30 02:52:24] [User: 27] User login - User ID: 27
+[2026-03-30 03:04:23] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-03-30 03:05:12] [User: 28] Profile updated - User ID: 28
+[2026-03-30 03:07:47] [User: 28] Payment processed - Booking ID: 32, Method: gcash, Status: paid
+[2026-03-30 03:11:25] [User: 28] Payment processed - Booking ID: 33, Method: gcash, Status: paid
+[2026-03-30 03:13:29] [User: 28] Food Order Placed - Order ID: 16, User: 28, Amount: 400, Method: gcash
+[2026-03-30 03:15:33] [User: 28] Payment processed - Booking ID: 34, Method: gcash, Status: paid
+[2026-03-30 03:19:11] [User: 28] Payment processed - Booking ID: 35, Method: gcash, Status: paid
+[2026-03-30 03:21:07] [User: 28] Food Order Placed - Order ID: 17, User: 28, Amount: 450, Method: gcash
+[2026-03-30 03:21:58] [User: 28] Payment processed - Booking ID: 36, Method: pay_at_hotel, Status: partial

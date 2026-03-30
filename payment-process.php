@@ -4,6 +4,9 @@
  * Handles all payment methods: GCash, PayPal, Credit Card, Pay at Hotel
  */
 
+// Start output buffering to prevent any stray output
+ob_start();
+
 require_once 'includes/config.php';
 
 header('Content-Type: application/json');
@@ -184,13 +187,36 @@ try {
     
     // Send notifications
     require_once 'includes/notifications.php';
+    require_once 'includes/email_notifications.php';
     
     // Get user details for notifications
-    $userStmt = $db->prepare("SELECT first_name, last_name, check_in FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
+    $userStmt = $db->prepare("SELECT first_name, last_name, email FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
     $userStmt->execute([$bookingId]);
     $userData = $userStmt->fetch();
     $guestName = $userData ? $userData['first_name'] . ' ' . $userData['last_name'] : 'Guest';
+    $guestEmail = $userData ? $userData['email'] : $guestEmail;
     $checkInDate = $userData ? $userData['check_in'] : '';
+    
+    // Send booking confirmation email to user
+    if ($guestEmail) {
+        try {
+            $bookingData = [
+                'booking_ref' => $bookingRef,
+                'room_type' => $category['category_name'],
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'nights' => $nights,
+                'guests' => $adults + $children,
+                'total_amount' => $totalAmount,
+                'payment_status' => $paymentStatus,
+                'payment_method' => $paymentMethod,
+                'guest_name' => $guestName
+            ];
+            sendBookingConfirmationEmail($guestEmail, $bookingData);
+        } catch (Exception $emailError) {
+            error_log('Failed to send booking confirmation email: ' . $emailError->getMessage());
+        }
+    }
     
     // Notify user about their booking
     notifyBookingUpdate($userId, $bookingId, 'pending');
@@ -238,6 +264,9 @@ try {
     // Log activity
     logActivity('Payment processed', "Booking ID: $bookingId, Method: $paymentMethod, Status: $paymentStatus");
     
+    // Clear any buffered output before sending JSON
+    ob_clean();
+    
     echo json_encode([
         'success' => true,
         'message' => 'Payment processed successfully',
@@ -250,11 +279,17 @@ try {
         'receipt' => $receiptData,
         'redirect' => 'booking-confirmation.php'
     ]);
+    exit();
     
 } catch (Exception $e) {
     $db->rollBack();
     http_response_code(400);
+    
+    // Clear any buffered output before sending JSON
+    ob_clean();
+    
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    exit();
 }
 
 /**

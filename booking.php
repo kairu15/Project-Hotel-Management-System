@@ -139,10 +139,10 @@ require_once 'includes/header.php';
                     <?php else: ?>
                     <!-- Logged in user info -->
                     <div style="background-color: var(--gray-light); padding: 20px; border-radius: 5px; margin-bottom: 25px;">
-                        <p style="margin-bottom: 10px;"><strong>Booking as:</strong> <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></p>
-                        <input type="hidden" name="guest_first_name" id="guestFirstName" value="<?php echo htmlspecialchars($_SESSION['first_name']); ?>">
-                        <input type="hidden" name="guest_last_name" id="guestLastName" value="<?php echo htmlspecialchars($_SESSION['last_name']); ?>">
-                        <input type="hidden" name="guest_email" id="guestEmail" value="<?php echo htmlspecialchars($_SESSION['email']); ?>">
+                        <p style="margin-bottom: 10px;"><strong>Booking as:</strong> <?php echo htmlspecialchars(($_SESSION['first_name'] ?? '') . ' ' . ($_SESSION['last_name'] ?? '')); ?></p>
+                        <input type="hidden" name="guest_first_name" id="guestFirstName" value="<?php echo htmlspecialchars($_SESSION['first_name'] ?? ''); ?>">
+                        <input type="hidden" name="guest_last_name" id="guestLastName" value="<?php echo htmlspecialchars($_SESSION['last_name'] ?? ''); ?>">
+                        <input type="hidden" name="guest_email" id="guestEmail" value="<?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?>">
                         <input type="hidden" name="guest_phone" id="guestPhone" value="<?php echo htmlspecialchars($_SESSION['phone'] ?? ''); ?>">
                         <a href="profile.php" style="color: var(--primary-color); font-size: 14px;">Update profile</a>
                     </div>
@@ -497,7 +497,15 @@ function submitPayment(method, paymentData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payment_method: method, booking_data: bookingData, payment_data: paymentData })
     })
-    .then(response => response.json())
+    .then(async response => {
+        const text = await response.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('Invalid JSON response:', text);
+            throw new Error('Server returned invalid response. Check console for details.');
+        }
+    })
     .then(data => {
         if (data.success) {
             showReceipt(data);
@@ -508,7 +516,7 @@ function submitPayment(method, paymentData) {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while processing your payment. Please try again.');
+        alert('Payment error: ' + error.message);
         closePaymentModal();
     });
 }
