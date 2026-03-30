@@ -147,3 +147,29 @@
 [2026-03-30 03:19:11] [User: 28] Payment processed - Booking ID: 35, Method: gcash, Status: paid
 [2026-03-30 03:21:07] [User: 28] Food Order Placed - Order ID: 17, User: 28, Amount: 450, Method: gcash
 [2026-03-30 03:21:58] [User: 28] Payment processed - Booking ID: 36, Method: pay_at_hotel, Status: partial
+[2026-03-30 03:27:38] [User: 1] User login - User ID: 1
+[2026-03-30 04:07:21] [User: 28] Payment processed - Booking ID: 37, Method: gcash, Status: paid
+[2026-03-30 04:09:00] [User: 28] Payment processed - Booking ID: 38, Method: gcash, Status: paid
+[2026-03-30 04:33:50] [User: 28] Payment processed - Booking ID: 39, Method: gcash, Status: pending
+[2026-03-30 04:40:17] [User: 28] Payment processed - Booking ID: 40, Method: gcash, Status: paid
+[2026-03-30 04:48:46] [User: 28] Payment processed - Booking ID: 41, Method: gcash, Status: paid
+[2026-03-30 04:51:16] [User: 28] Payment processed - Booking ID: 42, Method: gcash, Status: pending
+[2026-03-30 04:52:17] [User: 28] Payment processed - Booking ID: 43, Method: gcash, Status: paid
+[2026-03-30 05:00:27] [User: 28] Payment processed - Booking ID: 44, Method: gcash, Status: paid
+[2026-03-30 05:14:43] [User: 28] Payment processed - Booking ID: 45, Method: gcash, Status: paid
+[2026-03-30 05:21:45] [User: 28] Payment processed - Booking ID: 46, Method: gcash, Status: paid
+[2026-03-30 05:34:13] [User: 28] User login - User ID: 28
+[2026-03-30 05:44:55] [User: 28] Payment processed - Booking ID: 47, Method: gcash, Status: paid
+[2026-03-30 05:54:26] [User: 28] Payment processed - Booking ID: 48, Method: gcash, Status: pending
+[2026-03-30 05:55:40] [User: 28] Payment processed - Booking ID: 49, Method: gcash, Status: paid
+[2026-03-30 06:50:07] [User: 28] Food Order Placed - Order ID: 18, User: 28, Amount: 400, Method: gcash
+[2026-03-30 06:53:39] [User: 28] Food Order Placed - Order ID: 19, User: 28, Amount: 400, Method: gcash
+[2026-03-30 06:57:08] [User: 28] Food Order Placed - Order ID: 20, User: 28, Amount: 400, Method: gcash
+[2026-03-30 06:59:17] [User: 28] Food Order Placed - Order ID: 21, User: 28, Amount: 400, Method: gcash
+[2026-03-30 07:01:45] [User: 28] Food Order Placed - Order ID: 22, User: 28, Amount: 400, Method: gcash
+[2026-03-30 07:08:25] [User: 28] Food Order Placed - Order ID: 23, User: 28, Amount: 400, Method: gcash
+[2026-03-30 07:23:11] [User: 28] Payment processed - Booking ID: 50, Method: gcash, Status: pending
+[2026-03-30 07:24:05] [User: 28] Payment processed - Booking ID: 51, Method: gcash, Status: paid
+[2026-03-30 07:29:55] [User: 28] User login - User ID: 28
+[2026-03-30 07:37:15] [User: 2] Staff profile updated - User ID: 2
+[2026-03-30 07:37:49] [User: 1] Admin profile updated - User ID: 1

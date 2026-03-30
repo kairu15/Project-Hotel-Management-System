@@ -1638,3 +1638,69 @@ INSERT INTO event_virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text
 (5, 'info', -10.0, -90.0, 'Bar and cocktail area', 'info-hotspot');
 
 SELECT 'All additional tables and data combined successfully!' AS message;
+
+-- =====================================================
+-- ADDITIONAL MIGRATION FILES COMBINED BELOW
+-- =====================================================
+
+-- =====================================================
+-- Add profile_picture column to users table
+-- =====================================================
+ALTER TABLE users ADD COLUMN profile_picture VARCHAR(255) DEFAULT NULL AFTER country;
+
+-- =====================================================
+-- Add booking_ref column to bookings table
+-- =====================================================
+ALTER TABLE bookings 
+ADD COLUMN booking_ref VARCHAR(50) UNIQUE NULL AFTER booking_id;
+
+ALTER TABLE bookings 
+ADD INDEX idx_booking_ref (booking_ref);
+
+ALTER TABLE bookings 
+MODIFY COLUMN booking_ref VARCHAR(50) UNIQUE NULL COMMENT 'Unique booking reference number (BBHYYYYMMDDXXXXXX)';
+
+-- =====================================================
+-- Add event_ref and order_ref columns for QR code scanning
+-- =====================================================
+ALTER TABLE event_bookings 
+ADD COLUMN event_ref VARCHAR(50) UNIQUE NULL AFTER event_booking_id;
+
+ALTER TABLE event_bookings 
+ADD INDEX idx_event_ref (event_ref);
+
+ALTER TABLE food_orders 
+ADD COLUMN order_ref VARCHAR(50) UNIQUE NULL AFTER order_id;
+
+ALTER TABLE food_orders 
+ADD INDEX idx_order_ref (order_ref);
+
+-- =====================================================
+-- Add Payment Columns to Event Bookings Table
+-- =====================================================
+ALTER TABLE event_bookings 
+ADD COLUMN payment_status ENUM('pending', 'paid', 'partial', 'failed', 'refunded') DEFAULT 'pending' AFTER status;
+
+ALTER TABLE event_bookings 
+ADD COLUMN payment_method VARCHAR(50) DEFAULT NULL AFTER payment_status;
+
+ALTER TABLE event_bookings 
+ADD COLUMN amount_paid DECIMAL(10,2) DEFAULT 0.00 AFTER payment_method;
+
+ALTER TABLE event_bookings 
+ADD COLUMN transaction_id VARCHAR(100) DEFAULT NULL AFTER amount_paid;
+
+ALTER TABLE event_bookings 
+ADD COLUMN paid_at TIMESTAMP NULL AFTER transaction_id;
+
+ALTER TABLE event_bookings 
+ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER paid_at;
+
+ALTER TABLE payments 
+ADD COLUMN event_booking_id INT NULL AFTER booking_id,
+ADD FOREIGN KEY (event_booking_id) REFERENCES event_bookings(event_booking_id) ON DELETE SET NULL;
+
+ALTER TABLE payments 
+MODIFY COLUMN booking_id INT NULL;
+
+SELECT 'All database migration files combined successfully!' AS message;

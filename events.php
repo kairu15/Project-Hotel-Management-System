@@ -54,6 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $eventBookingId = $db->lastInsertId();
             
+            // Generate and update Inquiry Reference (INQ-XXXXXX)
+            $eventRef = 'INQ-' . str_pad($eventBookingId, 6, '0', STR_PAD_LEFT);
+            $refStmt = $db->prepare("UPDATE event_bookings SET event_ref = ? WHERE event_booking_id = ?");
+            $refStmt->execute([$eventRef, $eventBookingId]);
+            
             // Send event inquiry confirmation email
             require_once 'includes/email_notifications.php';
             
@@ -70,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $eventData = [
                 'inquiry_id' => $eventBookingId,
+                'event_ref' => $eventRef,
                 'event_type' => $eventType,
                 'event_date' => $eventDate,
                 'start_time' => $startTime,

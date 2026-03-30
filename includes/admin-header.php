@@ -753,7 +753,19 @@ $alert = getAlert();
             </div>
             
             <div class="sidebar-user">
-                <div class="avatar"><?php echo strtoupper(substr($_SESSION['first_name'], 0, 1)); ?></div>
+                <?php
+                $db = getDB();
+                $userId = getUserId();
+                $userStmt = $db->prepare("SELECT profile_picture FROM users WHERE user_id = ?");
+                $userStmt->execute([$userId]);
+                $userData = $userStmt->fetch();
+                $profilePic = $userData['profile_picture'] ?? null;
+                ?>
+                <?php if (!empty($profilePic) && file_exists('../' . $profilePic)): ?>
+                    <img src="../<?php echo htmlspecialchars($profilePic); ?>" alt="Profile" class="avatar" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color);">
+                <?php else: ?>
+                    <div class="avatar"><?php echo strtoupper(substr($_SESSION['first_name'], 0, 1)); ?></div>
+                <?php endif; ?>
                 <div class="user-info">
                     <h4><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></h4>
                     <p><?php echo ucfirst(getUserRole()); ?></p>
@@ -856,6 +868,9 @@ $alert = getAlert();
                     </a></li>
                     
                     <li class="nav-section">System</li>
+                    <li><a href="admin-profile.php" class="<?php echo $currentPage === 'admin-profile' ? 'active' : ''; ?>">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a></li>
                     <li><a href="admin-settings.php" class="<?php echo $currentPage === 'admin-settings' ? 'active' : ''; ?>">
                         <i class="fas fa-cog"></i> Settings
                     </a></li>
@@ -887,6 +902,7 @@ $alert = getAlert();
                         <i class="fas fa-bell"></i>
                         <span class="badge" id="notification-badge" style="display: none;">0</span>
                     </div>
+                    <a href="admin-profile.php" title="My Profile"><i class="fas fa-user-circle"></i></a>
                     <a href="admin-dashboard.php" title="Dashboard"><i class="fas fa-home"></i></a>
                     <a href="../auth/logout.php" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>

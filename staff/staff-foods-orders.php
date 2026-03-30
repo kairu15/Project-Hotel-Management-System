@@ -304,7 +304,7 @@ $totalRevenue = array_sum(array_map(function($o) { return $o['status'] !== 'canc
                     $paymentStatus = $paymentStatusColors[$order['payment_status']] ?? $paymentStatusColors['pending'];
                     $roomDisplay = $order['room_number'] ?? ($order['booking_room'] ?? 'N/A');
                 ?>
-                <tr style="border-bottom: 1px solid var(--gray-light);">
+                <tr style="border-bottom: 1px solid var(--gray-light);" data-order-id="<?php echo $order['order_id']; ?>">
                     <td style="padding: 15px;">
                         <span style="font-weight: 600; color: var(--primary-color);">#<?php echo $order['order_id']; ?></span>
                     </td>
@@ -392,3 +392,20 @@ $totalRevenue = array_sum(array_map(function($o) { return $o['status'] !== 'canc
 </div>
 
 <?php require_once '../includes/staff-footer.php'; ?>
+
+<script>
+// Highlight scanned food order row
+function highlightScannedFoodOrder() {
+    const scannedOrderId = localStorage.getItem('scannedFoodOrderId');
+    if (scannedOrderId) {
+        const row = document.querySelector(`tr[data-order-id="${scannedOrderId}"]`);
+        if (row) {
+            row.style.backgroundColor = '#d4edda';
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        localStorage.removeItem('scannedFoodOrderId');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', highlightScannedFoodOrder);
+</script>

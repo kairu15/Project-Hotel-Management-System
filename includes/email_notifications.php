@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/qr_code_helper.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -44,10 +45,16 @@ function sendBookingConfirmationEmail($to, $bookingData) {
         $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
         $mail->addAddress($to);
         
+        // Generate QR code and attach as embedded image
+        $qrBinary = generateQRCodeBinary($bookingData['booking_ref'] ?? '', 100);
+        if ($qrBinary) {
+            $mail->addStringEmbeddedImage($qrBinary, 'qrcode', 'qrcode.png', 'base64', 'image/png');
+        }
+        
         // Content
         $mail->isHTML(true);
         $mail->Subject = 'Room Booking Confirmation - ' . $bookingData['booking_ref'];
-        $mail->Body    = getBookingConfirmationTemplate($bookingData);
+        $mail->Body    = getBookingConfirmationTemplate($bookingData, $qrBinary ? 'qrcode' : null);
         $mail->AltBody = getBookingConfirmationPlainText($bookingData);
         
         $mail->send();
@@ -91,10 +98,17 @@ function sendEventInquiryConfirmationEmail($to, $eventData) {
         $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
         $mail->addAddress($to);
         
+        // Generate QR code and attach as embedded image
+        $inquiryRef = $eventData['event_ref'] ?? ('INQ-' . str_pad($eventData['inquiry_id'] ?? '0', 6, '0', STR_PAD_LEFT));
+        $qrBinary = generateQRCodeBinary($inquiryRef, 100);
+        if ($qrBinary) {
+            $mail->addStringEmbeddedImage($qrBinary, 'qrcode', 'qrcode.png', 'base64', 'image/png');
+        }
+        
         // Content
         $mail->isHTML(true);
         $mail->Subject = 'Event Inquiry Received - Bayawan Bai Hotel';
-        $mail->Body    = getEventInquiryTemplate($eventData);
+        $mail->Body    = getEventInquiryTemplate($eventData, $qrBinary ? 'qrcode' : null);
         $mail->AltBody = getEventInquiryPlainText($eventData);
         
         $mail->send();
@@ -141,10 +155,20 @@ function sendFoodOrderConfirmationEmail($to, $orderData) {
         $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
         $mail->addAddress($to);
         
+        // Generate QR code and attach as embedded image using order_ref
+        $orderRef = $orderData['order_ref'] ?? $orderData['transaction_ref'] ?? '';
+        $qrBinary = generateQRCodeBinary($orderRef, 100);
+        if ($qrBinary) {
+            $mail->addStringEmbeddedImage($qrBinary, 'qrcode', 'qrcode.png', 'base64', 'image/png');
+        }
+        
+        // Ensure order_ref is set for the template
+        $orderData['order_ref'] = $orderRef;
+        
         // Content
         $mail->isHTML(true);
-        $mail->Subject = 'Food Order Confirmation - ' . $orderData['transaction_ref'];
-        $mail->Body    = getFoodOrderConfirmationTemplate($orderData);
+        $mail->Subject = 'Food Order Confirmation - ' . $orderRef;
+        $mail->Body    = getFoodOrderConfirmationTemplate($orderData, $qrBinary ? 'qrcode' : null);
         $mail->AltBody = getFoodOrderConfirmationPlainText($orderData);
         
         $mail->send();
@@ -158,7 +182,7 @@ function sendFoodOrderConfirmationEmail($to, $orderData) {
 /**
  * Get HTML email template for room booking confirmation
  */
-function getBookingConfirmationTemplate($data) {
+function getBookingConfirmationTemplate($data, $qrCID = null) {
     $bookingRef = htmlspecialchars($data['booking_ref'] ?? 'N/A');
     $roomType = htmlspecialchars($data['room_type'] ?? 'N/A');
     $checkIn = htmlspecialchars($data['check_in'] ?? 'N/A');
@@ -171,6 +195,13 @@ function getBookingConfirmationTemplate($data) {
     $guestName = htmlspecialchars($data['guest_name'] ?? 'Valued Guest');
     
     $statusColor = ($data['payment_status'] === 'paid') ? '#28a745' : '#ffc107';
+    
+    // Generate QR code HTML with CID if available
+    if ($qrCID) {
+        $qrCodeHtml = getEmailQRCodeHTMLWithCID($data['booking_ref'] ?? '', 'booking', $qrCID);
+    } else {
+        $qrCodeHtml = getEmailQRCodeHTML($data['booking_ref'] ?? '', 'booking');
+    }
     
     return '
     <!DOCTYPE html>
@@ -234,10 +265,7 @@ function getBookingConfirmationTemplate($data) {
                     Thank you for choosing Bayawan Bai Hotel. Your room reservation has been successfully confirmed. We look forward to welcoming you.
                 </p>
                 
-                <div class="booking-ref-box">
-                    <div class="ref-label">Your Booking Reference</div>
-                    <div class="ref-number">' . $bookingRef . '</div>
-                </div>
+                ' . $qrCodeHtml . '
                 
                 <div class="details-section">
                     <h3 class="section-title">Booking Details</h3>
@@ -351,7 +379,7 @@ Phone: +63 (32) 123-4567
 /**
  * Get HTML email template for event inquiry confirmation
  */
-function getEventInquiryTemplate($data) {
+function getEventInquiryTemplate($data, $qrCID = null) {
     $inquiryId = htmlspecialchars($data['inquiry_id'] ?? 'N/A');
     $eventType = ucfirst(htmlspecialchars($data['event_type'] ?? 'N/A'));
     $eventDate = htmlspecialchars($data['event_date'] ?? 'N/A');
@@ -367,6 +395,15 @@ function getEventInquiryTemplate($data) {
         $timeDisplay = date('h:i A', strtotime($startTime)) . ' - ' . date('h:i A', strtotime($endTime));
     } elseif ($startTime) {
         $timeDisplay = 'Starting at ' . date('h:i A', strtotime($startTime));
+    }
+    
+    $inquiryRef = 'INQ-' . str_pad($inquiryId, 6, '0', STR_PAD_LEFT);
+    
+    // Generate QR code for inquiry reference
+    if ($qrCID) {
+        $qrCodeHtml = getEmailQRCodeHTMLWithCID($inquiryRef, 'inquiry', $qrCID);
+    } else {
+        $qrCodeHtml = getEmailQRCodeHTML($inquiryRef, 'inquiry');
     }
     
     return '
@@ -431,10 +468,7 @@ function getEventInquiryTemplate($data) {
                     Thank you for your interest in hosting your event at Bayawan Bai Hotel. We have received your inquiry and our events team will review your requirements and contact you within 24 hours with a customized quotation.
                 </p>
                 
-                <div class="inquiry-box">
-                    <div class="inquiry-label">Your Inquiry Reference</div>
-                    <div class="inquiry-number">INQ-' . str_pad($inquiryId, 6, '0', STR_PAD_LEFT) . '</div>
-                </div>
+                ' . $qrCodeHtml . '
                 
                 <div class="details-section">
                     <h3 class="section-title">Event Details</h3>
@@ -543,9 +577,9 @@ Phone: +63 (32) 123-4567
 /**
  * Get HTML email template for food order confirmation
  */
-function getFoodOrderConfirmationTemplate($data) {
+function getFoodOrderConfirmationTemplate($data, $qrCID = null) {
     $orderId = htmlspecialchars($data['order_id'] ?? 'N/A');
-    $transactionRef = htmlspecialchars($data['transaction_ref'] ?? 'N/A');
+    $orderRef = htmlspecialchars($data['order_ref'] ?? $data['transaction_ref'] ?? 'N/A');
     $itemName = htmlspecialchars($data['item_name'] ?? 'N/A');
     $quantity = htmlspecialchars($data['quantity'] ?? '1');
     $unitPrice = number_format($data['unit_price'] ?? 0, 2);
@@ -562,6 +596,14 @@ function getFoodOrderConfirmationTemplate($data) {
     $orderTypeIcon = '🍽️';
     if ($data['order_type'] === 'room_service') $orderTypeIcon = '🛏️';
     if ($data['order_type'] === 'takeaway') $orderTypeIcon = '📦';
+    
+    // Generate QR code for order reference
+    $qrRef = $data['order_ref'] ?? $data['transaction_ref'] ?? '';
+    if ($qrCID) {
+        $qrCodeHtml = getEmailQRCodeHTMLWithCID($qrRef, 'order', $qrCID);
+    } else {
+        $qrCodeHtml = getEmailQRCodeHTML($qrRef, 'order');
+    }
     
     return '
     <!DOCTYPE html>
@@ -628,10 +670,7 @@ function getFoodOrderConfirmationTemplate($data) {
                 <h2 style="color: #d4a574; font-size: 28px; margin-bottom: 10px; text-align: center;">Order Confirmed!</h2>
                 <p style="text-align: center; color: #6c757d; margin-bottom: 30px;">Thank you for ordering with us</p>
                 
-                <div class="order-ref-box">
-                    <div class="ref-label">Your Order Reference</div>
-                    <div class="ref-number">' . $transactionRef . '</div>
-                </div>
+                ' . $qrCodeHtml . '
                 
                 <div class="order-summary">
                     <h3 class="section-title">' . $orderTypeIcon . ' Order Summary</h3>
@@ -722,7 +761,7 @@ FOOD ORDER CONFIRMATION - BAYAWAN BAI HOTEL
 
 Thank you for ordering with us!
 
-ORDER REFERENCE: ' . ($data['transaction_ref'] ?? 'N/A') . '
+ORDER REFERENCE: ' . ($data['order_ref'] ?? $data['transaction_ref'] ?? 'N/A') . '
 
 ORDER SUMMARY:
 - Item: ' . ($data['item_name'] ?? 'N/A') . '

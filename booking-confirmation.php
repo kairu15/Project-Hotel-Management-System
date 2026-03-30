@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'Booking Confirmed';
 require_once 'includes/config.php';
+require_once 'includes/qr_code_helper.php';
 
 // Check if booking confirmation exists in session
 if (!isset($_SESSION['booking_confirmation'])) {
@@ -75,6 +76,15 @@ $statusLabel = match($paymentStatus) {
                             <h2 style="color: white; font-size: 28px; margin: 0;"><?php echo htmlspecialchars($booking['booking_ref']); ?></h2>
                         </div>
                         <div style="text-align: right;">
+                            <?php 
+                            $qrCodeUrl = generateSimpleQRCode($booking['booking_ref'], 120, $booking['booking_id']);
+                            if ($qrCodeUrl): 
+                            ?>
+                            <div style="display: inline-block; text-align: center;">
+                                <img src="<?php echo $qrCodeUrl; ?>" alt="Booking QR Code" style="width: 100px; height: 100px; display: block; background: white; padding: 8px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <span style="font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 5px; display: block;">Scan to verify</span>
+                            </div>
+                            <?php endif; ?>
                             <span style="background-color: <?php echo $statusBg; ?>; color: <?php echo $statusTextColor; ?>; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 600;">
                                 <i class="fas fa-<?php echo $paymentStatus === 'paid' || $paymentStatus === 'partial' ? 'check' : 'clock'; ?>"></i> <?php echo $statusLabel; ?>
                             </span>

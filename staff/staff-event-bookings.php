@@ -28,13 +28,13 @@ if (isset($_POST['confirm_booking'])) {
     redirect('staff-event-bookings.php');
 }
 
-// Handle reject booking
-if (isset($_POST['reject_booking'])) {
+// Handle complete booking
+if (isset($_POST['complete_booking'])) {
     $bookingId = $_POST['booking_id'] ?? 0;
     if ($bookingId) {
-        $stmt = $db->prepare("UPDATE event_bookings SET status = 'cancelled' WHERE event_booking_id = ?");
+        $stmt = $db->prepare("UPDATE event_bookings SET status = 'completed' WHERE event_booking_id = ?");
         $stmt->execute([$bookingId]);
-        $_SESSION['success'] = 'Event booking rejected successfully';
+        $_SESSION['success'] = 'Event booking marked as completed successfully';
     }
     redirect('staff-event-bookings.php');
 }
@@ -167,6 +167,7 @@ require_once '../includes/staff-header.php';
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Space</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Status</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Quoted Price</th>
+                            <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Payment</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Actions</th>
                         </tr>
                     </thead>
@@ -174,7 +175,7 @@ require_once '../includes/staff-header.php';
                         <?php foreach ($bookings as $booking):
                             $color = $statusColors[$booking['status']] ?? ['#e2e3e5', '#383d41'];
                         ?>
-                        <tr style="border-bottom: 1px solid var(--gray-light);">
+                        <tr style="border-bottom: 1px solid var(--gray-light);" data-event-id="<?php echo $booking['event_booking_id']; ?>">
                             <td style="padding: 15px 20px;">
                                 <div style="font-weight: 500;"><?php echo htmlspecialchars(ucfirst($booking['event_type'] ?: 'General Event')); ?></div>
                                 <?php if ($booking['catering_required']): ?>
@@ -209,6 +210,25 @@ require_once '../includes/staff-header.php';
                                 <?php echo $booking['quoted_price'] ? formatPrice($booking['quoted_price']) : 'Pending'; ?>
                             </td>
                             <td style="padding: 15px 20px;">
+                                <?php 
+                                $paymentStatus = $booking['payment_status'] ?? 'pending';
+                                $paymentColors = [
+                                    'pending' => ['#fff3cd', '#856404'],
+                                    'paid' => ['#d4edda', '#155724'],
+                                    'partial' => ['#cce5ff', '#004085'],
+                                    'failed' => ['#f8d7da', '#721c24'],
+                                    'refunded' => ['#e2e3e5', '#383d41']
+                                ];
+                                $payColor = $paymentColors[$paymentStatus] ?? ['#e2e3e5', '#383d41'];
+                                ?>
+                                <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?php echo $payColor[0]; ?>; color: <?php echo $payColor[1]; ?>; text-transform: capitalize;">
+                                    <?php echo $paymentStatus; ?>
+                                    <?php if ($paymentStatus === 'partial' && $booking['amount_paid'] > 0): ?>
+                                        (<?php echo formatPrice($booking['amount_paid']); ?>)
+                                    <?php endif; ?>
+                                </span>
+                            </td>
+                            <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                     <?php if ($booking['status'] === 'pending'): ?>
                                     <button type="button" onclick="openConfirmModal(<?php echo $booking['event_booking_id']; ?>)" class="btn btn-sm btn-success" style="padding: 5px 12px; font-size: 12px;">
@@ -217,6 +237,14 @@ require_once '../includes/staff-header.php';
                                     <button type="button" onclick="openRejectModal(<?php echo $booking['event_booking_id']; ?>)" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
+                                    <?php endif; ?>
+                                    <?php if ($booking['status'] === 'confirmed'): ?>
+                                    <form method="POST" action="" style="display: inline;">
+                                        <input type="hidden" name="booking_id" value="<?php echo $booking['event_booking_id']; ?>">
+                                        <button type="submit" name="complete_booking" class="btn btn-sm" style="padding: 5px 12px; font-size: 12px; background-color: #007bff; color: white;" onclick="return confirm('Mark this event booking as completed?');">
+                                            <i class="fas fa-check-double"></i> Complete
+                                        </button>
+                                    </form>
                                     <?php endif; ?>
                                     <button type="button" onclick="openPriceModal(<?php echo $booking['event_booking_id']; ?>, <?php echo $booking['quoted_price'] ?: 'null'; ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">
                                         <i class="fas fa-tag"></i> Set Price
@@ -412,6 +440,21 @@ function closeDetailsModal() {
         }
     });
 });
+
+// Highlight scanned event row
+function highlightScannedEvent() {
+    const scannedEventId = localStorage.getItem('scannedEventId');
+    if (scannedEventId) {
+        const row = document.querySelector(`tr[data-event-id="${scannedEventId}"]`);
+        if (row) {
+            row.style.backgroundColor = '#d4edda';
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        localStorage.removeItem('scannedEventId');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', highlightScannedEvent);
 </script>
 
 <?php require_once '../includes/staff-footer.php'; ?>

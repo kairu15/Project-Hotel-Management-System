@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'Booking Details - Admin';
 require_once '../includes/config.php';
+require_once '../includes/qr_code_helper.php';
 
 // Check if user is admin
 if (!isAdmin()) {
@@ -204,6 +205,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_payment'])) {
                             <p style="color: #666;">Made on <?php echo formatDate($booking['created_at'], 'F d, Y \a\t h:i A'); ?></p>
                         </div>
                         <div style="text-align: right;">
+                            <?php 
+                            $qrCodeUrl = generateSimpleQRCode($booking['booking_ref'] ?? '', 100, $booking['booking_id']);
+                            if ($qrCodeUrl): 
+                            ?>
+                            <div style="margin-bottom: 10px;">
+                                <div style="display: inline-block; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <img src="<?php echo $qrCodeUrl; ?>" alt="QR Code" style="width: 90px; height: 90px; display: block;">
+                                </div>
+                                <p style="font-size: 10px; color: #666; margin-top: 5px; margin-bottom: 0;">Scan to verify booking</p>
+                            </div>
+                            <?php endif; ?>
                             <span style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; background-color: <?php echo $status[0]; ?>; color: <?php echo $status[1]; ?>; margin-bottom: 10px;">
                                 <i class="fas fa-<?php echo $status[2]; ?>"></i>
                                 <?php echo ucfirst(str_replace('_', ' ', $booking['status'])); ?>

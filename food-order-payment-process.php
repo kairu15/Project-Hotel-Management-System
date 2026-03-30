@@ -106,8 +106,13 @@ try {
     // Commit transaction
     $db->commit();
     
-    // Generate transaction reference
-    $transactionRef = 'FOD' . date('Ymd') . strtoupper(substr(uniqid(), -6));
+    // Generate Order Reference (FODYYYYMMDDXXXXXX) and update
+    $orderRef = 'FOD' . date('Ymd') . strtoupper(substr(md5(uniqid()), 0, 6));
+    $refStmt = $db->prepare("UPDATE food_orders SET order_ref = ? WHERE order_id = ?");
+    $refStmt->execute([$orderRef, $orderId]);
+    
+    // Generate transaction reference (different from order_ref)
+    $transactionRef = 'TXN' . date('Ymd') . strtoupper(substr(uniqid(), -6));
     
     // Send food order confirmation email
     require_once 'includes/email_notifications.php';
@@ -128,6 +133,7 @@ try {
         
         $emailData = [
             'order_id' => $orderId,
+            'order_ref' => $orderRef,
             'transaction_ref' => $transactionRef,
             'item_name' => $item['food_name'],
             'quantity' => $quantity,

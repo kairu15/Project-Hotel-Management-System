@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'Booking Details';
 require_once '../includes/config.php';
+require_once '../includes/qr_code_helper.php';
 
 // Redirect if not logged in
 if (!isLoggedIn()) {
@@ -79,7 +80,20 @@ $canCancel = in_array($booking['status'], ['pending', 'confirmed']) &&
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; flex-wrap: wrap; gap: 20px;">
             <div>
                 <h2 style="font-size: 28px; margin-bottom: 10px;">Booking #<?php echo str_pad($booking['booking_id'], 6, '0', STR_PAD_LEFT); ?></h2>
-                <p style="color: #666;">Made on <?php echo formatDate($booking['created_at'], 'F d, Y \a\t h:i A'); ?></p>
+                <p style="color: #666; margin-bottom: 15px;">Made on <?php echo formatDate($booking['created_at'], 'F d, Y \a\t h:i A'); ?></p>
+                
+                <!-- QR Code at bottom of booking info -->
+                <?php 
+                $qrCodeUrl = generateSimpleQRCode($booking['booking_ref'] ?? '', 100, $booking['booking_id']);
+                if ($qrCodeUrl): 
+                ?>
+                <div style="margin-top: 15px;">
+                    <div style="display: inline-block; background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 2px solid var(--primary-color);">
+                        <img src="<?php echo $qrCodeUrl; ?>" alt="QR Code" style="width: 100px; height: 100px; display: block;">
+                    </div>
+                    <p style="font-size: 11px; color: #666; margin-top: 8px; margin-bottom: 0;"><i class="fas fa-qrcode"></i> Scan at hotel for quick check-in</p>
+                </div>
+                <?php endif; ?>
             </div>
             <div style="text-align: right;">
                 <span style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; background-color: <?php echo $status[0]; ?>; color: <?php echo $status[1]; ?>; margin-bottom: 10px;">
@@ -87,7 +101,7 @@ $canCancel = in_array($booking['status'], ['pending', 'confirmed']) &&
                     <?php echo ucfirst(str_replace('_', ' ', $booking['status'])); ?>
                 </span>
                 <br>
-                <span style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 15px; border-radius: 15px; font-size: 12px; font-weight: 600; background-color: <?php echo $paymentStatus[0]; ?>; color: <?php echo $paymentStatus[1]; ?>;">
+                <span style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 15px; border-radius: 15px; font-size: 12px; font-weight: 600; background-color: <?php echo $paymentStatus[0]; ?>; color: <?php echo $paymentStatus[1]; ?>">
                     Payment: <?php echo ucfirst($booking['payment_status']); ?>
                 </span>
             </div>

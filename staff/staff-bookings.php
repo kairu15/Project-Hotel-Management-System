@@ -159,7 +159,7 @@ require_once '../includes/staff-header.php';
                             ];
                             $color = $statusColors[$booking['status']] ?? ['#fff3cd', '#856404'];
                         ?>
-                        <tr style="border-bottom: 1px solid var(--gray-light);">
+                        <tr style="border-bottom: 1px solid var(--gray-light);" data-booking-id="<?php echo $booking['booking_id']; ?>">
                             <td style="padding: 15px 20px;">#<?php echo $booking['booking_id']; ?></td>
                             <td style="padding: 15px 20px;">
                                 <div style="font-weight: 500;"><?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?></div>
@@ -221,3 +221,32 @@ require_once '../includes/staff-header.php';
 </section>
 
 <?php require_once '../includes/staff-footer.php'; ?>
+
+<script>
+// Highlight scanned booking row
+(function() {
+    // Check if we have a scanned booking ID in localStorage
+    const scannedBookingId = localStorage.getItem('scannedBookingId');
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlBookingId = urlParams.get('id');
+    
+    if (scannedBookingId && urlBookingId && scannedBookingId === urlBookingId) {
+        // Find the row with matching booking ID
+        const row = document.querySelector('tr[data-booking-id="' + scannedBookingId + '"]');
+        if (row) {
+            // Apply green highlight
+            row.style.backgroundColor = '#d4edda';
+            row.style.borderLeft = '4px solid #28a745';
+            row.style.transition = 'background-color 0.5s ease';
+            
+            // Scroll to the row smoothly
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Clear the stored ID after 5 seconds
+            setTimeout(function() {
+                localStorage.removeItem('scannedBookingId');
+            }, 5000);
+        }
+    }
+})();
+</script>

@@ -1,13 +1,13 @@
 <?php
 /**
- * Payment Processing Endpoint
- * Handles all payment methods: GCash, PayPal, Credit Card, Pay at Hotel
+ * Event Booking Payment Processing Endpoint
+ * Handles all payment methods for event bookings: GCash, PayPal, Credit Card, Pay at Hotel
  */
 
 // Start output buffering to prevent any stray output
 ob_start();
 
-require_once 'includes/config.php';
+require_once '../includes/config.php';
 
 header('Content-Type: application/json');
 
@@ -15,6 +15,13 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit();
+}
+
+// Check if user is logged in
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
     exit();
 }
 
@@ -27,75 +34,53 @@ if (!$input) {
 }
 
 $paymentMethod = $input['payment_method'] ?? '';
-$bookingData = $input['booking_data'] ?? [];
+$eventBookingId = (int)($input['event_booking_id'] ?? 0);
 $paymentData = $input['payment_data'] ?? [];
 
-// Validate required booking data
-if (empty($bookingData['check_in']) || empty($bookingData['check_out']) || empty($bookingData['room_category'])) {
-    echo json_encode(['success' => false, 'message' => 'Missing booking information']);
+// Validate required data
+if (empty($paymentMethod) || empty($eventBookingId)) {
+    echo json_encode(['success' => false, 'message' => 'Missing required payment information']);
     exit();
 }
 
 $db = getDB();
+$userId = getUserId();
 
 try {
     $db->beginTransaction();
     
-    // Extract booking data
-    $checkIn = $bookingData['check_in'];
-    $checkOut = $bookingData['check_out'];
-    $categoryId = $bookingData['room_category'];
-    $adults = (int)($bookingData['adults'] ?? 1);
-    $children = (int)($bookingData['children'] ?? 0);
-    $specialRequests = sanitizeInput($bookingData['special_requests'] ?? '');
-    $promoCode = sanitizeInput($bookingData['promo_code'] ?? '');
+    // Get event booking details and verify it belongs to the current user
+    $bookingStmt = $db->prepare("
+        SELECT eb.*, es.space_name 
+        FROM event_bookings eb 
+        JOIN event_spaces es ON eb.space_id = es.space_id 
+        WHERE eb.event_booking_id = ? AND eb.user_id = ?
+    ");
+    $bookingStmt->execute([$eventBookingId, $userId]);
+    $booking = $bookingStmt->fetch();
     
-    // Guest info
-    $guestFirstName = sanitizeInput($bookingData['guest_first_name'] ?? '');
-    $guestLastName = sanitizeInput($bookingData['guest_last_name'] ?? '');
-    $guestEmail = sanitizeInput($bookingData['guest_email'] ?? '');
-    $guestPhone = sanitizeInput($bookingData['guest_phone'] ?? '');
-    
-    // Calculate nights and amount
-    $nights = calculateNights($checkIn, $checkOut);
-    
-    // Get room category details
-    $categoryStmt = $db->prepare("SELECT * FROM room_categories WHERE category_id = ? AND status = 'active'");
-    $categoryStmt->execute([$categoryId]);
-    $category = $categoryStmt->fetch();
-    
-    if (!$category) {
-        throw new Exception('Selected room type is not available');
+    if (!$booking) {
+        throw new Exception('Event booking not found or unauthorized');
     }
     
-    // Check availability
-    $availableRooms = checkAvailability($checkIn, $checkOut, $categoryId);
-    
-    if (count($availableRooms) === 0) {
-        throw new Exception('No rooms available for the selected dates');
+    // Check if booking has a quoted price
+    if (empty($booking['quoted_price']) || $booking['quoted_price'] <= 0) {
+        throw new Exception('No quoted price available for this booking. Please contact the hotel for pricing.');
     }
     
-    $room = $availableRooms[0];
-    $roomRate = $category['base_price'];
-    $totalAmount = $roomRate * $nights;
-    
-    // Get or create user
-    if (!isLoggedIn()) {
-        $userStmt = $db->prepare("SELECT user_id FROM users WHERE email = ?");
-        $userStmt->execute([$guestEmail]);
-        $existingUser = $userStmt->fetch();
-        
-        if ($existingUser) {
-            $userId = $existingUser['user_id'];
-        } else {
-            $createUserStmt = $db->prepare("INSERT INTO users (email, password, first_name, last_name, phone, role) VALUES (?, ?, ?, ?, ?, 'guest')");
-            $tempPassword = password_hash(uniqid(), PASSWORD_DEFAULT);
-            $createUserStmt->execute([$guestEmail, $tempPassword, $guestFirstName, $guestLastName, $guestPhone]);
-            $userId = $db->lastInsertId();
-        }
-    } else {
-        $userId = getUserId();
+    // Check if booking is in a payable status
+    if (!in_array($booking['status'], ['pending', 'confirmed'])) {
+        throw new Exception('This booking cannot be paid for at this time. Current status: ' . $booking['status']);
     }
+    
+    // Check if already fully paid
+    if ($booking['payment_status'] === 'paid') {
+        throw new Exception('This booking has already been fully paid.');
+    }
+    
+    $totalAmount = (float)$booking['quoted_price'];
+    $alreadyPaid = (float)($booking['amount_paid'] ?? 0);
+    $remainingAmount = $totalAmount - $alreadyPaid;
     
     // Initialize payment variables
     $paymentStatus = 'pending';
@@ -106,7 +91,7 @@ try {
     // Process based on payment method
     switch ($paymentMethod) {
         case 'gcash':
-            $result = processGCashPayment($paymentData, $totalAmount);
+            $result = processGCashPayment($paymentData, $remainingAmount);
             $paymentStatus = $result['status'];
             $transactionId = $result['transaction_id'];
             $amountPaid = $result['amount_paid'];
@@ -114,7 +99,7 @@ try {
             break;
             
         case 'paypal':
-            $result = processPayPalPayment($paymentData, $totalAmount);
+            $result = processPayPalPayment($paymentData, $remainingAmount);
             $paymentStatus = $result['status'];
             $transactionId = $result['transaction_id'];
             $amountPaid = $result['amount_paid'];
@@ -122,7 +107,7 @@ try {
             break;
             
         case 'credit_card':
-            $result = processCreditCardPayment($paymentData, $totalAmount);
+            $result = processCreditCardPayment($paymentData, $remainingAmount);
             $paymentStatus = $result['status'];
             $transactionId = $result['transaction_id'];
             $amountPaid = $result['amount_paid'];
@@ -130,7 +115,7 @@ try {
             break;
             
         case 'pay_at_hotel':
-            $result = processPayAtHotel($paymentData, $totalAmount);
+            $result = processPayAtHotel($paymentData, $remainingAmount);
             $paymentStatus = $result['status'];
             $transactionId = $result['transaction_id'];
             $amountPaid = $result['amount_paid'];
@@ -141,129 +126,108 @@ try {
             throw new Exception('Invalid payment method');
     }
     
-    // Create booking
-    $bookingRef = generateBookingRef();
-    $bookingStmt = $db->prepare("INSERT INTO bookings 
-        (booking_ref, user_id, room_id, category_id, check_in, check_out, adults, children, nights, room_rate, total_amount, special_requests, booking_source, status, payment_status, payment_method) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'website', 'pending', ?, ?)");
-    $bookingStmt->execute([
-        $bookingRef,
-        $userId, 
-        $room['room_id'], 
-        $categoryId, 
-        $checkIn, 
-        $checkOut, 
-        $adults, 
-        $children, 
-        $nights, 
-        $roomRate, 
-        $totalAmount, 
-        $specialRequests, 
-        $paymentStatus,
-        $paymentMethod
-    ]);
-    $bookingId = $db->lastInsertId();
+    // Calculate new totals
+    $newTotalPaid = $alreadyPaid + $amountPaid;
+    $newPaymentStatus = $paymentStatus;
+    $newBookingStatus = $booking['status'];
     
-    // Create payment record
-    $paymentStmt = $db->prepare("INSERT INTO payments 
-        (booking_id, user_id, amount, payment_method, transaction_id, status, notes) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)");
+    // If fully paid, update booking status to confirmed and payment_status to paid
+    if ($newTotalPaid >= $totalAmount) {
+        $newPaymentStatus = 'paid';
+        $newBookingStatus = 'confirmed';
+    } elseif ($newTotalPaid > 0 && $newTotalPaid < $totalAmount) {
+        $newPaymentStatus = 'partial';
+    }
+    
+    // Update event booking
+    $updateStmt = $db->prepare("
+        UPDATE event_bookings 
+        SET payment_status = ?, 
+            payment_method = ?, 
+            amount_paid = ?, 
+            transaction_id = ?,
+            status = ?,
+            paid_at = CASE WHEN ? >= ? THEN NOW() ELSE paid_at END,
+            updated_at = NOW()
+        WHERE event_booking_id = ?
+    ");
+    $updateStmt->execute([
+        $newPaymentStatus,
+        $paymentMethod,
+        $newTotalPaid,
+        $transactionId,
+        $newBookingStatus,
+        $newTotalPaid,
+        $totalAmount,
+        $eventBookingId
+    ]);
+    
+    // Create payment record in a new event_payments table or use existing payments table
+    // Using existing payments table with event_booking_id reference
+    $paymentStmt = $db->prepare("
+        INSERT INTO payments 
+        (event_booking_id, user_id, amount, payment_method, transaction_id, status, notes, payment_date) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    ");
     $paymentStmt->execute([
-        $bookingId,
+        $eventBookingId,
         $userId,
         $amountPaid,
         $paymentMethod,
         $transactionId,
         $paymentStatus === 'paid' || $paymentStatus === 'partial' ? 'completed' : 'pending',
-        $receiptData['notes'] ?? ''
+        $receiptData['notes'] ?? "Event booking payment via $paymentMethod"
     ]);
-    
-    // Update room status if fully paid
-    if ($paymentStatus === 'paid') {
-        $updateRoomStmt = $db->prepare("UPDATE rooms SET status = 'reserved' WHERE room_id = ?");
-        $updateRoomStmt->execute([$room['room_id']]);
-    }
+    $paymentId = $db->lastInsertId();
     
     $db->commit();
     
     // Send notifications
-    require_once 'includes/notifications.php';
-    require_once 'includes/email_notifications.php';
+    require_once '../includes/notifications.php';
+    require_once '../includes/email_notifications.php';
     
     // Get user details for notifications
-    $userStmt = $db->prepare("SELECT first_name, last_name, email FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
-    $userStmt->execute([$bookingId]);
+    $userStmt = $db->prepare("SELECT first_name, last_name, email FROM users WHERE user_id = ?");
+    $userStmt->execute([$userId]);
     $userData = $userStmt->fetch();
     $guestName = $userData ? $userData['first_name'] . ' ' . $userData['last_name'] : 'Guest';
-    $guestEmail = $userData ? $userData['email'] : $guestEmail;
-    $checkInDate = $userData ? $userData['check_in'] : '';
+    $guestEmail = $userData ? $userData['email'] : '';
     
-    // Send booking confirmation email to user
-    if ($guestEmail) {
+    // Send payment confirmation email
+    if ($guestEmail && ($paymentStatus === 'paid' || $paymentStatus === 'partial')) {
         try {
-            $bookingData = [
-                'booking_ref' => $bookingRef,
-                'room_type' => $category['category_name'],
-                'check_in' => $checkIn,
-                'check_out' => $checkOut,
-                'nights' => $nights,
-                'guests' => $adults + $children,
-                'total_amount' => $totalAmount,
-                'payment_status' => $paymentStatus,
+            $paymentDetails = [
+                'event_booking_id' => $eventBookingId,
+                'space_name' => $booking['space_name'],
+                'event_date' => $booking['event_date'],
+                'quoted_price' => $totalAmount,
+                'amount_paid' => $amountPaid,
+                'total_paid' => $newTotalPaid,
+                'remaining' => $totalAmount - $newTotalPaid,
                 'payment_method' => $paymentMethod,
+                'payment_status' => $newPaymentStatus,
+                'transaction_id' => $transactionId,
                 'guest_name' => $guestName
             ];
-            sendBookingConfirmationEmail($guestEmail, $bookingData);
+            sendEventPaymentConfirmationEmail($guestEmail, $paymentDetails);
         } catch (Exception $emailError) {
-            error_log('Failed to send booking confirmation email: ' . $emailError->getMessage());
+            error_log('Failed to send event payment confirmation email: ' . $emailError->getMessage());
         }
     }
     
-    // Notify user about their booking
-    notifyBookingUpdate($userId, $bookingId, 'pending');
-    
-    // Notify user about payment status
+    // Notify user about payment
     if ($paymentStatus === 'paid' || $paymentStatus === 'partial') {
-        notifyPaymentUpdate($userId, $paymentId ?? $bookingId, 'completed', $amountPaid);
+        notifyPaymentUpdate($userId, $paymentId, 'completed', $amountPaid);
     } elseif ($paymentStatus === 'failed') {
-        notifyPaymentUpdate($userId, $paymentId ?? $bookingId, 'failed', $totalAmount);
+        notifyPaymentUpdate($userId, $paymentId, 'failed', $remainingAmount);
     } else {
-        notifyPaymentUpdate($userId, $paymentId ?? $bookingId, 'pending', $totalAmount);
-    }
-    
-    // Notify staff about new booking
-    if ($userData) {
-        notifyStaffNewBooking($bookingId, $guestName, $checkInDate);
+        notifyPaymentUpdate($userId, $paymentId, 'pending', $remainingAmount);
     }
     
     // Notify admin about payment
     $paymentProcessType = ($paymentStatus === 'paid' || $paymentStatus === 'partial') ? 'made' : 
                          ($paymentStatus === 'failed' ? 'failed' : 'pending');
-    notifyAdminPaymentUpdate($paymentId ?? $bookingId, $paymentProcessType, $guestName, $amountPaid, $paymentMethod);
-    
-    // Notify admin about new booking
-    notifyAdminBookingUpdate($bookingId, 'created', $guestName, "Check-in: " . date('M d, Y', strtotime($checkInDate ?: 'today')));
-    
-    // Store booking info in session
-    $_SESSION['booking_confirmation'] = [
-        'booking_id' => $bookingId,
-        'booking_ref' => $bookingRef,
-        'room_name' => $category['category_name'],
-        'check_in' => $checkIn,
-        'check_out' => $checkOut,
-        'nights' => $nights,
-        'guests' => $adults + $children,
-        'total' => $totalAmount,
-        'amount_paid' => $amountPaid,
-        'remaining_amount' => $totalAmount - $amountPaid,
-        'payment_method' => $paymentMethod,
-        'payment_status' => $paymentStatus,
-        'transaction_id' => $transactionId,
-        'receipt_data' => $receiptData
-    ];
-    
-    // Log activity
-    logActivity('Payment processed', "Booking ID: $bookingId, Method: $paymentMethod, Status: $paymentStatus");
+    notifyAdminPaymentUpdate($paymentId, $paymentProcessType, $guestName, $amountPaid, $paymentMethod);
     
     // Clear any buffered output before sending JSON
     ob_clean();
@@ -271,14 +235,15 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Payment processed successfully',
-        'booking_id' => $bookingId,
-        'booking_ref' => $bookingRef,
-        'payment_status' => $paymentStatus,
+        'event_booking_id' => $eventBookingId,
+        'payment_status' => $newPaymentStatus,
+        'booking_status' => $newBookingStatus,
         'transaction_id' => $transactionId,
         'amount_paid' => $amountPaid,
-        'remaining_amount' => $totalAmount - $amountPaid,
+        'total_paid' => $newTotalPaid,
+        'remaining_amount' => $totalAmount - $newTotalPaid,
         'receipt' => $receiptData,
-        'redirect' => 'booking-confirmation.php'
+        'redirect' => 'my-event-bookings.php'
     ]);
     exit();
     
@@ -339,7 +304,7 @@ function processGCashPayment($data, $totalAmount) {
             'reference_note' => $referenceNote,
             'payment_method' => 'GCash',
             'message' => 'Payment verification failed. Please try again.',
-            'notes' => "GCash payment failed from $accountName ($mobile_number)"
+            'notes' => "GCash payment failed from $accountName ($mobileNumber)"
         ];
     }
 }
@@ -366,7 +331,7 @@ function processPayPalPayment($data, $totalAmount) {
     $isApproved = (mt_rand(1, 100) <= 85);
     
     if ($isApproved) {
-        $transactionId = 'PAY-' . strtoupper(substr(uniqid(), -6));
+        $transactionId = 'PAYPAL-' . strtoupper(substr(uniqid(), -6));
         return [
             'status' => 'paid',
             'transaction_id' => $transactionId,
@@ -519,4 +484,13 @@ function processPayAtHotel($data, $totalAmount) {
         'message' => $message,
         'notes' => $notes
     ];
+}
+
+/**
+ * Send event payment confirmation email
+ */
+function sendEventPaymentConfirmationEmail($email, $paymentDetails) {
+    // This is a placeholder - implement based on your existing email system
+    // You can use the existing sendBookingConfirmationEmail as reference
+    return true;
 }

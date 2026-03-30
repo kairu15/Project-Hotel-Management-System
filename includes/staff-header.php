@@ -751,7 +751,19 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
             </div>
             
             <div class="sidebar-user">
-                <div class="avatar"><?php echo strtoupper(substr($_SESSION['first_name'], 0, 1)); ?></div>
+                <?php
+                $db = getDB();
+                $userId = getUserId();
+                $userStmt = $db->prepare("SELECT profile_picture FROM users WHERE user_id = ?");
+                $userStmt->execute([$userId]);
+                $userData = $userStmt->fetch();
+                $profilePic = $userData['profile_picture'] ?? null;
+                ?>
+                <?php if (!empty($profilePic) && file_exists('../' . $profilePic)): ?>
+                    <img src="../<?php echo htmlspecialchars($profilePic); ?>" alt="Profile" class="avatar" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color);">
+                <?php else: ?>
+                    <div class="avatar"><?php echo strtoupper(substr($_SESSION['first_name'], 0, 1)); ?></div>
+                <?php endif; ?>
                 <div class="user-info">
                     <h4><?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></h4>
                     <p><?php echo ucfirst($userRole); ?></p>
@@ -774,6 +786,15 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
                     </a></li>
                     <li><a href="confirm-booking.php" class="<?php echo $currentPage === 'confirm-booking' ? 'active' : ''; ?>">
                         <i class="fas fa-clipboard-check"></i> Confirm Bookings
+                    </a></li>
+                    <li><a href="staff-qr-scanner.php" class="<?php echo $currentPage === 'staff-qr-scanner' ? 'active' : ''; ?>">
+                        <i class="fas fa-qrcode"></i> Room QR Scanner
+                    </a></li>
+                    <li><a href="staff-qr-scanner-event.php" class="<?php echo $currentPage === 'staff-qr-scanner-event' ? 'active' : ''; ?>">
+                        <i class="fas fa-qrcode"></i> Inquiry QR Scanner
+                    </a></li>
+                    <li><a href="staff-qr-scanner-food.php" class="<?php echo $currentPage === 'staff-qr-scanner-food' ? 'active' : ''; ?>">
+                        <i class="fas fa-qrcode"></i> Food QR Scanner
                     </a></li>
                     <li><a href="staff-event-bookings.php" class="<?php echo $currentPage === 'staff-event-bookings' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i> Event Bookings
@@ -800,6 +821,9 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
                     <?php endif; ?>
                     
                     <li class="nav-section">System</li>
+                    <li><a href="staff-profile.php" class="<?php echo $currentPage === 'staff-profile' ? 'active' : ''; ?>">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a></li>
                     <li><a href="../index.php" target="_blank">
                         <i class="fas fa-external-link-alt"></i> View Website
                     </a></li>
@@ -826,6 +850,7 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
                         <i class="fas fa-bell"></i>
                         <span class="badge" id="notification-badge" style="display: none;">0</span>
                     </div>
+                    <a href="staff-profile.php" title="My Profile"><i class="fas fa-user-circle"></i></a>
                     <a href="staff-dashboard.php" title="Dashboard"><i class="fas fa-home"></i></a>
                     <a href="../auth/logout.php" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>

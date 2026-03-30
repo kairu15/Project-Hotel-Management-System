@@ -108,6 +108,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 require_once 'includes/notifications.php';
                 $orderId = $db->lastInsertId();
                 
+                // Generate and update Order Reference (FODYYYYMMDDXXXXXX)
+                $orderRef = 'FOD' . date('Ymd') . strtoupper(substr(md5(uniqid()), 0, 6));
+                $refStmt = $db->prepare("UPDATE food_orders SET order_ref = ? WHERE order_id = ?");
+                $refStmt->execute([$orderRef, $orderId]);
+                
                 // Notify user about order placed
                 notifyFoodOrderUpdate($userId, $orderId, 'pending');
                 

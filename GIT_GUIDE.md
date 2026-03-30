@@ -187,7 +187,7 @@ git commit -m "Description of changes made"
 ### Step 5: Push to GitHub
 
 ```bash
- 
+git push origin main
 ```
 
 Or simply:

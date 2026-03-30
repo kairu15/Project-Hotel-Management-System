@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'My Bookings';
 require_once '../includes/config.php';
+require_once '../includes/qr_code_helper.php';
 
 // Redirect if not logged in
 if (!isLoggedIn()) {
@@ -261,7 +262,7 @@ if ($filter === 'upcoming') {
                         <p style="color: #666; font-size: 14px;">Room <?php echo htmlspecialchars($booking['room_number']); ?></p>
                         <?php endif; ?>
                     </div>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; background-color: <?php echo $status[0]; ?>; color: <?php echo $status[1]; ?>;">
+                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; background-color: <?php echo $status[0]; ?>; color: <?php echo $status[1]; ?>">
                         <i class="fas fa-<?php echo $status[2]; ?>"></i>
                         <?php echo ucfirst(str_replace('_', ' ', $booking['status'])); ?>
                     </span>
