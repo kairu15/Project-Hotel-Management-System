@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Spa & Amenities';
 require_once 'includes/header.php';
+$pageTitle = __('Spa & Amenities');
 
 // Get amenities from database
 $db = getDB();
@@ -15,11 +15,11 @@ foreach ($amenities as $amenity) {
 
 // Category display names
 $categoryNames = [
-    'spa' => 'Spa & Wellness',
-    'gym' => 'Fitness Center',
-    'pool' => 'Swimming Pools',
-    'wellness' => 'Wellness Activities',
-    'other' => 'Other Facilities'
+    'spa' => __('Spa & Wellness'),
+    'gym' => __('Fitness Center'),
+    'pool' => __('Swimming Pools'),
+    'wellness' => __('Wellness Activities'),
+    'other' => __('Other Facilities')
 ];
 
 $categoryIcons = [
@@ -34,8 +34,8 @@ $categoryIcons = [
 <!-- Page Header -->
 <div class="page-header">
     <div class="container">
-        <h1>Spa & Amenities</h1>
-        <p>Relax, rejuvenate, and refresh your senses</p>
+        <h1><?php echo __('Spa & Amenities'); ?></h1>
+        <p><?php echo __('Relax, rejuvenate, and refresh your senses'); ?></p>
     </div>
 </div>
 
@@ -43,9 +43,9 @@ $categoryIcons = [
 <div class="breadcrumb">
     <div class="container">
         <ul>
-            <li><a href="index.php">Home</a></li>
+            <li><a href="index.php"><?php echo __('Home'); ?></a></li>
             <li>/</li>
-            <li>Amenities</li>
+            <li><?php echo __('Amenities'); ?></li>
         </ul>
     </div>
 </div>

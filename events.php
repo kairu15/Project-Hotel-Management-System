@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Events & Meetings';
 require_once 'includes/header.php';
+$pageTitle = __('Events & Meetings');
 
 // Process event inquiry form
 $success = '';
@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $spaceId = (int)($_POST['space_id'] ?? 0);
     
     if (empty($eventType) || empty($eventDate) || empty($name) || empty($email) || empty($guests)) {
-        $error = 'Please fill in all required fields';
+        $error = __('Please fill in all required fields');
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Please enter a valid email address';
+        $error = __('Please enter a valid email address');
     } else {
         try {
             // Check if user is logged in

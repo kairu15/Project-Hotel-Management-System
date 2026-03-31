@@ -9,8 +9,8 @@
                         <h3 style="color: var(--light-color); font-size: 22px; margin: 0;">Bayawan <span style="color: var(--primary-color);">Bai</span> Hotel</h3>
                     </div>
                     <p style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.8; margin-bottom: 20px;">
-                        Experience luxury and comfort in the heart of Bayawan City. Your perfect escape awaits with stunning views and world-class service.
-                    </p>
+                    <?php echo __('Experience luxury and comfort in the heart of Bayawan City. Your perfect escape awaits with stunning views and world-class service.'); ?>
+                </p>
                     <div style="display: flex; gap: 15px;">
                         <a href="#" style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--light-color); transition: all 0.3s; text-decoration: none;">
                             <i class="fab fa-facebook-f"></i>
@@ -26,20 +26,20 @@
                 
                 <!-- Column 2: Quick Links -->
                 <div>
-                    <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;">Quick Links</h4>
+                    <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;"><?php echo __('Quick Links'); ?></h4>
                     <ul style="list-style: none;">
-                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/rooms.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;">Rooms & Suites</a></li>
-                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/dining.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;">Dining</a></li>
-                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/amenities.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;">Amenities</a></li>
-                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/events.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;">Events</a></li>
-                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/about.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;">About Us</a></li>
-                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/contact.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;">Contact</a></li>
+                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/rooms.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;"><?php echo __('Rooms & Suites'); ?></a></li>
+                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/dining.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;"><?php echo __('Dining'); ?></a></li>
+                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/amenities.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;"><?php echo __('Amenities'); ?></a></li>
+                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/events.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;"><?php echo __('Events'); ?></a></li>
+                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/about.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;"><?php echo __('About Us'); ?></a></li>
+                        <li style="margin-bottom: 12px;"><a href="/bayawanhotel/contact.php" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color 0.3s;"><?php echo __('Contact'); ?></a></li>
                     </ul>
                 </div>
                 
                 <!-- Column 3: Contact Info -->
                 <div>
-                    <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;">Contact Us</h4>
+                    <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;"><?php echo __('Contact Us'); ?></h4>
                     <ul style="list-style: none;">
                         <li style="margin-bottom: 15px; display: flex; align-items: flex-start; gap: 12px;">
                             <i class="fas fa-map-marker-alt" style="color: var(--primary-color); margin-top: 3px;"></i>
@@ -55,19 +55,19 @@
                         </li>
                         <li style="display: flex; align-items: center; gap: 12px;">
                             <i class="fas fa-clock" style="color: var(--primary-color);"></i>
-                            <span style="color: rgba(255,255,255,0.7); font-size: 14px;">24/7 Front Desk</span>
+                            <span style="color: rgba(255,255,255,0.7); font-size: 14px;"><?php echo __('24/7 Front Desk'); ?></span>
                         </li>
                     </ul>
                 </div>
                 
                 <!-- Column 4: Newsletter -->
                 <div>
-                    <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;">Newsletter</h4>
+                    <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;"><?php echo __('Newsletter'); ?></h4>
                     <p style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-                        Subscribe to receive special offers and updates.
+                        <?php echo __('Subscribe to receive special offers and updates.'); ?>
                     </p>
                     <form action="subscribe.php" method="POST" style="display: flex;">
-                        <input type="email" name="email" placeholder="Your email address" required style="flex: 1; padding: 12px 15px; border: none; border-radius: 5px 0 0 5px; font-size: 14px; outline: none;">
+                        <input type="email" name="email" placeholder="<?php echo __('Your email address'); ?>" required style="flex: 1; padding: 12px 15px; border: none; border-radius: 5px 0 0 5px; font-size: 14px; outline: none;">
                         <button type="submit" style="background-color: var(--primary-color); color: var(--light-color); border: none; padding: 12px 20px; border-radius: 0 5px 5px 0; cursor: pointer; transition: background-color 0.3s;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -78,12 +78,12 @@
             <!-- Bottom Bar -->
             <div style="padding: 20px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
                 <p style="color: rgba(255,255,255,0.6); font-size: 13px;">
-                    &copy; <?php echo date('Y'); ?> Bayawan Bai Hotel. All rights reserved.
+                    &copy; <?php echo date('Y'); ?> <?php echo __('Bayawan Bai Hotel. All rights reserved.'); ?>
                 </p>
                 <div style="display: flex; gap: 25px;">
-                    <a href="/bayawanhotel/privacy.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;">Privacy Policy</a>
-                    <a href="/bayawanhotel/terms.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;">Terms of Service</a>
-                    <a href="/bayawanhotel/faq.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;">FAQ</a>
+                    <a href="/bayawanhotel/privacy.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;"><?php echo __('Privacy Policy'); ?></a>
+                    <a href="/bayawanhotel/terms.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;"><?php echo __('Terms of Service'); ?></a>
+                    <a href="/bayawanhotel/faq.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;"><?php echo __('FAQ'); ?></a>
                 </div>
             </div>
         </div>

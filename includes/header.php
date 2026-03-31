@@ -4,6 +4,7 @@
  * Include this at the top of every page
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/TranslationEngine.php';
 
 // Get alert if any
 $alert = getAlert();
@@ -66,6 +67,28 @@ if (isLoggedIn()) {
             font-family: 'Playfair Display', serif;
             font-weight: 600;
             color: var(--dark-color);
+        }
+        
+        .top-bar .language-selector {
+            position: relative;
+            z-index: 2000;
+        }
+        
+        .top-bar .language-btn {
+            color: var(--light-color);
+            border-color: rgba(255,255,255,0.3);
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+        
+        .top-bar .language-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .top-bar .language-dropdown {
+            margin-top: 8px;
+            z-index: 2001;
         }
         
         /* Top Bar */
@@ -564,6 +587,8 @@ if (isLoggedIn()) {
                 <a href="#"><i class="fab fa-facebook-f"></i></a>
                 <a href="#"><i class="fab fa-instagram"></i></a>
                 <a href="#"><i class="fab fa-twitter"></i></a>
+                <span style="margin: 0 15px;">|</span>
+                <?php include __DIR__ . '/language-selector.php'; ?>
                 <?php if (isLoggedIn()): ?>
                     <span style="margin: 0 15px;">|</span>
                     <span><i class="fas fa-user"></i> Welcome, <?php echo htmlspecialchars($_SESSION['first_name'] ?? 'Guest'); ?></span>

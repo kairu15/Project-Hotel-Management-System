@@ -1,7 +1,7 @@
 <?php
-$pageTitle = 'Welcome';
 require_once 'includes/config.php';
 require_once 'includes/header.php';
+$pageTitle = __('Welcome');
 
 // Get featured rooms
 $db = getDB();
@@ -19,12 +19,12 @@ $promotions = $promoStmt->fetchAll();
         <!-- Slide 1 -->
         <div class="hero-slide active" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; opacity: 1; transition: opacity 1s;">
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; max-width: 800px; padding: 0 20px;">
-                <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; opacity: 0.9;">Welcome to Paradise</p>
+                <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; opacity: 0.9;"><?php echo __('Welcome to Paradise'); ?></p>
                 <h1 style="font-size: 64px; color: white; margin-bottom: 25px; line-height: 1.2;">Bayawan Bai Hotel</h1>
-                <p style="font-size: 20px; margin-bottom: 40px; opacity: 0.9;">Experience luxury and comfort in the heart of Bayawan City, Negros Oriental</p>
+                <p style="font-size: 20px; margin-bottom: 40px; opacity: 0.9;"><?php echo __('Experience luxury and comfort in the heart of Bayawan City, Negros Oriental'); ?></p>
                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                    <a href="booking.php" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;">Book Your Stay</a>
-                    <a href="rooms.php" class="btn btn-outline" style="padding: 15px 40px; font-size: 16px; border-color: white; color: white;">Explore Rooms</a>
+                    <a href="booking.php" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;"><?php echo __('Book Your Stay'); ?></a>
+                    <a href="rooms.php" class="btn btn-outline" style="padding: 15px 40px; font-size: 16px; border-color: white; color: white;"><?php echo __('Explore Rooms'); ?></a>
                 </div>
             </div>
         </div>
@@ -32,12 +32,12 @@ $promotions = $promoStmt->fetchAll();
         <!-- Slide 2 -->
         <div class="hero-slide" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; opacity: 0; transition: opacity 1s;">
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; max-width: 800px; padding: 0 20px;">
-                <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; opacity: 0.9;">Unforgettable Experience</p>
-                <h1 style="font-size: 64px; color: white; margin-bottom: 25px; line-height: 1.2;">Escape to Paradise</h1>
-                <p style="font-size: 20px; margin-bottom: 40px; opacity: 0.9;">Discover pristine beaches, stunning ocean views, and world-class hospitality</p>
+                <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; opacity: 0.9;"><?php echo __('Unforgettable Experience'); ?></p>
+                <h1 style="font-size: 64px; color: white; margin-bottom: 25px; line-height: 1.2;"><?php echo __('Escape to Paradise'); ?></h1>
+                <p style="font-size: 20px; margin-bottom: 40px; opacity: 0.9;"><?php echo __('Discover pristine beaches, stunning ocean views, and world-class hospitality'); ?></p>
                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                    <a href="booking.php" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;">Book Now</a>
-                    <a href="amenities.php" class="btn btn-outline" style="padding: 15px 40px; font-size: 16px; border-color: white; color: white;">Our Amenities</a>
+                    <a href="booking.php" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;"><?php echo __('Book Now'); ?></a>
+                    <a href="amenities.php" class="btn btn-outline" style="padding: 15px 40px; font-size: 16px; border-color: white; color: white;"><?php echo __('Our Amenities'); ?></a>
                 </div>
             </div>
         </div>
@@ -45,12 +45,12 @@ $promotions = $promoStmt->fetchAll();
         <!-- Slide 3 -->
         <div class="hero-slide" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; opacity: 0; transition: opacity 1s;">
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; max-width: 800px; padding: 0 20px;">
-                <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; opacity: 0.9;">Culinary Excellence</p>
-                <h1 style="font-size: 64px; color: white; margin-bottom: 25px; line-height: 1.2;">Savor the Flavors</h1>
-                <p style="font-size: 20px; margin-bottom: 40px; opacity: 0.9;">Experience authentic Negros Oriental cuisine at our world-class restaurants</p>
+                <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; opacity: 0.9;"><?php echo __('Culinary Excellence'); ?></p>
+                <h1 style="font-size: 64px; color: white; margin-bottom: 25px; line-height: 1.2;"><?php echo __('Savor the Flavors'); ?></h1>
+                <p style="font-size: 20px; margin-bottom: 40px; opacity: 0.9;"><?php echo __('Experience authentic Negros Oriental cuisine at our world-class restaurants'); ?></p>
                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                    <a href="dining.php" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;">View Dining</a>
-                    <a href="booking.php" class="btn btn-outline" style="padding: 15px 40px; font-size: 16px; border-color: white; color: white;">Reserve a Table</a>
+                    <a href="dining.php" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;"><?php echo __('View Dining'); ?></a>
+                    <a href="booking.php" class="btn btn-outline" style="padding: 15px 40px; font-size: 16px; border-color: white; color: white;"><?php echo __('Reserve a Table'); ?></a>
                 </div>
             </div>
         </div>
@@ -167,27 +167,27 @@ $promotions = $promoStmt->fetchAll();
     <div class="container">
         <form action="availability.php" method="GET" style="display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 20px; align-items: end;">
             <div>
-                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;">Check-in Date</label>
+                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;"><?php echo __('Check-in Date'); ?></label>
                 <input type="date" name="check_in" required min="<?php echo date('Y-m-d'); ?>" style="width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 15px;">
             </div>
             <div>
-                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;">Check-out Date</label>
+                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;"><?php echo __('Check-out Date'); ?></label>
                 <input type="date" name="check_out" required min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" style="width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 15px;">
             </div>
             <div>
-                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;">Guests</label>
+                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;"><?php echo __('Guests'); ?></label>
                 <select name="guests" style="width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 15px; background-color: white;">
-                    <option value="1">1 Guest</option>
-                    <option value="2" selected>2 Guests</option>
-                    <option value="3">3 Guests</option>
-                    <option value="4">4 Guests</option>
-                    <option value="5">5+ Guests</option>
+                    <option value="1"><?php echo __('1 Guest'); ?></option>
+                    <option value="2" selected><?php echo __('2 Guests'); ?></option>
+                    <option value="3"><?php echo __('3 Guests'); ?></option>
+                    <option value="4"><?php echo __('4 Guests'); ?></option>
+                    <option value="5"><?php echo __('5+ Guests'); ?></option>
                 </select>
             </div>
             <div>
-                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;">Room Type</label>
+                <label style="display: block; color: white; margin-bottom: 8px; font-size: 14px;"><?php echo __('Room Type'); ?></label>
                 <select name="room_type" style="width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 15px; background-color: white;">
-                    <option value="">All Rooms</option>
+                    <option value=""><?php echo __('All Rooms'); ?></option>
                     <?php foreach ($featuredRooms as $room): ?>
                     <option value="<?php echo $room['category_id']; ?>"><?php echo htmlspecialchars($room['category_name']); ?></option>
                     <?php endforeach; ?>
@@ -195,7 +195,7 @@ $promotions = $promoStmt->fetchAll();
             </div>
             <div>
                 <button type="submit" class="btn btn-dark" style="padding: 15px 30px; white-space: nowrap;">
-                    <i class="fas fa-search"></i> Check Availability
+                    <i class="fas fa-search"></i> <?php echo __('Check Availability'); ?>
                 </button>
             </div>
         </form>
@@ -390,8 +390,8 @@ $promotions = $promoStmt->fetchAll();
     <div class="container">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
             <div>
-                <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">About Our Hotel</p>
-                <h2 style="font-size: 42px; margin-bottom: 25px;">Experience the Beauty of Bayawan City</h2>
+                <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('About Our Hotel'); ?></p>
+                <h2 style="font-size: 42px; margin-bottom: 25px;"><?php echo __('Experience the Beauty of Bayawan City'); ?></h2>
                 <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 20px;">
                     Nestled in the heart of Bayawan City, Negros Oriental, Bayawan Bai Hotel offers a perfect blend of modern luxury and natural beauty. Our hotel is inspired by the rich cultural heritage and stunning coastal landscapes of this beautiful region.
                 </p>
@@ -412,7 +412,7 @@ $promotions = $promoStmt->fetchAll();
                         <p style="font-size: 14px; color: #666;">Happy Guests</p>
                     </div>
                 </div>
-                <a href="about.php" class="btn btn-outline">Learn More About Us</a>
+                <a href="about.php" class="btn btn-outline"><?php echo __('Learn More About Us'); ?></a>
             </div>
             <div style="position: relative;">
                 <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hotel View" style="width: 100%; border-radius: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
@@ -429,9 +429,9 @@ $promotions = $promoStmt->fetchAll();
 <section style="padding: 80px 0; background-color: var(--gray-light);">
     <div class="container">
         <div style="text-align: center; margin-bottom: 50px;">
-            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Accommodations</p>
-            <h2 style="font-size: 42px; margin-bottom: 20px;">Our Rooms & Suites</h2>
-            <p style="font-size: 16px; color: #666; max-width: 600px; margin: 0 auto;">Choose from our selection of beautifully designed rooms and suites, each offering comfort and elegance.</p>
+            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Accommodations'); ?></p>
+            <h2 style="font-size: 42px; margin-bottom: 20px;"><?php echo __('Our Rooms & Suites'); ?></h2>
+            <p style="font-size: 16px; color: #666; max-width: 600px; margin: 0 auto;"><?php echo __('Choose from our selection of beautifully designed rooms and suites, each offering comfort and elegance.'); ?></p>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px;">
@@ -451,13 +451,13 @@ $promotions = $promoStmt->fetchAll();
                 <div style="padding: 25px;">
                     <h3 style="font-size: 22px; margin-bottom: 10px;"><?php echo htmlspecialchars($room['category_name']); ?></h3>
                     <div style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 13px; color: #666;">
-                        <span><i class="fas fa-user" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo $room['max_occupancy']; ?> Guests</span>
+                        <span><i class="fas fa-user" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo $room['max_occupancy']; ?> <?php echo __('Guests'); ?></span>
                         <span><i class="fas fa-vector-square" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo $room['room_size_sqm']; ?> m²</span>
                     </div>
                     <p style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 20px;"><?php echo substr(htmlspecialchars($room['description']), 0, 100) . '...'; ?></p>
                     <div style="display: flex; gap: 10px;">
-                        <a href="room-details.php?id=<?php echo $room['category_id']; ?>" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">Details</a>
-                        <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary btn-sm" style="flex: 1; text-align: center;">Book Now</a>
+                        <a href="room-details.php?id=<?php echo $room['category_id']; ?>" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;"><?php echo __('Details'); ?></a>
+                        <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary btn-sm" style="flex: 1; text-align: center;"><?php echo __('Book Now'); ?></a>
                     </div>
                 </div>
             </div>
@@ -465,7 +465,7 @@ $promotions = $promoStmt->fetchAll();
         </div>
         
         <div style="text-align: center; margin-top: 40px;">
-            <a href="rooms.php" class="btn btn-outline">View All Rooms</a>
+            <a href="rooms.php" class="btn btn-outline"><?php echo __('View All Rooms'); ?></a>
         </div>
     </div>
 </section>
@@ -474,41 +474,41 @@ $promotions = $promoStmt->fetchAll();
 <section style="padding: 80px 0; background-color: var(--light-color);">
     <div class="container">
         <div style="text-align: center; margin-bottom: 50px;">
-            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Facilities</p>
-            <h2 style="font-size: 42px; margin-bottom: 20px;">Hotel Amenities</h2>
-            <p style="font-size: 16px; color: #666; max-width: 600px; margin: 0 auto;">Enjoy our world-class facilities designed for your comfort and relaxation.</p>
+            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Facilities'); ?></p>
+            <h2 style="font-size: 42px; margin-bottom: 20px;"><?php echo __('Hotel Amenities'); ?></h2>
+            <p style="font-size: 16px; color: #666; max-width: 600px; margin: 0 auto;"><?php echo __('Enjoy our world-class facilities designed for your comfort and relaxation.'); ?></p>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 30px;">
             <div style="text-align: center; padding: 30px; background-color: var(--gray-light); border-radius: 10px; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-color)'; this.querySelector('i').style.color='white'; this.querySelector('h4').style.color='white'; this.querySelector('p').style.color='rgba(255,255,255,0.8)';" onmouseout="this.style.backgroundColor='var(--gray-light)'; this.querySelector('i').style.color='var(--primary-color)'; this.querySelector('h4').style.color='var(--dark-color)'; this.querySelector('p').style.color='#666';">
                 <i class="fas fa-swimming-pool" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px; transition: color 0.3s;"></i>
-                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;">Infinity Pool</h4>
-                <p style="font-size: 14px; color: #666; transition: color 0.3s;">Stunning pool with bay views</p>
+                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;"><?php echo __('Infinity Pool'); ?></h4>
+                <p style="font-size: 14px; color: #666; transition: color 0.3s;"><?php echo __('Stunning pool with bay views'); ?></p>
             </div>
             <div style="text-align: center; padding: 30px; background-color: var(--gray-light); border-radius: 10px; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-color)'; this.querySelector('i').style.color='white'; this.querySelector('h4').style.color='white'; this.querySelector('p').style.color='rgba(255,255,255,0.8)';" onmouseout="this.style.backgroundColor='var(--gray-light)'; this.querySelector('i').style.color='var(--primary-color)'; this.querySelector('h4').style.color='var(--dark-color)'; this.querySelector('p').style.color='#666';">
                 <i class="fas fa-spa" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px; transition: color 0.3s;"></i>
-                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;">Spa & Wellness</h4>
-                <p style="font-size: 14px; color: #666; transition: color 0.3s;">Rejuvenating treatments</p>
+                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;"><?php echo __('Spa & Wellness'); ?></h4>
+                <p style="font-size: 14px; color: #666; transition: color 0.3s;"><?php echo __('Rejuvenating treatments'); ?></p>
             </div>
             <div style="text-align: center; padding: 30px; background-color: var(--gray-light); border-radius: 10px; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-color)'; this.querySelector('i').style.color='white'; this.querySelector('h4').style.color='white'; this.querySelector('p').style.color='rgba(255,255,255,0.8)';" onmouseout="this.style.backgroundColor='var(--gray-light)'; this.querySelector('i').style.color='var(--primary-color)'; this.querySelector('h4').style.color='var(--dark-color)'; this.querySelector('p').style.color='#666';">
                 <i class="fas fa-dumbbell" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px; transition: color 0.3s;"></i>
-                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;">Fitness Center</h4>
-                <p style="font-size: 14px; color: #666; transition: color 0.3s;">24/7 modern equipment</p>
+                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;"><?php echo __('Fitness Center'); ?></h4>
+                <p style="font-size: 14px; color: #666; transition: color 0.3s;"><?php echo __('24/7 modern equipment'); ?></p>
             </div>
             <div style="text-align: center; padding: 30px; background-color: var(--gray-light); border-radius: 10px; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-color)'; this.querySelector('i').style.color='white'; this.querySelector('h4').style.color='white'; this.querySelector('p').style.color='rgba(255,255,255,0.8)';" onmouseout="this.style.backgroundColor='var(--gray-light)'; this.querySelector('i').style.color='var(--primary-color)'; this.querySelector('h4').style.color='var(--dark-color)'; this.querySelector('p').style.color='#666';">
                 <i class="fas fa-utensils" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px; transition: color 0.3s;"></i>
-                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;">Fine Dining</h4>
-                <p style="font-size: 14px; color: #666; transition: color 0.3s;">Exquisite cuisine</p>
+                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;"><?php echo __('Fine Dining'); ?></h4>
+                <p style="font-size: 14px; color: #666; transition: color 0.3s;"><?php echo __('Exquisite cuisine'); ?></p>
             </div>
             <div style="text-align: center; padding: 30px; background-color: var(--gray-light); border-radius: 10px; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-color)'; this.querySelector('i').style.color='white'; this.querySelector('h4').style.color='white'; this.querySelector('p').style.color='rgba(255,255,255,0.8)';" onmouseout="this.style.backgroundColor='var(--gray-light)'; this.querySelector('i').style.color='var(--primary-color)'; this.querySelector('h4').style.color='var(--dark-color)'; this.querySelector('p').style.color='#666';">
                 <i class="fas fa-wifi" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px; transition: color 0.3s;"></i>
-                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;">Free WiFi</h4>
-                <p style="font-size: 14px; color: #666; transition: color 0.3s;">High-speed internet</p>
+                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;"><?php echo __('Free WiFi'); ?></h4>
+                <p style="font-size: 14px; color: #666; transition: color 0.3s;"><?php echo __('High-speed internet'); ?></p>
             </div>
             <div style="text-align: center; padding: 30px; background-color: var(--gray-light); border-radius: 10px; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--primary-color)'; this.querySelector('i').style.color='white'; this.querySelector('h4').style.color='white'; this.querySelector('p').style.color='rgba(255,255,255,0.8)';" onmouseout="this.style.backgroundColor='var(--gray-light)'; this.querySelector('i').style.color='var(--primary-color)'; this.querySelector('h4').style.color='var(--dark-color)'; this.querySelector('p').style.color='#666';">
                 <i class="fas fa-concierge-bell" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px; transition: color 0.3s;"></i>
-                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;">24/7 Service</h4>
-                <p style="font-size: 14px; color: #666; transition: color 0.3s;">Always at your service</p>
+                <h4 style="font-size: 18px; margin-bottom: 10px; transition: color 0.3s;"><?php echo __('24/7 Service'); ?></h4>
+                <p style="font-size: 14px; color: #666; transition: color 0.3s;"><?php echo __('Always at your service'); ?></p>
             </div>
         </div>
     </div>
@@ -519,9 +519,9 @@ $promotions = $promoStmt->fetchAll();
 <section style="padding: 80px 0; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
     <div class="container">
         <div style="text-align: center; margin-bottom: 50px;">
-            <p style="color: rgba(255,255,255,0.8); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Special Offers</p>
-            <h2 style="font-size: 42px; margin-bottom: 20px; color: white;">Current Promotions</h2>
-            <p style="font-size: 16px; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto;">Take advantage of our exclusive deals and save on your next stay.</p>
+            <p style="color: rgba(255,255,255,0.8); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Special Offers'); ?></p>
+            <h2 style="font-size: 42px; margin-bottom: 20px; color: white;"><?php echo __('Current Promotions'); ?></h2>
+            <p style="font-size: 16px; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto;"><?php echo __('Take advantage of our exclusive deals and save on your next stay.'); ?></p>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
@@ -537,11 +537,11 @@ $promotions = $promoStmt->fetchAll();
                 <p style="font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 20px;"><?php echo htmlspecialchars($promo['description']); ?></p>
                 <?php if ($promo['promo_code']): ?>
                 <div style="background-color: var(--gray-light); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                    <p style="font-size: 13px; color: #666; margin-bottom: 5px;">Use Promo Code:</p>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 5px;"><?php echo __('Use Promo Code:'); ?></p>
                     <code style="font-size: 20px; color: var(--primary-color); font-weight: 600;"><?php echo htmlspecialchars($promo['promo_code']); ?></code>
                 </div>
                 <?php endif; ?>
-                <a href="booking.php?promo=<?php echo $promo['promo_code']; ?>" class="btn btn-primary">Book Now</a>
+                <a href="booking.php?promo=<?php echo $promo['promo_code']; ?>" class="btn btn-primary"><?php echo __('Book Now'); ?></a>
             </div>
             <?php endforeach; ?>
         </div>
@@ -553,8 +553,8 @@ $promotions = $promoStmt->fetchAll();
 <section style="padding: 80px 0; background-color: var(--gray-light);">
     <div class="container">
         <div style="text-align: center; margin-bottom: 50px;">
-            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Testimonials</p>
-            <h2 style="font-size: 42px; margin-bottom: 20px;">What Our Guests Say</h2>
+            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Testimonials'); ?></p>
+            <h2 style="font-size: 42px; margin-bottom: 20px;"><?php echo __('What Our Guests Say'); ?></h2>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
@@ -625,8 +625,8 @@ $promotions = $promoStmt->fetchAll();
 <section style="padding: 80px 0; background-color: var(--light-color);">
     <div class="container">
         <div style="text-align: center; margin-bottom: 50px;">
-            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Gallery</p>
-            <h2 style="font-size: 42px; margin-bottom: 20px;">Explore Our Hotel</h2>
+            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Gallery'); ?></p>
+            <h2 style="font-size: 42px; margin-bottom: 20px;"><?php echo __('Explore Our Hotel'); ?></h2>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
@@ -651,7 +651,7 @@ $promotions = $promoStmt->fetchAll();
         </div>
         
         <div style="text-align: center; margin-top: 40px;">
-            <a href="gallery.php" class="btn btn-outline">View Full Gallery</a>
+            <a href="gallery.php" class="btn btn-outline"><?php echo __('View Full Gallery'); ?></a>
         </div>
     </div>
 </section>
@@ -659,11 +659,11 @@ $promotions = $promoStmt->fetchAll();
 <!-- CTA Section -->
 <section style="padding: 100px 0; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover fixed no-repeat;">
     <div class="container" style="text-align: center;">
-        <h2 style="font-size: 48px; color: white; margin-bottom: 20px;">Ready to Experience Bayawan?</h2>
-        <p style="font-size: 20px; color: rgba(255,255,255,0.9); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;">Book your stay today and discover the beauty of Negros Oriental with world-class hospitality.</p>
+        <h2 style="font-size: 48px; color: white; margin-bottom: 20px;"><?php echo __('Ready to Experience Bayawan?'); ?></h2>
+        <p style="font-size: 20px; color: rgba(255,255,255,0.9); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;"><?php echo __('Book your stay today and discover the beauty of Negros Oriental with world-class hospitality.'); ?></p>
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-            <a href="booking.php" class="btn btn-primary" style="padding: 18px 50px; font-size: 18px;">Book Your Stay Now</a>
-            <a href="contact.php" class="btn btn-outline" style="padding: 18px 50px; font-size: 18px; border-color: white; color: white;">Contact Us</a>
+            <a href="booking.php" class="btn btn-primary" style="padding: 18px 50px; font-size: 18px;"><?php echo __('Book Your Stay Now'); ?></a>
+            <a href="contact.php" class="btn btn-outline" style="padding: 18px 50px; font-size: 18px; border-color: white; color: white;"><?php echo __('Contact Us'); ?></a>
         </div>
     </div>
 </section>

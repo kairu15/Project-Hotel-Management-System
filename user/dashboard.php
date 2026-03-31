@@ -1,5 +1,4 @@
 <?php
-$pageTitle = 'My Dashboard';
 require_once '../includes/config.php';
 
 // Redirect if not logged in
@@ -8,6 +7,7 @@ if (!isLoggedIn()) {
 }
 
 require_once '../includes/user-header.php';
+$pageTitle = __('My Dashboard');
 
 $db = getDB();
 $userId = getUserId();
@@ -89,8 +89,8 @@ $user = $userStmt->fetch();
 
 <!-- Dashboard Overview -->
 <div style="margin-bottom: 30px;">
-    <h2 style="font-size: 28px; margin-bottom: 10px;">Dashboard Overview</h2>
-    <p style="color: #666;">Here's what's happening with your account</p>
+    <h1 style="font-size: 32px; margin-bottom: 10px;"><?php echo __('Welcome back'); ?>, <?php echo htmlspecialchars($user['first_name']); ?>!</h1>
+    <p style="color: #666;"><?php echo __('Here\'s what\'s happening with your account'); ?></p>
 </div>
 
 <!-- Stats Cards -->
@@ -100,10 +100,10 @@ $user = $userStmt->fetch();
             <div class="stat-icon" style="background-color: rgba(54,125,138,0.1); color: var(--primary-color);">
                 <i class="fas fa-calendar"></i>
             </div>
-            <span class="stat-label">Lifetime</span>
+            <span class="stat-label"><?php echo __('Lifetime'); ?></span>
         </div>
         <div class="stat-value"><?php echo $totalBookings; ?></div>
-        <p class="stat-desc">Total Bookings</p>
+        <p class="stat-desc"><?php echo __('Total Bookings'); ?></p>
     </div>
     
     <div class="stat-card">
@@ -111,10 +111,10 @@ $user = $userStmt->fetch();
             <div class="stat-icon" style="background-color: rgba(255,193,7,0.1); color: var(--warning-color);">
                 <i class="fas fa-clock"></i>
             </div>
-            <span class="stat-label" style="color: var(--warning-color); background-color: rgba(255,193,7,0.1);">Active</span>
+            <span class="stat-label" style="color: var(--warning-color); background-color: rgba(255,193,7,0.1);"><?php echo __('Active'); ?></span>
         </div>
         <div class="stat-value" style="color: var(--warning-color);"><?php echo count($upcomingStays); ?></div>
-        <p class="stat-desc">Upcoming Stays</p>
+        <p class="stat-desc"><?php echo __('Upcoming Stays'); ?></p>
     </div>
     
     <div class="stat-card">
@@ -122,10 +122,10 @@ $user = $userStmt->fetch();
             <div class="stat-icon" style="background-color: rgba(40,167,69,0.1); color: var(--success-color);">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <span class="stat-label">History</span>
+            <span class="stat-label"><?php echo __('History'); ?></span>
         </div>
         <div class="stat-value" style="color: var(--success-color);"><?php echo count($completedStays); ?></div>
-        <p class="stat-desc">Completed Stays</p>
+        <p class="stat-desc"><?php echo __('Completed Stays'); ?></p>
     </div>
     
     <div class="stat-card">
@@ -133,26 +133,26 @@ $user = $userStmt->fetch();
             <div class="stat-icon" style="background-color: rgba(220,53,69,0.1); color: var(--danger-color);">
                 <i class="fas fa-gift"></i>
             </div>
-            <span class="stat-label">Rewards</span>
+            <span class="stat-label"><?php echo __('Rewards'); ?></span>
         </div>
         <div class="stat-value" style="color: var(--danger-color);"><?php echo number_format($user['loyalty_points']); ?></div>
-        <p class="stat-desc">Loyalty Points</p>
+        <p class="stat-desc"><?php echo __('Loyalty Points'); ?></p>
     </div>
 </div>
 
 <!-- Event Bookings Overview -->
 <div style="margin-bottom: 30px;">
-    <h3 style="font-size: 20px; margin-bottom: 20px;"><i class="fas fa-calendar-check" style="color: var(--primary-color); margin-right: 10px;"></i>Event Bookings Overview</h3>
+    <h3 style="font-size: 20px; margin-bottom: 20px;"><i class="fas fa-calendar-check" style="color: var(--primary-color); margin-right: 10px;"></i><?php echo __('Event Bookings Overview'); ?></h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
         <div class="stat-card">
             <div class="stat-header">
                 <div class="stat-icon" style="background-color: rgba(255,193,7,0.1); color: var(--warning-color);">
                     <i class="fas fa-clock"></i>
                 </div>
-                <span class="stat-label" style="color: var(--warning-color); background-color: rgba(255,193,7,0.1);">Pending</span>
+                <span class="stat-label" style="color: var(--warning-color); background-color: rgba(255,193,7,0.1);"><?php echo __('Pending'); ?></span>
             </div>
             <div class="stat-value" style="color: var(--warning-color);"><?php echo $eventPending; ?></div>
-            <p class="stat-desc">Awaiting confirmation</p>
+            <p class="stat-desc"><?php echo __('Awaiting confirmation'); ?></p>
         </div>
 
         <div class="stat-card">
@@ -160,10 +160,10 @@ $user = $userStmt->fetch();
                 <div class="stat-icon" style="background-color: rgba(40,167,69,0.1); color: var(--success-color);">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <span class="stat-label" style="color: var(--success-color); background-color: rgba(40,167,69,0.1);">Confirmed</span>
+                <span class="stat-label" style="color: var(--success-color); background-color: rgba(40,167,69,0.1);"><?php echo __('Confirmed'); ?></span>
             </div>
             <div class="stat-value" style="color: var(--success-color);"><?php echo $eventConfirmed; ?></div>
-            <p class="stat-desc">Upcoming events</p>
+            <p class="stat-desc"><?php echo __('Upcoming events'); ?></p>
         </div>
 
         <div class="stat-card">
@@ -171,10 +171,10 @@ $user = $userStmt->fetch();
                 <div class="stat-icon" style="background-color: rgba(54,125,138,0.1); color: var(--primary-color);">
                     <i class="fas fa-calendar-check"></i>
                 </div>
-                <span class="stat-label">Completed</span>
+                <span class="stat-label"><?php echo __('Completed'); ?></span>
             </div>
             <div class="stat-value"><?php echo $eventCompleted; ?></div>
-            <p class="stat-desc">Past events</p>
+            <p class="stat-desc"><?php echo __('Past events'); ?></p>
         </div>
 
         <div class="stat-card">
@@ -182,27 +182,27 @@ $user = $userStmt->fetch();
                 <div class="stat-icon" style="background-color: rgba(220,53,69,0.1); color: var(--danger-color);">
                     <i class="fas fa-times-circle"></i>
                 </div>
-                <span class="stat-label" style="color: var(--danger-color); background-color: rgba(220,53,69,0.1);">Cancelled</span>
+                <span class="stat-label" style="color: var(--danger-color); background-color: rgba(220,53,69,0.1);"><?php echo __('Cancelled'); ?></span>
             </div>
             <div class="stat-value" style="color: var(--danger-color);"><?php echo $eventCancelled; ?></div>
-            <p class="stat-desc">Cancelled events</p>
+            <p class="stat-desc"><?php echo __('Cancelled events'); ?></p>
         </div>
     </div>
 </div>
 
 <!-- Food Orders Overview -->
 <div style="margin-bottom: 30px;">
-    <h3 style="font-size: 20px; margin-bottom: 20px;"><i class="fas fa-utensils" style="color: var(--primary-color); margin-right: 10px;"></i>Food Orders Overview</h3>
+    <h3 style="font-size: 20px; margin-bottom: 20px;"><i class="fas fa-utensils" style="color: var(--primary-color); margin-right: 10px;"></i><?php echo __('Food Orders Overview'); ?></h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
         <div class="stat-card">
             <div class="stat-header">
                 <div class="stat-icon" style="background-color: rgba(255,193,7,0.1); color: var(--warning-color);">
                     <i class="fas fa-clock"></i>
                 </div>
-                <span class="stat-label" style="color: var(--warning-color); background-color: rgba(255,193,7,0.1);">Pending</span>
+                <span class="stat-label" style="color: var(--warning-color); background-color: rgba(255,193,7,0.1);"><?php echo __('Pending'); ?></span>
             </div>
             <div class="stat-value" style="color: var(--warning-color);"><?php echo $foodPending; ?></div>
-            <p class="stat-desc">Orders in progress</p>
+            <p class="stat-desc"><?php echo __('Orders in progress'); ?></p>
         </div>
 
         <div class="stat-card">
@@ -210,10 +210,10 @@ $user = $userStmt->fetch();
                 <div class="stat-icon" style="background-color: rgba(40,167,69,0.1); color: var(--success-color);">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <span class="stat-label" style="color: var(--success-color); background-color: rgba(40,167,69,0.1);">Delivered</span>
+                <span class="stat-label" style="color: var(--success-color); background-color: rgba(40,167,69,0.1);"><?php echo __('Delivered'); ?></span>
             </div>
             <div class="stat-value" style="color: var(--success-color);"><?php echo $foodDelivered; ?></div>
-            <p class="stat-desc">Completed orders</p>
+            <p class="stat-desc"><?php echo __('Completed orders'); ?></p>
         </div>
 
         <div class="stat-card">
@@ -221,10 +221,10 @@ $user = $userStmt->fetch();
                 <div class="stat-icon" style="background-color: rgba(54,125,138,0.1); color: var(--primary-color);">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <span class="stat-label">Total Spent</span>
+                <span class="stat-label"><?php echo __('Total Spent'); ?></span>
             </div>
             <div class="stat-value"><?php echo formatPrice($foodTotalSpent); ?></div>
-            <p class="stat-desc">On food orders</p>
+            <p class="stat-desc"><?php echo __('On food orders'); ?></p>
         </div>
     </div>
 </div>
@@ -232,9 +232,9 @@ $user = $userStmt->fetch();
 <!-- Recent Bookings -->
 <div class="card" style="margin-bottom: 30px;">
     <div class="card-header">
-        <h3><i class="fas fa-history" style="color: var(--primary-color); margin-right: 10px;"></i>Recent Bookings</h3>
+        <h3><i class="fas fa-history" style="color: var(--primary-color); margin-right: 10px;"></i><?php echo __('Recent Bookings'); ?></h3>
         <a href="my-bookings.php" style="color: var(--primary-color); text-decoration: none; font-size: 14px; font-weight: 600;">
-            View All <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+            <?php echo __('View All'); ?> <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
         </a>
     </div>
     
@@ -261,11 +261,11 @@ $user = $userStmt->fetch();
                 </p>
             </div>
             <div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 3px;">Booking Ref</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 3px;"><?php echo __('Booking Ref'); ?></p>
                 <p style="font-size: 14px; font-weight: 600;">#BBH-<?php echo $booking['booking_id']; ?></p>
             </div>
             <div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 3px;">Amount</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 3px;"><?php echo __('Amount'); ?></p>
                 <p style="font-size: 14px; font-weight: 600; color: var(--primary-color);"><?php echo formatPrice($booking['total_amount']); ?></p>
             </div>
             <div>
@@ -276,7 +276,7 @@ $user = $userStmt->fetch();
             </div>
             <div>
                 <a href="booking-details.php?id=<?php echo $booking['booking_id']; ?>" class="btn btn-outline btn-sm">
-                    <i class="fas fa-eye"></i> View
+                    <i class="fas fa-eye"></i> <?php echo __('View'); ?>
                 </a>
             </div>
         </div>
@@ -285,9 +285,9 @@ $user = $userStmt->fetch();
     <?php else: ?>
     <div style="padding: 60px; text-align: center;">
         <i class="fas fa-calendar-times" style="font-size: 60px; color: var(--gray-medium); margin-bottom: 20px;"></i>
-        <h4 style="font-size: 20px; margin-bottom: 10px;">No Bookings Yet</h4>
-        <p style="color: #666; margin-bottom: 25px;">Start exploring our rooms and make your first reservation!</p>
-        <a href="../rooms.php" class="btn btn-primary">Browse Rooms</a>
+        <h4 style="font-size: 20px; margin-bottom: 10px;"><?php echo __('No Bookings Yet'); ?></h4>
+        <p style="color: #666; margin-bottom: 25px;"><?php echo __('Start exploring our rooms and make your first reservation!'); ?></p>
+        <a href="../rooms.php" class="btn btn-primary"><?php echo __('Browse Rooms'); ?></a>
     </div>
     <?php endif; ?>
 </div>
@@ -295,9 +295,9 @@ $user = $userStmt->fetch();
 <!-- Recent Event Bookings -->
 <div class="card" style="margin-bottom: 30px;">
     <div class="card-header">
-        <h3><i class="fas fa-calendar-check" style="color: var(--primary-color); margin-right: 10px;"></i>Recent Event Bookings</h3>
+        <h3><i class="fas fa-calendar-check" style="color: var(--primary-color); margin-right: 10px;"></i><?php echo __('Recent Event Bookings'); ?></h3>
         <a href="my-event-bookings.php" style="color: var(--primary-color); text-decoration: none; font-size: 14px; font-weight: 600;">
-            View All <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+            <?php echo __('View All'); ?> <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
         </a>
     </div>
     
@@ -321,11 +321,11 @@ $user = $userStmt->fetch();
                 </p>
             </div>
             <div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 3px;">Event Date</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 3px;"><?php echo __('Event Date'); ?></p>
                 <p style="font-size: 14px; font-weight: 600;"><?php echo formatDate($eventBooking['event_date']); ?></p>
             </div>
             <div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 3px;">Guests</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 3px;"><?php echo __('Guests'); ?></p>
                 <p style="font-size: 14px; font-weight: 600;"><?php echo $eventBooking['guests_count'] ? number_format($eventBooking['guests_count']) : 'N/A'; ?></p>
             </div>
             <div>
@@ -336,7 +336,7 @@ $user = $userStmt->fetch();
             </div>
             <div>
                 <a href="my-event-bookings.php" class="btn btn-outline btn-sm">
-                    <i class="fas fa-eye"></i> View
+                    <i class="fas fa-eye"></i> <?php echo __('View'); ?>
                 </a>
             </div>
         </div>
@@ -345,9 +345,9 @@ $user = $userStmt->fetch();
     <?php else: ?>
     <div style="padding: 60px; text-align: center;">
         <i class="fas fa-calendar-times" style="font-size: 60px; color: var(--gray-medium); margin-bottom: 20px;"></i>
-        <h4 style="font-size: 20px; margin-bottom: 10px;">No Event Bookings Yet</h4>
-        <p style="color: #666; margin-bottom: 25px;">Book an event space for your next special occasion!</p>
-        <a href="../events.php" class="btn btn-primary">Browse Event Spaces</a>
+        <h4 style="font-size: 20px; margin-bottom: 10px;"><?php echo __('No Event Bookings Yet'); ?></h4>
+        <p style="color: #666; margin-bottom: 25px;"><?php echo __('Book an event space for your next special occasion!'); ?></p>
+        <a href="../events.php" class="btn btn-primary"><?php echo __('Browse Event Spaces'); ?></a>
     </div>
     <?php endif; ?>
 </div>
@@ -355,9 +355,9 @@ $user = $userStmt->fetch();
 <!-- Recent Food Orders -->
 <div class="card" style="margin-bottom: 30px;">
     <div class="card-header">
-        <h3><i class="fas fa-utensils" style="color: var(--primary-color); margin-right: 10px;"></i>Recent Food Orders</h3>
+        <h3><i class="fas fa-utensils" style="color: var(--primary-color); margin-right: 10px;"></i><?php echo __('Recent Food Orders'); ?></h3>
         <a href="my-food-orders.php" style="color: var(--primary-color); text-decoration: none; font-size: 14px; font-weight: 600;">
-            View All <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+            <?php echo __('View All'); ?> <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
         </a>
     </div>
     
@@ -381,11 +381,11 @@ $user = $userStmt->fetch();
                 </p>
             </div>
             <div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 3px;">Quantity</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 3px;"><?php echo __('Quantity'); ?></p>
                 <p style="font-size: 14px; font-weight: 600;"><?php echo $foodOrder['quantity']; ?></p>
             </div>
             <div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 3px;">Total</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 3px;"><?php echo __('Total'); ?></p>
                 <p style="font-size: 14px; font-weight: 600; color: var(--primary-color);"><?php echo formatPrice($foodOrder['total_price']); ?></p>
             </div>
             <div>

@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Rooms & Accommodations';
 require_once 'includes/header.php';
+$pageTitle = __('Rooms & Accommodations');
 
 // Get all room categories
 $db = getDB();
@@ -16,8 +16,8 @@ $filterBed = $_GET['bed'] ?? '';
 <!-- Page Header -->
 <div class="page-header">
     <div class="container">
-        <h1>Rooms & Suites</h1>
-        <p>Discover our collection of thoughtfully designed accommodations</p>
+        <h1><?php echo __('Rooms & Suites'); ?></h1>
+        <p><?php echo __('Discover our collection of thoughtfully designed accommodations'); ?></p>
     </div>
 </div>
 
@@ -25,9 +25,9 @@ $filterBed = $_GET['bed'] ?? '';
 <div class="breadcrumb">
     <div class="container">
         <ul>
-            <li><a href="index.php">Home</a></li>
+            <li><a href="index.php"><?php echo __('Home'); ?></a></li>
             <li>/</li>
-            <li>Rooms & Suites</li>
+            <li><?php echo __('Rooms & Suites'); ?></li>
         </ul>
     </div>
 </div>
@@ -39,43 +39,43 @@ $filterBed = $_GET['bed'] ?? '';
         <div style="background-color: white; padding: 25px; border-radius: 10px; margin-bottom: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
             <form method="GET" style="display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 15px; align-items: end;">
                 <div>
-                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;">Price Range</label>
+                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;"><?php echo __('Price Range'); ?></label>
                     <select name="price" style="width: 100%; padding: 12px; border: 1px solid var(--gray-medium); border-radius: 5px; font-size: 14px;">
-                        <option value="">All Prices</option>
-                        <option value="0-3000" <?php echo $filterPrice == '0-3000' ? 'selected' : ''; ?>>Below ₱3,000</option>
-                        <option value="3000-5000" <?php echo $filterPrice == '3000-5000' ? 'selected' : ''; ?>>₱3,000 - ₱5,000</option>
-                        <option value="5000+" <?php echo $filterPrice == '5000+' ? 'selected' : ''; ?>>Above ₱5,000</option>
+                        <option value=""><?php echo __('All Prices'); ?></option>
+                        <option value="0-3000" <?php echo $filterPrice == '0-3000' ? 'selected' : ''; ?>><?php echo __('Below ₱3,000'); ?></option>
+                        <option value="3000-5000" <?php echo $filterPrice == '3000-5000' ? 'selected' : ''; ?>><?php echo __('₱3,000 - ₱5,000'); ?></option>
+                        <option value="5000+" <?php echo $filterPrice == '5000+' ? 'selected' : ''; ?>><?php echo __('Above ₱5,000'); ?></option>
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;">Guests</label>
+                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;"><?php echo __('Guests'); ?></label>
                     <select name="capacity" style="width: 100%; padding: 12px; border: 1px solid var(--gray-medium); border-radius: 5px; font-size: 14px;">
-                        <option value="">Any</option>
-                        <option value="2" <?php echo $filterCapacity == '2' ? 'selected' : ''; ?>>1-2 Guests</option>
-                        <option value="3" <?php echo $filterCapacity == '3' ? 'selected' : ''; ?>>3 Guests</option>
-                        <option value="4" <?php echo $filterCapacity == '4' ? 'selected' : ''; ?>>4+ Guests</option>
+                        <option value=""><?php echo __('Any'); ?></option>
+                        <option value="2" <?php echo $filterCapacity == '2' ? 'selected' : ''; ?>><?php echo __('1-2 Guests'); ?></option>
+                        <option value="3" <?php echo $filterCapacity == '3' ? 'selected' : ''; ?>><?php echo __('3 Guests'); ?></option>
+                        <option value="4" <?php echo $filterCapacity == '4' ? 'selected' : ''; ?>><?php echo __('4+ Guests'); ?></option>
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;">Bed Type</label>
+                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;"><?php echo __('Bed Type'); ?></label>
                     <select name="bed" style="width: 100%; padding: 12px; border: 1px solid var(--gray-medium); border-radius: 5px; font-size: 14px;">
-                        <option value="">Any</option>
-                        <option value="Queen" <?php echo $filterBed == 'Queen' ? 'selected' : ''; ?>>Queen Bed</option>
-                        <option value="King" <?php echo $filterBed == 'King' ? 'selected' : ''; ?>>King Bed</option>
-                        <option value="Twin" <?php echo $filterBed == 'Twin' ? 'selected' : ''; ?>>Twin Beds</option>
+                        <option value=""><?php echo __('Any'); ?></option>
+                        <option value="Queen" <?php echo $filterBed == 'Queen' ? 'selected' : ''; ?>><?php echo __('Queen Bed'); ?></option>
+                        <option value="King" <?php echo $filterBed == 'King' ? 'selected' : ''; ?>><?php echo __('King Bed'); ?></option>
+                        <option value="Twin" <?php echo $filterBed == 'Twin' ? 'selected' : ''; ?>><?php echo __('Twin Beds'); ?></option>
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;">Sort By</label>
+                    <label style="display: block; font-size: 13px; color: #666; margin-bottom: 8px;"><?php echo __('Sort By'); ?></label>
                     <select name="sort" style="width: 100%; padding: 12px; border: 1px solid var(--gray-medium); border-radius: 5px; font-size: 14px;">
-                        <option value="price_asc">Price: Low to High</option>
-                        <option value="price_desc">Price: High to Low</option>
-                        <option value="capacity">Capacity</option>
+                        <option value="price_asc"><?php echo __('Price: Low to High'); ?></option>
+                        <option value="price_desc"><?php echo __('Price: High to Low'); ?></option>
+                        <option value="capacity"><?php echo __('Capacity'); ?></option>
                     </select>
                 </div>
                 <div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <i class="fas fa-filter"></i> Filter
+                        <i class="fas fa-filter"></i> <?php echo __('Filter'); ?>
                     </button>
                 </div>
             </form>
@@ -114,7 +114,7 @@ $filterBed = $_GET['bed'] ?? '';
                 <div style="position: relative; overflow: hidden;">
                     <img src="<?php echo htmlspecialchars($primaryImage); ?>" alt="<?php echo htmlspecialchars($room['category_name']); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                     <div style="position: absolute; top: 15px; left: 15px; background-color: var(--primary-color); color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: 600;">
-                        From <?php echo formatPrice($room['base_price']); ?>
+                        <?php echo __('From'); ?> <?php echo formatPrice($room['base_price']); ?>
                     </div>
                 </div>
                 
@@ -124,7 +124,7 @@ $filterBed = $_GET['bed'] ?? '';
                     
                     <!-- Room Specs -->
                     <div style="display: flex; gap: 20px; margin-bottom: 15px; font-size: 14px; color: #666;">
-                        <span><i class="fas fa-user" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo $room['max_occupancy']; ?> Guests</span>
+                        <span><i class="fas fa-user" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo $room['max_occupancy']; ?> <?php echo __('Guests'); ?></span>
                         <span><i class="fas fa-vector-square" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo $room['room_size_sqm']; ?> m²</span>
                         <span><i class="fas fa-bed" style="color: var(--primary-color); margin-right: 5px;"></i> <?php echo htmlspecialchars($room['bed_type']); ?></span>
                     </div>
@@ -142,14 +142,14 @@ $filterBed = $_GET['bed'] ?? '';
                         </span>
                         <?php endforeach; ?>
                         <?php if (count($amenities) > 4): ?>
-                        <span style="font-size: 13px; color: var(--primary-color);">+<?php echo count($amenities) - 4; ?> more</span>
+                        <span style="font-size: 13px; color: var(--primary-color);">+<?php echo count($amenities) - 4; ?> <?php echo __('more'); ?></span>
                         <?php endif; ?>
                     </div>
                     
                     <!-- Actions -->
                     <div style="display: flex; gap: 10px;">
-                        <a href="room-details.php?id=<?php echo $room['category_id']; ?>" class="btn btn-outline" style="flex: 1; text-align: center;">View Details</a>
-                        <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary" style="flex: 1; text-align: center;">Book Now</a>
+                        <a href="room-details.php?id=<?php echo $room['category_id']; ?>" class="btn btn-outline" style="flex: 1; text-align: center;"><?php echo __('View Details'); ?></a>
+                        <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary" style="flex: 1; text-align: center;"><?php echo __('Book Now'); ?></a>
                     </div>
                 </div>
             </div>
@@ -158,12 +158,12 @@ $filterBed = $_GET['bed'] ?? '';
         
         <!-- Compare Section -->
         <div style="margin-top: 60px; text-align: center;">
-            <h3 style="font-size: 28px; margin-bottom: 30px;">Compare Room Types</h3>
+            <h3 style="font-size: 28px; margin-bottom: 30px;"><?php echo __('Compare Room Types'); ?></h3>
             <div style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background-color: var(--primary-color); color: white;">
-                            <th style="padding: 20px; text-align: left; font-weight: 600;">Feature</th>
+                            <th style="padding: 20px; text-align: left; font-weight: 600;"><?php echo __('Feature'); ?></th>
                             <?php foreach ($rooms as $room): ?>
                             <th style="padding: 20px; text-align: center; font-weight: 600;"><?php echo htmlspecialchars($room['category_name']); ?></th>
                             <?php endforeach; ?>
@@ -171,34 +171,34 @@ $filterBed = $_GET['bed'] ?? '';
                     </thead>
                     <tbody>
                         <tr style="border-bottom: 1px solid var(--gray-light);">
-                            <td style="padding: 15px 20px; font-weight: 500;">Max Occupancy</td>
+                            <td style="padding: 15px 20px; font-weight: 500;"><?php echo __('Max Occupancy'); ?></td>
                             <?php foreach ($rooms as $room): ?>
-                            <td style="padding: 15px 20px; text-align: center; color: #666;"><?php echo $room['max_occupancy']; ?> Guests</td>
+                            <td style="padding: 15px 20px; text-align: center; color: #666;"><?php echo $room['max_occupancy']; ?> <?php echo __('Guests'); ?></td>
                             <?php endforeach; ?>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--gray-light);">
-                            <td style="padding: 15px 20px; font-weight: 500;">Room Size</td>
+                            <td style="padding: 15px 20px; font-weight: 500;"><?php echo __('Room Size'); ?></td>
                             <?php foreach ($rooms as $room): ?>
                             <td style="padding: 15px 20px; text-align: center; color: #666;"><?php echo $room['room_size_sqm']; ?> m²</td>
                             <?php endforeach; ?>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--gray-light);">
-                            <td style="padding: 15px 20px; font-weight: 500;">Bed Type</td>
+                            <td style="padding: 15px 20px; font-weight: 500;"><?php echo __('Bed Type'); ?></td>
                             <?php foreach ($rooms as $room): ?>
                             <td style="padding: 15px 20px; text-align: center; color: #666;"><?php echo htmlspecialchars($room['bed_type']); ?></td>
                             <?php endforeach; ?>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--gray-light);">
-                            <td style="padding: 15px 20px; font-weight: 500;">Starting Price</td>
+                            <td style="padding: 15px 20px; font-weight: 500;"><?php echo __('Starting Price'); ?></td>
                             <?php foreach ($rooms as $room): ?>
                             <td style="padding: 15px 20px; text-align: center; color: var(--primary-color); font-weight: 600;"><?php echo formatPrice($room['base_price']); ?></td>
                             <?php endforeach; ?>
                         </tr>
                         <tr>
-                            <td style="padding: 15px 20px; font-weight: 500;">Action</td>
+                            <td style="padding: 15px 20px; font-weight: 500;"><?php echo __('Action'); ?></td>
                             <?php foreach ($rooms as $room): ?>
                             <td style="padding: 15px 20px; text-align: center;">
-                                <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary btn-sm">Book</a>
+                                <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary btn-sm"><?php echo __('Book'); ?></a>
                             </td>
                             <?php endforeach; ?>
                         </tr>

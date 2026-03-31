@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Photo Gallery';
 require_once 'includes/header.php';
+$pageTitle = __('Photo Gallery');
 
 // Get gallery images from database
 $db = getDB();

@@ -175,3 +175,11 @@
 [2026-03-30 07:37:49] [User: 1] Admin profile updated - User ID: 1
 [2026-03-30 08:15:32] [User: 28] User login - User ID: 28
 [2026-03-30 08:16:53] [User: 28] Profile updated - User ID: 28
+[2026-03-31 14:41:16] [User: 28] User login - User ID: 28
+[2026-03-31 16:27:56] [User: 1] User login - User ID: 1
+[2026-03-31 16:30:33] [User: 2] User login - User ID: 2
+[2026-03-31 16:33:38] [User: 1] User login - User ID: 1
+[2026-03-31 16:34:18] [User: 28] User login - User ID: 28
+[2026-03-31 16:37:58] [User: 28] Payment processed - Booking ID: 52, Method: gcash, Status: pending
+[2026-03-31 16:38:48] [User: 28] Payment processed - Booking ID: 53, Method: gcash, Status: paid
+[2026-03-31 16:42:23] [User: 28] Payment processed - Booking ID: 54, Method: gcash, Status: paid

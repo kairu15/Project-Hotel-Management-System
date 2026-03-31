@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Contact Us';
 require_once 'includes/header.php';
+$pageTitle = __('Contact Us');
 
 $success = '';
 $error = '';
@@ -14,12 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $message = sanitizeInput($_POST['message'] ?? '');
     
     if (empty($name) || empty($email) || empty($subject) || empty($message)) {
-        $error = 'Please fill in all required fields';
+        $error = __('Please fill in all required fields');
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Please enter a valid email address';
+        $error = __('Please enter a valid email address');
     } else {
         // In production, send email here
-        $success = 'Thank you for your message! We will get back to you within 24 hours.';
+        $success = __('Thank you for your message! We will get back to you within 24 hours.');
         logActivity('Contact form submitted', 'From: ' . $email);
     }
 }
@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Page Header -->
 <div class="page-header">
     <div class="container">
-        <h1>Contact Us</h1>
-        <p>We'd love to hear from you</p>
+        <h1><?php echo __('Contact Us'); ?></h1>
+        <p><?php echo __('We\'d love to hear from you'); ?></p>
     </div>
 </div>
 
@@ -39,9 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 60px;">
             <!-- Contact Info -->
             <div>
-                <h2 style="font-size: 32px; margin-bottom: 30px;">Get in Touch</h2>
+                <h2 style="font-size: 32px; margin-bottom: 30px;"><?php echo __('Get in Touch'); ?></h2>
                 <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 40px;">
-                    Have questions about your reservation, or need assistance with planning your stay? Our team is here to help you 24/7.
+                    <?php echo __('Have questions about your reservation, or need assistance with planning your stay? Our team is here to help you 24/7.'); ?>
                 </p>
                 
                 <div style="margin-bottom: 40px;">

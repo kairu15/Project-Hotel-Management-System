@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Dining & Restaurants';
 require_once 'includes/header.php';
+$pageTitle = __('Dining & Restaurants');
 
 // Get menu categories and items
 $db = getDB();
@@ -21,8 +21,8 @@ foreach ($menuItems as $item) {
 <!-- Page Header -->
 <div class="page-header">
     <div class="container">
-        <h1>Dining & Restaurants</h1>
-        <p>Savor the authentic flavors of Negros Oriental</p>
+        <h1><?php echo __('Dining & Restaurants'); ?></h1>
+        <p><?php echo __('Savor the authentic flavors of Negros Oriental'); ?></p>
     </div>
 </div>
 
@@ -30,9 +30,9 @@ foreach ($menuItems as $item) {
 <div class="breadcrumb">
     <div class="container">
         <ul>
-            <li><a href="index.php">Home</a></li>
+            <li><a href="index.php"><?php echo __('Home'); ?></a></li>
             <li>/</li>
-            <li>Dining</li>
+            <li><?php echo __('Dining'); ?></li>
         </ul>
     </div>
 </div>
@@ -40,9 +40,9 @@ foreach ($menuItems as $item) {
 <!-- Hero Section -->
 <section style="padding: 0; position: relative; height: 500px; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; max-width: 800px; padding: 0 20px;">
-        <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px;">Culinary Excellence</p>
-        <h2 style="font-size: 48px; color: white; margin-bottom: 25px;">A Feast for the Senses</h2>
-        <p style="font-size: 18px; line-height: 1.8; opacity: 0.9;">Experience the rich culinary heritage of Negros Oriental through our expertly crafted dishes, prepared with the freshest local ingredients</p>
+        <p style="font-size: 18px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px;"><?php echo __('Culinary Excellence'); ?></p>
+        <h2 style="font-size: 48px; color: white; margin-bottom: 25px;"><?php echo __('A Feast for the Senses'); ?></h2>
+        <p style="font-size: 18px; line-height: 1.8; opacity: 0.9;"><?php echo __('Experience the rich culinary heritage of Negros Oriental through our expertly crafted dishes, prepared with the freshest local ingredients'); ?></p>
     </div>
 </section>
 
@@ -52,21 +52,21 @@ foreach ($menuItems as $item) {
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;">
             <div style="text-align: center; padding: 40px; background-color: var(--gray-light); border-radius: 10px;">
                 <i class="fas fa-utensils" style="font-size: 50px; color: var(--primary-color); margin-bottom: 20px;"></i>
-                <h3 style="font-size: 24px; margin-bottom: 15px;">Bai Restaurant</h3>
-                <p style="color: #666; line-height: 1.7; margin-bottom: 20px;">Our signature restaurant serving authentic Filipino and international cuisine with a modern twist.</p>
-                <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock"></i> Open 6:00 AM - 10:00 PM</p>
+                <h3 style="font-size: 24px; margin-bottom: 15px;"><?php echo __('Bai Restaurant'); ?></h3>
+                <p style="color: #666; line-height: 1.7; margin-bottom: 20px;"><?php echo __('Our signature restaurant serving authentic Filipino and international cuisine with a modern twist'); ?></p>
+                <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock"></i> <?php echo __('Open 6:00 AM - 10:00 PM'); ?></p>
             </div>
             <div style="text-align: center; padding: 40px; background-color: var(--gray-light); border-radius: 10px;">
                 <i class="fas fa-coffee" style="font-size: 50px; color: var(--primary-color); margin-bottom: 20px;"></i>
-                <h3 style="font-size: 24px; margin-bottom: 15px;">Café Bai</h3>
-                <p style="color: #666; line-height: 1.7; margin-bottom: 20px;">Relax with premium coffee, fresh pastries, and light bites in our cozy café setting.</p>
-                <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock"></i> Open 7:00 AM - 9:00 PM</p>
+                <h3 style="font-size: 24px; margin-bottom: 15px;"><?php echo __('Café Bai'); ?></h3>
+                <p style="color: #666; line-height: 1.7; margin-bottom: 20px;"><?php echo __('Relax with premium coffee, fresh pastries, and light bites in our cozy café setting'); ?></p>
+                <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock"></i> <?php echo __('Open 7:00 AM - 9:00 PM'); ?></p>
             </div>
             <div style="text-align: center; padding: 40px; background-color: var(--gray-light); border-radius: 10px;">
                 <i class="fas fa-glass-martini-alt" style="font-size: 50px; color: var(--primary-color); margin-bottom: 20px;"></i>
-                <h3 style="font-size: 24px; margin-bottom: 15px;">Rooftop Lounge</h3>
-                <p style="color: #666; line-height: 1.7; margin-bottom: 20px;">Enjoy handcrafted cocktails and breathtaking bay views at our exclusive rooftop bar.</p>
-                <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock"></i> Open 5:00 PM - 12:00 AM</p>
+                <h3 style="font-size: 24px; margin-bottom: 15px;"><?php echo __('Rooftop Lounge'); ?></h3>
+                <p style="color: #666; line-height: 1.7; margin-bottom: 20px;"><?php echo __('Enjoy handcrafted cocktails and breathtaking bay views at our exclusive rooftop bar'); ?></p>
+                <p style="font-size: 14px; color: var(--primary-color);"><i class="fas fa-clock"></i> <?php echo __('Open 5:00 PM - 12:00 AM'); ?></p>
             </div>
         </div>
     </div>
@@ -76,13 +76,13 @@ foreach ($menuItems as $item) {
 <section style="padding: 80px 0; background-color: var(--gray-light);">
     <div class="container">
         <div style="text-align: center; margin-bottom: 50px;">
-            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Our Menu</p>
-            <h2 style="font-size: 42px; margin-bottom: 20px;">Culinary Delights</h2>
+            <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Our Menu'); ?></p>
+            <h2 style="font-size: 42px; margin-bottom: 20px;"><?php echo __('Culinary Delights'); ?></h2>
         </div>
         
         <!-- Menu Categories Tabs -->
         <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap;">
-            <button class="menu-tab active" onclick="filterMenu('all', this)" style="padding: 12px 30px; border: 2px solid var(--primary-color); background-color: var(--primary-color); color: white; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.3s;">All</button>
+            <button class="menu-tab active" onclick="filterMenu('all', this)" style="padding: 12px 30px; border: 2px solid var(--primary-color); background-color: var(--primary-color); color: white; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.3s;"><?php echo __('All'); ?></button>
             <?php foreach ($categories as $category): ?>
             <button class="menu-tab" onclick="filterMenu('<?php echo htmlspecialchars($category['category_name']); ?>', this)" style="padding: 12px 30px; border: 2px solid var(--primary-color); background-color: transparent; color: var(--primary-color); border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
                 <?php echo htmlspecialchars($category['category_name']); ?>

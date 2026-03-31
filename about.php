@@ -1,13 +1,13 @@
 <?php
-$pageTitle = 'About Us';
 require_once 'includes/header.php';
+$pageTitle = __('About Us');
 ?>
 
 <!-- Page Header -->
 <div class="page-header">
     <div class="container">
-        <h1>About Bayawan Bai Hotel</h1>
-        <p>Discover our story and commitment to excellence</p>
+        <h1><?php echo __('About Bayawan Bai Hotel'); ?></h1>
+        <p><?php echo __('Discover our story and commitment to excellence'); ?></p>
     </div>
 </div>
 
@@ -16,8 +16,8 @@ require_once 'includes/header.php';
     <div class="container">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
             <div>
-                <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">Our Story</p>
-                <h2 style="font-size: 42px; margin-bottom: 25px;">A Legacy of Hospitality</h2>
+                <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Our Story'); ?></p>
+                <h2 style="font-size: 42px; margin-bottom: 25px;"><?php echo __('A Legacy of Hospitality'); ?></h2>
                 <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 20px;">
                     Bayawan Bai Hotel was founded with a vision to bring world-class hospitality to the beautiful coastal city of Bayawan in Negros Oriental. Named after the city's warm and welcoming spirit ("Bai" means friend in the local dialect), our hotel has become a landmark destination for travelers seeking both adventure and relaxation.
                 </p>
@@ -27,22 +27,22 @@ require_once 'includes/header.php';
                 <div style="display: flex; gap: 40px; margin-top: 30px;">
                     <div>
                         <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">15+</h3>
-                        <p style="font-size: 14px; color: #666;">Years of Excellence</p>
+                        <p style="font-size: 14px; color: #666;"><?php echo __('Years of Excellence'); ?></p>
                     </div>
                     <div>
                         <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">50+</h3>
-                        <p style="font-size: 14px; color: #666;">Luxury Rooms</p>
+                        <p style="font-size: 14px; color: #666;"><?php echo __('Luxury Rooms'); ?></p>
                     </div>
                     <div>
                         <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">100+</h3>
-                        <p style="font-size: 14px; color: #666;">Team Members</p>
+                        <p style="font-size: 14px; color: #666;"><?php echo __('Team Members'); ?></p>
                     </div>
                 </div>
             </div>
             <div style="position: relative;">
                 <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hotel Exterior" style="width: 100%; border-radius: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
                 <div style="position: absolute; bottom: -30px; left: -30px; background-color: var(--primary-color); color: white; padding: 30px; border-radius: 10px;">
-                    <p style="font-size: 14px; margin-bottom: 10px;">Established</p>
+                    <p style="font-size: 14px; margin-bottom: 10px;"><?php echo __('Established'); ?></p>
                     <p style="font-size: 24px; font-weight: 700;">2009</p>
                 </div>
             </div>

@@ -4,6 +4,7 @@
  * Sidebar layout for user dashboard with welcome message
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/TranslationEngine.php';
 
 // Get alert if any
 $alert = getAlert();
