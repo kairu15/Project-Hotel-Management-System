@@ -22,11 +22,15 @@ A comprehensive, full-featured Hotel Management System for Bayawan Bai Hotel bui
 - [📈 Performance Considerations](#-performance-considerations)
 - [🔄 Backup & Maintenance](#-backup--maintenance)
 - [🐛 Troubleshooting](#-troubleshooting)
+- [⚠️ Limitations](#️-limitations)
+- [🔮 Future Roadmap](#-future-roadmap)
 - [📚 Documentation](#-documentation)
 - [🤝 Contributing](#-contributing)
 - [📞 Support](#-support)
-- [📄 License](#-license)
+- [� Default Users](#-default-users)
+- [�📄 License](#-license)
 - [🏆 Credits](#-credits)
+- [📈 System Statistics](#-system-statistics)
 - [📝 Recent Updates](#-recent-updates)
 
 ## 🏨 Project Overview
@@ -1137,7 +1141,119 @@ This project is proprietary software developed for Bayawan Bai Hotel.
 - **Responsive Design**: Fully responsive
 - **Mobile Browsers**: iOS Safari, Chrome Mobile
 - **Tablet Support**: iPad, Android tablets
-- **PWA Features**: Progressive Web App ready
+
+---
+
+## ⚠️ Limitations
+
+Despite its comprehensive features, the Bayawan Bai Hotel: Web-Based Hotel Reservation and Management System has several limitations:
+
+### 1. **Web-Based Access Only**
+The system is designed solely for web-based access and does not include a native mobile application or Progressive Web App (PWA). This limits accessibility for guests and staff who prefer mobile devices or require offline functionality. While the responsive design accommodates mobile browsers, native app features such as push notifications, offline mode, and device-specific optimizations are not available.
+
+### 2. **Internet Dependency**
+The system's functionality is entirely dependent on a stable internet connection and server availability. Offline operations are not supported, which could affect service continuity during network outages or in areas with poor connectivity. All operations—including check-in, check-out, booking management, and reporting—require real-time server communication.
+
+### 3. **Limited Third-Party Booking Platform Integration**
+While the system integrates with essential third-party services:
+- ✅ **Google/Facebook OAuth** - Social login authentication
+- ✅ **Google Gemini API** - AI-powered chatbot assistance
+- ✅ **Langbly API** - Multi-language translation support
+- ✅ **PHPMailer** - Email communication
+
+The system lacks integration with:
+- ❌ External booking platforms (Booking.com, Agoda, Expedia, Airbnb)
+- ❌ Channel manager services for multi-platform inventory synchronization
+- ❌ Advanced Point-of-Sale (POS) systems
+- ❌ Global Distribution Systems (GDS) for travel agency bookings
+
+This requires manual synchronization of reservations and inventory with external channels, potentially leading to overbooking risks and administrative overhead.
+
+### 4. **Enterprise Module Constraints**
+Enterprise-level modules including inventory management, staff scheduling, and advanced reporting are implemented and functional. However, these modules may lack advanced features required by larger hotel chains:
+
+| Module | Implemented Features | Missing Enterprise Features |
+|--------|---------------------|----------------------------|
+| **Inventory Management** | Stock tracking, categories, alerts | Multi-property synchronization, automated reordering, supplier integration |
+| **Staff Scheduling** | Shift management, calendar view | AI-powered shift optimization, labor cost forecasting, compliance tracking |
+| **Advanced Reporting** | Financial reports, occupancy analytics | Predictive revenue analytics, competitive pricing intelligence, real-time dashboards |
+
+### 5. **Security & Data Privacy Compliance**
+While security measures are implemented—including password hashing (bcrypt), session management, CSRF protection, input sanitization, and role-based access control—the system requires further security enhancements to comply with international data privacy standards such as GDPR:
+
+**Implemented Security:**
+- ✅ Password hashing with bcrypt
+- ✅ Session management and timeout controls
+- ✅ CSRF token protection
+- ✅ Input sanitization and validation
+- ✅ Role-based access control (RBAC)
+- ✅ Login attempt tracking
+
+**Required for Full Compliance:**
+- ❌ Data encryption at rest for sensitive information
+- ❌ Comprehensive audit logging for sensitive operations
+- ❌ Two-factor authentication (2FA)
+- ❌ Data subject rights management (GDPR Article 15-22)
+  - Right to access personal data
+  - Right to erasure ("right to be forgotten")
+  - Right to data portability
+  - Right to rectification
+- ❌ Privacy policy consent management
+- ❌ Data retention policy automation
+
+### 6. **Single-Property Architecture**
+The system is designed for single-property operations and does not support multi-branch or hotel chain management. Features not available include:
+- Centralized reservation systems across properties
+- Cross-property guest profiles and preferences
+- Chain-wide loyalty program integration
+- Consolidated financial reporting
+- Inter-property inventory transfers
+- Corporate rate management for chains
+
+### 7. **Payment Processing Considerations**
+The payment processing system supports multiple payment methods:
+- Cash payments
+- GCash (mobile wallet)
+- PayPal
+- Credit card processing
+- Bank transfers
+
+However, production deployment may require:
+- PCI DSS compliance certification
+- Integration with local payment gateways for specific regions
+- Additional security audits for financial data handling
+- Compliance with local financial regulations
+
+### 8. **Translation Quality Limitations**
+While the system includes a multi-language translation engine powered by Langbly API, the quality and accuracy of automated translations may vary. Professional human translation may be required for:
+- Legal documents (terms and conditions, privacy policy)
+- Critical booking confirmations and contracts
+- Marketing materials and promotional content
+- Emergency procedures and safety information
+
+Automated translations may not capture:
+- Local cultural nuances
+- Industry-specific hospitality terminology
+- Regional dialect differences
+- Context-dependent meaning variations
+
+### 9. **Specialized Resort Features**
+The system focuses primarily on operational efficiency and guest experience for small to medium-sized hotels. It may not fully address specialized management needs for resort properties, including:
+- Spa and wellness center management (appointment scheduling, therapist assignments, treatment packages)
+- Golf course tee time scheduling and management
+- Tour and excursion package management
+- Extensive F&B recipe costing and kitchen display systems
+- Marina and water sports equipment rental
+- Kids club and activity programming
+- Timeshare or vacation ownership management
+
+### 10. **Scalability Considerations**
+While the system can handle 500+ concurrent users and 1000+ daily bookings, enterprise-scale operations may require:
+- Database clustering or replication for high availability
+- Load balancing for distributed request handling
+- Content Delivery Network (CDN) integration for global performance
+- Microservices architecture for independent service scaling
+- Caching layers (Redis, Memcached) for improved response times
 
 ---
 

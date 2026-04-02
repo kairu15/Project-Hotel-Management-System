@@ -102,8 +102,7 @@ $currentLang = getUserLanguage();
     </button>
     <div class="language-dropdown" id="languageDropdown">
         <?php foreach ($supportedLanguages as $code => $name): ?>
-            <a href="?lang=<?php echo $code; ?>" 
-               class="<?php echo ($code === $currentLang && $code !== 'en') ? 'active' : ''; ?>">
+            <a href="?lang=<?php echo $code; ?>">
                 <?php echo htmlspecialchars($name); ?>
             </a>
         <?php endforeach; ?>
