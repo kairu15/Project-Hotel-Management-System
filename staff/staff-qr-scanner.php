@@ -524,18 +524,18 @@ $paymentStatusColors = [
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <?php if ($booking['status'] === 'confirmed'): ?>
-                    <form method="POST" action="" style="display: inline;">
+                    <form method="POST" action="" style="display: inline;" id="checkinForm<?php echo $booking['booking_id']; ?>">
                         <input type="hidden" name="booking_id" value="<?php echo $booking['booking_id']; ?>">
                         <input type="hidden" name="action" value="check_in">
-                        <button type="submit" class="btn-action btn-checkin" onclick="return confirm('Confirm check-in for this guest?')">
+                        <button type="button" class="btn-action btn-checkin" onclick="openDeleteModal('checkinForm<?php echo $booking['booking_id']; ?>', 'Confirm Check-in', 'Are you sure you want to check in <?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?>?', null, 'action')">
                             <i class="fas fa-door-open"></i> Check In Guest
                         </button>
                     </form>
                 <?php elseif ($booking['status'] === 'checked_in'): ?>
-                    <form method="POST" action="" style="display: inline;">
+                    <form method="POST" action="" style="display: inline;" id="checkoutForm<?php echo $booking['booking_id']; ?>">
                         <input type="hidden" name="booking_id" value="<?php echo $booking['booking_id']; ?>">
                         <input type="hidden" name="action" value="check_out">
-                        <button type="submit" class="btn-action btn-checkout" onclick="return confirm('Confirm check-out for this guest?')">
+                        <button type="button" class="btn-action btn-checkout" onclick="openDeleteModal('checkoutForm<?php echo $booking['booking_id']; ?>', 'Confirm Check-out', 'Are you sure you want to check out <?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?>?', null, 'action')">
                             <i class="fas fa-sign-out-alt"></i> Check Out Guest
                         </button>
                     </form>

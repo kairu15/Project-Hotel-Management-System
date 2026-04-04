@@ -17,9 +17,14 @@ if (isset($_POST['update_status'])) {
     $validStatuses = ['pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'];
     
     if ($bookingId && in_array($newStatus, $validStatuses)) {
+        // Get booking reference for message
+        $bookingStmt = $db->prepare("SELECT booking_reference FROM bookings WHERE booking_id = ?");
+        $bookingStmt->execute([$bookingId]);
+        $bookingRef = $bookingStmt->fetchColumn() ?? 'Booking';
+        
         $stmt = $db->prepare("UPDATE bookings SET status = ? WHERE booking_id = ?");
         if ($stmt->execute([$newStatus, $bookingId])) {
-            $_SESSION['success'] = 'Booking status updated successfully';
+            $_SESSION['success'] = 'Booking ' . $bookingRef . ' status updated to ' . ucfirst($newStatus);
         } else {
             $_SESSION['error'] = 'Failed to update booking status';
         }

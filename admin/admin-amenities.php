@@ -45,12 +45,12 @@ if (isset($_POST['save_amenity'])) {
                 $stmt = $db->prepare("UPDATE amenities SET amenity_name = ?, category = ?, description = ?, price = ?, duration_minutes = ?, operating_hours = ?, is_available = ? WHERE amenity_id = ?");
                 $stmt->execute([$amenityName, $category, $description, $price, $durationMinutes, $operatingHours, $isAvailable, $amenityId]);
             }
-            $_SESSION['success'] = 'Amenity updated successfully';
+            $_SESSION['success'] = 'Amenity "' . $amenityName . '" updated successfully';
         } else {
             // Add new amenity
             $stmt = $db->prepare("INSERT INTO amenities (amenity_name, category, description, price, duration_minutes, operating_hours, image, is_available) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$amenityName, $category, $description, $price, $durationMinutes, $operatingHours, $image, $isAvailable]);
-            $_SESSION['success'] = 'Amenity added successfully';
+            $_SESSION['success'] = 'Amenity "' . $amenityName . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
@@ -62,9 +62,14 @@ if (isset($_POST['save_amenity'])) {
 if (isset($_POST['delete_amenity'])) {
     $amenityId = $_POST['amenity_id'] ?? 0;
     if ($amenityId) {
+        // Get amenity name before deletion
+        $nameStmt = $db->prepare("SELECT amenity_name FROM amenities WHERE amenity_id = ?");
+        $nameStmt->execute([$amenityId]);
+        $amenityName = $nameStmt->fetchColumn() ?? 'Amenity';
+        
         $stmt = $db->prepare("DELETE FROM amenities WHERE amenity_id = ?");
         if ($stmt->execute([$amenityId])) {
-            $_SESSION['success'] = 'Amenity deleted successfully';
+            $_SESSION['success'] = 'Amenity "' . $amenityName . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete amenity';
         }
@@ -208,9 +213,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editAmenity(<?php echo htmlspecialchars(json_encode($amenity)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this amenity?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteAmenityForm<?php echo $amenity['amenity_id']; ?>">
                                         <input type="hidden" name="amenity_id" value="<?php echo $amenity['amenity_id']; ?>">
-                                        <button type="submit" name="delete_amenity" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteAmenityForm<?php echo $amenity['amenity_id']; ?>', 'Delete Amenity', 'Are you sure you want to delete &quot;<?php echo htmlspecialchars($amenity['amenity_name']); ?>&quot;?', null, 'delete_amenity')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

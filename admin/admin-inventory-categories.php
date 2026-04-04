@@ -20,12 +20,12 @@ if (isset($_POST['save_category'])) {
             // Update existing category
             $stmt = $db->prepare("UPDATE inventory_categories SET category_name = ? WHERE inv_cat_id = ?");
             $stmt->execute([$categoryName, $catId]);
-            $_SESSION['success'] = 'Category updated successfully';
+            $_SESSION['success'] = 'Inventory category "' . $categoryName . '" updated successfully';
         } else {
             // Add new category
             $stmt = $db->prepare("INSERT INTO inventory_categories (category_name) VALUES (?)");
             $stmt->execute([$categoryName]);
-            $_SESSION['success'] = 'Category added successfully';
+            $_SESSION['success'] = 'Inventory category "' . $categoryName . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please enter a category name';
@@ -37,15 +37,20 @@ if (isset($_POST['save_category'])) {
 if (isset($_POST['delete_category'])) {
     $catId = $_POST['inv_cat_id'] ?? 0;
     if ($catId) {
+        // Get category name before deletion
+        $nameStmt = $db->prepare("SELECT category_name FROM inventory_categories WHERE inv_cat_id = ?");
+        $nameStmt->execute([$catId]);
+        $categoryName = $nameStmt->fetchColumn() ?? 'Category';
+        
         // Check if category has items
         $checkStmt = $db->prepare("SELECT COUNT(*) FROM inventory_items WHERE inv_cat_id = ?");
         $checkStmt->execute([$catId]);
         if ($checkStmt->fetchColumn() > 0) {
-            $_SESSION['error'] = 'Cannot delete category that has inventory items';
+            $_SESSION['error'] = 'Cannot delete category "' . $categoryName . '" - has inventory items';
         } else {
             $stmt = $db->prepare("DELETE FROM inventory_categories WHERE inv_cat_id = ?");
             if ($stmt->execute([$catId])) {
-                $_SESSION['success'] = 'Category deleted successfully';
+                $_SESSION['success'] = 'Inventory category "' . $categoryName . '" deleted successfully';
             } else {
                 $_SESSION['error'] = 'Failed to delete category';
             }
@@ -124,9 +129,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editCategory(<?php echo htmlspecialchars(json_encode($category)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteInvCatForm<?php echo $category['inv_cat_id']; ?>">
                                         <input type="hidden" name="inv_cat_id" value="<?php echo $category['inv_cat_id']; ?>">
-                                        <button type="submit" name="delete_category" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteInvCatForm<?php echo $category['inv_cat_id']; ?>', 'Delete Category', 'Are you sure you want to delete category &quot;<?php echo htmlspecialchars($category['category_name']); ?>&quot;?', null, 'delete_category')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
                 $stmt->execute([$bookingId]);
                 
-                $_SESSION['success'] = 'Booking confirmed successfully';
+                $_SESSION['success'] = 'Booking #' . str_pad($bookingId, 6, '0', STR_PAD_LEFT) . ' confirmed successfully';
                 
             } elseif ($action === 'cancel') {
                 // Cancel booking
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->execute([$booking['room_id']]);
                 }
                 
-                $_SESSION['success'] = 'Booking cancelled successfully';
+                $_SESSION['success'] = 'Booking #' . str_pad($bookingId, 6, '0', STR_PAD_LEFT) . ' cancelled successfully';
             }
             
             $db->commit();

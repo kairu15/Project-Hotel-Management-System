@@ -60,7 +60,7 @@
                     </ul>
                 </div>
                 
-                <!-- Column 4: Newsletter -->
+                <!-- Column 4: Newsletter & Mobile App -->
                 <div>
                     <h4 style="color: var(--light-color); font-size: 18px; margin-bottom: 20px;"><?php echo __('Newsletter'); ?></h4>
                     <p style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
@@ -72,6 +72,24 @@
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
+                    
+                    <!-- Mobile App Download -->
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <h4 style="color: var(--light-color); font-size: 16px; margin-bottom: 12px;">
+                            <i class="fas fa-mobile-alt" style="color: var(--primary-color); margin-right: 8px;"></i>
+                            <?php echo __('Get Our Mobile App'); ?>
+                        </h4>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.5; margin-bottom: 12px;">
+                            <?php echo __('Book rooms, order food & more on the go!'); ?>
+                        </p>
+                        <a href="download-app.php" class="btn-download" style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #3DDC84, #2E7D32); color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.3s; box-shadow: 0 4px 15px rgba(61, 220, 132, 0.3);">
+                            <i class="fab fa-android" style="font-size: 18px;"></i>
+                            <span><?php echo __('Download APK'); ?></span>
+                        </a>
+                        <p style="color: rgba(255,255,255,0.4); font-size: 10px; margin-top: 8px;">
+                            <?php echo __('Android 6.0+ required'); ?>
+                        </p>
+                    </div>
                 </div>
             </div>
             
@@ -179,6 +197,12 @@
             footer > .container > div:last-child > div a {
                 font-size: 12px;
             }
+        }
+        
+        /* Download button hover effect */
+        footer .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(61, 220, 132, 0.4) !important;
         }
     </style>
     

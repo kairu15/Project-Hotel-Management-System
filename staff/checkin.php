@@ -207,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once '../includes/notifications.php';
             notifyBookingUpdate($booking['user_id'], $bookingId, 'checked_in');
             
-            $_SESSION['success'] = 'Guest checked in successfully';
+            $_SESSION['success'] = $booking['first_name'] . ' ' . $booking['last_name'] . ' checked in to Room ' . ($booking['room_number'] ?? 'N/A') . ' successfully';
             redirect('checkin.php');
             
         } catch (Exception $e) {

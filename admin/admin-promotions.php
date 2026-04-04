@@ -47,7 +47,7 @@ if (isset($_POST['save_promotion'])) {
                 $stmt = $db->prepare("UPDATE promotions SET title = ?, description = ?, discount_percent = ?, discount_amount = ?, promo_code = ?, start_date = ?, end_date = ?, min_nights = ?, is_active = ? WHERE promo_id = ?");
                 $stmt->execute([$title, $description, $discountPercent, $discountAmount, $promoCode, $startDate, $endDate, $minNights, $isActive, $promoId]);
             }
-            $_SESSION['success'] = 'Promotion updated successfully';
+            $_SESSION['success'] = 'Promotion "' . $title . '" updated successfully';
             
             // Send notification
             require_once '../includes/notifications.php';
@@ -61,7 +61,7 @@ if (isset($_POST['save_promotion'])) {
             $stmt = $db->prepare("INSERT INTO promotions (title, description, discount_percent, discount_amount, promo_code, start_date, end_date, min_nights, image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$title, $description, $discountPercent, $discountAmount, $promoCode, $startDate, $endDate, $minNights, $image, $isActive]);
             $newPromoId = $db->lastInsertId();
-            $_SESSION['success'] = 'Promotion added successfully';
+            $_SESSION['success'] = 'Promotion "' . $title . '" added successfully';
             
             // Send notification
             require_once '../includes/notifications.php';
@@ -80,9 +80,14 @@ if (isset($_POST['save_promotion'])) {
 if (isset($_POST['delete_promotion'])) {
     $promoId = $_POST['promo_id'] ?? 0;
     if ($promoId) {
+        // Get promotion title before deletion
+        $nameStmt = $db->prepare("SELECT title FROM promotions WHERE promo_id = ?");
+        $nameStmt->execute([$promoId]);
+        $promoTitle = $nameStmt->fetchColumn() ?? 'Promotion';
+        
         $stmt = $db->prepare("DELETE FROM promotions WHERE promo_id = ?");
         if ($stmt->execute([$promoId])) {
-            $_SESSION['success'] = 'Promotion deleted successfully';
+            $_SESSION['success'] = 'Promotion "' . $promoTitle . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete promotion';
         }
@@ -259,9 +264,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editPromotion(<?php echo htmlspecialchars(json_encode($promo)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this promotion?');">
+                                    <form method="POST" action="" style="display: inline;" id="deletePromoForm<?php echo $promo['promo_id']; ?>">
                                         <input type="hidden" name="promo_id" value="<?php echo $promo['promo_id']; ?>">
-                                        <button type="submit" name="delete_promotion" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deletePromoForm<?php echo $promo['promo_id']; ?>', 'Delete Promotion', 'Are you sure you want to delete promotion &quot;<?php echo htmlspecialchars($promo['title']); ?>&quot;?', null, 'delete_promotion')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

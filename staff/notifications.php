@@ -428,9 +428,9 @@ $notificationTypes = [
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                         <?php endif; ?>
-                        <form method="POST" style="display: inline;">
+                        <form method="POST" style="display: inline;" id="deleteForm<?php echo $notification['notification_id']; ?>">
                             <input type="hidden" name="notification_id" value="<?php echo $notification['notification_id']; ?>">
-                            <button type="submit" name="delete" class="action-btn delete" title="Delete" onclick="return confirm('Delete this notification?');">
+                            <button type="button" name="delete" class="action-btn delete" title="Delete" onclick="openDeleteModal('deleteForm<?php echo $notification['notification_id']; ?>', 'Delete Notification', 'Are you sure you want to delete this notification? This action cannot be undone.', null, 'delete')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>

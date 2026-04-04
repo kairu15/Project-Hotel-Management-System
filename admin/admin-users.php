@@ -40,7 +40,7 @@ if (isset($_POST['save_user'])) {
                     $stmt = $db->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ?, city = ?, country = ?, role = ? WHERE user_id = ?");
                     $stmt->execute([$firstName, $lastName, $email, $phone, $address, $city, $country, $role, $userId]);
                 }
-                $_SESSION['success'] = 'User updated successfully';
+                $_SESSION['success'] = 'User ' . $firstName . ' ' . $lastName . ' updated successfully';
             } else {
                 // Add new user
                 if (!$password) {
@@ -49,7 +49,7 @@ if (isset($_POST['save_user'])) {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $stmt = $db->prepare("INSERT INTO users (first_name, last_name, email, password, phone, address, city, country, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     if ($stmt->execute([$firstName, $lastName, $email, $hashedPassword, $phone, $address, $city, $country, $role])) {
-                        $_SESSION['success'] = 'User added successfully';
+                        $_SESSION['success'] = 'User ' . $firstName . ' ' . $lastName . ' added successfully';
                     } else {
                         $_SESSION['error'] = 'Failed to add user';
                     }
@@ -66,6 +66,12 @@ if (isset($_POST['save_user'])) {
 if (isset($_POST['delete_user'])) {
     $userId = $_POST['user_id'] ?? 0;
     if ($userId) {
+        // Get user name before deletion
+        $nameStmt = $db->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
+        $nameStmt->execute([$userId]);
+        $userData = $nameStmt->fetch();
+        $userName = $userData ? $userData['first_name'] . ' ' . $userData['last_name'] : 'User';
+        
         // Prevent deleting own account
         if ($userId == $_SESSION['user_id']) {
             $_SESSION['error'] = 'Cannot delete your own account';
@@ -78,7 +84,7 @@ if (isset($_POST['delete_user'])) {
             } else {
                 $stmt = $db->prepare("DELETE FROM users WHERE user_id = ?");
                 if ($stmt->execute([$userId])) {
-                    $_SESSION['success'] = 'User deleted successfully';
+                    $_SESSION['success'] = 'User ' . $userName . ' deleted successfully';
                 } else {
                     $_SESSION['error'] = 'Failed to delete user';
                 }
@@ -255,9 +261,9 @@ require_once '../includes/admin-header.php';
                                     <button type="button" onclick="editUser(<?php echo htmlspecialchars(json_encode($user)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
                                     
                                     <?php if ($user['user_id'] != $_SESSION['user_id']): ?>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteUserForm<?php echo $user['user_id']; ?>">
                                         <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
-                                        <button type="submit" name="delete_user" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteUserForm<?php echo $user['user_id']; ?>', 'Delete User', 'Are you sure you want to delete <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>?', null, 'delete_user')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                     <?php endif; ?>
                                 </div>

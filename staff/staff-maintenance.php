@@ -18,7 +18,16 @@ if (isset($_POST['add_request'])) {
     if ($issueType && $description) {
         $stmt = $db->prepare("INSERT INTO maintenance_requests (room_id, reported_by, issue_type, description, priority, status) VALUES (?, ?, ?, ?, ?, 'pending')");
         $stmt->execute([$roomId, $userId, $issueType, $description, $priority]);
-        $_SESSION['success'] = 'Maintenance request submitted successfully';
+        
+        // Get room number for message
+        if ($roomId) {
+            $roomStmt = $db->prepare("SELECT room_number FROM rooms WHERE room_id = ?");
+            $roomStmt->execute([$roomId]);
+            $roomNumber = $roomStmt->fetchColumn();
+            $_SESSION['success'] = $issueType . ' request for Room ' . ($roomNumber ?? 'N/A') . ' submitted successfully';
+        } else {
+            $_SESSION['success'] = $issueType . ' request submitted successfully';
+        }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
     }
@@ -31,13 +40,20 @@ if (isset($_POST['update_status'])) {
     $status = $_POST['status'] ?? '';
 
     if ($requestId) {
+        // Get room number and issue type for message
+        $reqStmt = $db->prepare("SELECT r.room_number, mr.issue_type FROM maintenance_requests mr LEFT JOIN rooms r ON mr.room_id = r.room_id WHERE mr.request_id = ?");
+        $reqStmt->execute([$requestId]);
+        $reqData = $reqStmt->fetch();
+        $roomNumber = $reqData['room_number'] ?? 'N/A';
+        $issueType = $reqData['issue_type'] ?? 'Maintenance';
+        
         if ($status === 'completed') {
             $stmt = $db->prepare("UPDATE maintenance_requests SET status = ?, resolved_at = NOW() WHERE request_id = ?");
         } else {
             $stmt = $db->prepare("UPDATE maintenance_requests SET status = ?, resolved_at = NULL WHERE request_id = ?");
         }
         $stmt->execute([$status, $requestId]);
-        $_SESSION['success'] = 'Request status updated successfully';
+        $_SESSION['success'] = $issueType . ' request for Room ' . $roomNumber . ' updated to ' . ucfirst($status);
     }
     redirect('staff-maintenance.php');
 }

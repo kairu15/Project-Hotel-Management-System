@@ -112,9 +112,9 @@ $canCancel = in_array($booking['status'], ['pending', 'confirmed']) &&
                 <i class="fas fa-arrow-left"></i> Back to Bookings
             </a>
             <?php if ($canCancel): ?>
-            <a href="cancel-booking.php?id=<?php echo $booking['booking_id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this booking?');">
+            <button type="button" class="btn btn-danger" onclick="openDeleteModal(null, 'Cancel Booking', 'Are you sure you want to cancel Booking #<?php echo str_pad($booking['booking_id'], 6, '0', STR_PAD_LEFT); ?>? This action cannot be undone.', '<?php echo SITE_URL; ?>/user/cancel-booking.php?id=<?php echo $booking['booking_id']; ?>')">
                 <i class="fas fa-times"></i> Cancel Booking
-            </a>
+            </button>
             <?php endif; ?>
             <button onclick="window.print()" class="btn btn-outline">
                 <i class="fas fa-print"></i> Print Details

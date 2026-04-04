@@ -27,12 +27,12 @@ if (isset($_POST['save_item'])) {
             // Update existing item
             $stmt = $db->prepare("UPDATE inventory_items SET item_name = ?, inv_cat_id = ?, description = ?, unit = ?, quantity = ?, reorder_level = ?, unit_cost = ?, supplier = ? WHERE item_id = ?");
             $stmt->execute([$itemName, $invCatId, $description, $unit, $quantity, $reorderLevel, $unitCost, $supplier, $itemId]);
-            $_SESSION['success'] = 'Inventory item updated successfully';
+            $_SESSION['success'] = 'Inventory item "' . $itemName . '" updated successfully';
         } else {
             // Add new item
             $stmt = $db->prepare("INSERT INTO inventory_items (item_name, inv_cat_id, description, unit, quantity, reorder_level, unit_cost, supplier) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$itemName, $invCatId, $description, $unit, $quantity, $reorderLevel, $unitCost, $supplier]);
-            $_SESSION['success'] = 'Inventory item added successfully';
+            $_SESSION['success'] = 'Inventory item "' . $itemName . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
@@ -44,9 +44,14 @@ if (isset($_POST['save_item'])) {
 if (isset($_POST['delete_item'])) {
     $itemId = $_POST['item_id'] ?? 0;
     if ($itemId) {
+        // Get item name before deletion
+        $nameStmt = $db->prepare("SELECT item_name FROM inventory_items WHERE item_id = ?");
+        $nameStmt->execute([$itemId]);
+        $itemName = $nameStmt->fetchColumn() ?? 'Inventory item';
+        
         $stmt = $db->prepare("DELETE FROM inventory_items WHERE item_id = ?");
         if ($stmt->execute([$itemId])) {
-            $_SESSION['success'] = 'Inventory item deleted successfully';
+            $_SESSION['success'] = 'Inventory item "' . $itemName . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete inventory item';
         }
@@ -217,9 +222,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editItem(<?php echo htmlspecialchars(json_encode($item)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteInvItemForm<?php echo $item['item_id']; ?>">
                                         <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
-                                        <button type="submit" name="delete_item" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteInvItemForm<?php echo $item['item_id']; ?>', 'Delete Inventory Item', 'Are you sure you want to delete &quot;<?php echo htmlspecialchars($item['item_name']); ?>&quot;?', null, 'delete_item')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

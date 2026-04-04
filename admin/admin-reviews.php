@@ -16,9 +16,15 @@ if (isset($_POST['update_review'])) {
     $isApproved = isset($_POST['is_approved']) ? 1 : 0;
 
     if ($reviewId) {
+        // Get reviewer name and status for message
+        $reviewStmt = $db->prepare("SELECT u.first_name, u.last_name FROM reviews r JOIN users u ON r.user_id = u.user_id WHERE r.review_id = ?");
+        $reviewStmt->execute([$reviewId]);
+        $reviewer = $reviewStmt->fetch();
+        $reviewerName = $reviewer ? $reviewer['first_name'] . ' ' . $reviewer['last_name'] : 'Review';
+        
         $stmt = $db->prepare("UPDATE reviews SET is_approved = ? WHERE review_id = ?");
         $stmt->execute([$isApproved, $reviewId]);
-        $_SESSION['success'] = 'Review updated successfully';
+        $_SESSION['success'] = $reviewerName . '\'s review ' . ($isApproved ? 'approved' : 'rejected') . ' successfully';
     }
     redirect('admin-reviews.php');
 }
@@ -27,9 +33,15 @@ if (isset($_POST['update_review'])) {
 if (isset($_POST['delete_review'])) {
     $reviewId = $_POST['review_id'] ?? 0;
     if ($reviewId) {
+        // Get reviewer name before deletion
+        $reviewStmt = $db->prepare("SELECT u.first_name, u.last_name FROM reviews r JOIN users u ON r.user_id = u.user_id WHERE r.review_id = ?");
+        $reviewStmt->execute([$reviewId]);
+        $reviewer = $reviewStmt->fetch();
+        $reviewerName = $reviewer ? $reviewer['first_name'] . ' ' . $reviewer['last_name'] : 'Review';
+        
         $stmt = $db->prepare("DELETE FROM reviews WHERE review_id = ?");
         if ($stmt->execute([$reviewId])) {
-            $_SESSION['success'] = 'Review deleted successfully';
+            $_SESSION['success'] = $reviewerName . '\'s review deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete review';
         }
@@ -261,9 +273,9 @@ require_once '../includes/admin-header.php';
                                             <?php echo $review['is_approved'] ? 'Unapprove' : 'Approve'; ?>
                                         </button>
                                     </form>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteReviewForm<?php echo $review['review_id']; ?>">
                                         <input type="hidden" name="review_id" value="<?php echo $review['review_id']; ?>">
-                                        <button type="submit" name="delete_review" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteReviewForm<?php echo $review['review_id']; ?>', 'Delete Review', 'Are you sure you want to delete this review from <?php echo htmlspecialchars($review['first_name'] . ' ' . $review['last_name']); ?>?', null, 'delete_review')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

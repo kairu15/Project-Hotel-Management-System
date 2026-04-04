@@ -24,12 +24,12 @@ if (isset($_POST['save_faq'])) {
             // Update existing FAQ
             $stmt = $db->prepare("UPDATE faqs SET question = ?, answer = ?, category = ?, sort_order = ?, is_active = ? WHERE faq_id = ?");
             $stmt->execute([$question, $answer, $category, $sortOrder, $isActive, $faqId]);
-            $_SESSION['success'] = 'FAQ updated successfully';
+            $_SESSION['success'] = 'FAQ "' . substr($question, 0, 30) . (strlen($question) > 30 ? '...' : '') . '" updated successfully';
         } else {
             // Add new FAQ
             $stmt = $db->prepare("INSERT INTO faqs (question, answer, category, sort_order, is_active) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$question, $answer, $category, $sortOrder, $isActive]);
-            $_SESSION['success'] = 'FAQ added successfully';
+            $_SESSION['success'] = 'FAQ "' . substr($question, 0, 30) . (strlen($question) > 30 ? '...' : '') . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
@@ -41,9 +41,14 @@ if (isset($_POST['save_faq'])) {
 if (isset($_POST['delete_faq'])) {
     $faqId = $_POST['faq_id'] ?? 0;
     if ($faqId) {
+        // Get question before deletion
+        $nameStmt = $db->prepare("SELECT question FROM faqs WHERE faq_id = ?");
+        $nameStmt->execute([$faqId]);
+        $question = $nameStmt->fetchColumn() ?? 'FAQ';
+        
         $stmt = $db->prepare("DELETE FROM faqs WHERE faq_id = ?");
         if ($stmt->execute([$faqId])) {
-            $_SESSION['success'] = 'FAQ deleted successfully';
+            $_SESSION['success'] = 'FAQ "' . substr($question, 0, 30) . (strlen($question) > 30 ? '...' : '') . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete FAQ';
         }
@@ -202,9 +207,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editFaq(<?php echo htmlspecialchars(json_encode($faq)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this FAQ?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteFaqForm<?php echo $faq['faq_id']; ?>">
                                         <input type="hidden" name="faq_id" value="<?php echo $faq['faq_id']; ?>">
-                                        <button type="submit" name="delete_faq" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteFaqForm<?php echo $faq['faq_id']; ?>', 'Delete FAQ', 'Are you sure you want to delete FAQ &quot;<?php echo htmlspecialchars(substr($faq['question'], 0, 50)) . (strlen($faq['question']) > 50 ? '...' : ''); ?>&quot;?', null, 'delete_faq')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

@@ -32,7 +32,7 @@ if (isset($_POST['save_schedule'])) {
             // Update existing schedule
             $stmt = $db->prepare("UPDATE staff_schedules SET user_id = ?, work_date = ?, shift_start = ?, shift_end = ?, role = ?, status = ?, notes = ? WHERE schedule_id = ?");
             $stmt->execute([$userId, $workDate, $shiftStart, $shiftEnd, $role, $status, $notes, $scheduleId]);
-            $_SESSION['success'] = 'Schedule updated successfully';
+            $_SESSION['success'] = $staffName . '\'s schedule updated successfully';
             
             // Send notifications
             require_once '../includes/notifications.php';
@@ -48,7 +48,7 @@ if (isset($_POST['save_schedule'])) {
             $stmt = $db->prepare("INSERT INTO staff_schedules (user_id, work_date, shift_start, shift_end, role, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$userId, $workDate, $shiftStart, $shiftEnd, $role, $status, $notes]);
             $newScheduleId = $db->lastInsertId();
-            $_SESSION['success'] = 'Schedule added successfully';
+            $_SESSION['success'] = $staffName . '\'s schedule added successfully';
             
             // Send notifications
             require_once '../includes/notifications.php';
@@ -69,9 +69,16 @@ if (isset($_POST['save_schedule'])) {
 if (isset($_POST['delete_schedule'])) {
     $scheduleId = $_POST['schedule_id'] ?? 0;
     if ($scheduleId) {
+        // Get staff name and date before deletion
+        $schedStmt = $db->prepare("SELECT ss.user_id, u.first_name, u.last_name, ss.work_date FROM staff_schedules ss JOIN users u ON ss.user_id = u.user_id WHERE ss.schedule_id = ?");
+        $schedStmt->execute([$scheduleId]);
+        $schedData = $schedStmt->fetch();
+        $staffName = $schedData ? $schedData['first_name'] . ' ' . $schedData['last_name'] : 'Staff';
+        $workDate = $schedData['work_date'] ?? 'scheduled date';
+        
         $stmt = $db->prepare("DELETE FROM staff_schedules WHERE schedule_id = ?");
         if ($stmt->execute([$scheduleId])) {
-            $_SESSION['success'] = 'Schedule deleted successfully';
+            $_SESSION['success'] = $staffName . '\'s schedule for ' . $workDate . ' deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete schedule';
         }
@@ -242,9 +249,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editSchedule(<?php echo htmlspecialchars(json_encode($schedule)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this schedule?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteScheduleForm<?php echo $schedule['schedule_id']; ?>">
                                         <input type="hidden" name="schedule_id" value="<?php echo $schedule['schedule_id']; ?>">
-                                        <button type="submit" name="delete_schedule" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteScheduleForm<?php echo $schedule['schedule_id']; ?>', 'Delete Schedule', 'Are you sure you want to delete schedule for <?php echo htmlspecialchars($schedule['first_name'] . ' ' . $schedule['last_name']); ?> on <?php echo $schedule['work_date']; ?>?', null, 'delete_schedule')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

@@ -44,13 +44,13 @@ if (isset($_POST['save_slide'])) {
                 $stmt = $db->prepare("UPDATE homepage_slider SET title = ?, subtitle = ?, button_text = ?, button_link = ?, sort_order = ?, is_active = ? WHERE slide_id = ?");
                 $stmt->execute([$title, $subtitle, $buttonText, $buttonLink, $sortOrder, $isActive, $slideId]);
             }
-            $_SESSION['success'] = 'Slide updated successfully';
+            $_SESSION['success'] = 'Slide "' . $title . '" updated successfully';
         } else {
             // Add new slide
             if ($image) {
                 $stmt = $db->prepare("INSERT INTO homepage_slider (title, subtitle, button_text, button_link, image, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$title, $subtitle, $buttonText, $buttonLink, $image, $sortOrder, $isActive]);
-                $_SESSION['success'] = 'Slide added successfully';
+                $_SESSION['success'] = 'Slide "' . $title . '" added successfully';
             } else {
                 $_SESSION['error'] = 'Please upload an image';
             }
@@ -65,9 +65,14 @@ if (isset($_POST['save_slide'])) {
 if (isset($_POST['delete_slide'])) {
     $slideId = $_POST['slide_id'] ?? 0;
     if ($slideId) {
+        // Get title before deletion
+        $nameStmt = $db->prepare("SELECT title FROM homepage_slider WHERE slide_id = ?");
+        $nameStmt->execute([$slideId]);
+        $slideTitle = $nameStmt->fetchColumn() ?? 'Slide';
+        
         $stmt = $db->prepare("DELETE FROM homepage_slider WHERE slide_id = ?");
         if ($stmt->execute([$slideId])) {
-            $_SESSION['success'] = 'Slide deleted successfully';
+            $_SESSION['success'] = 'Slide "' . $slideTitle . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete slide';
         }
@@ -172,9 +177,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editSlide(<?php echo htmlspecialchars(json_encode($slide)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this slide?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteSlideForm<?php echo $slide['slide_id']; ?>">
                                         <input type="hidden" name="slide_id" value="<?php echo $slide['slide_id']; ?>">
-                                        <button type="submit" name="delete_slide" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteSlideForm<?php echo $slide['slide_id']; ?>', 'Delete Slide', 'Are you sure you want to delete slide &quot;<?php echo htmlspecialchars($slide['title']); ?>&quot;?', null, 'delete_slide')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

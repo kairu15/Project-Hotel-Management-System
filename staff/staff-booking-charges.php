@@ -16,9 +16,14 @@ if (isset($_POST['add_charge'])) {
     $userId = getUserId();
 
     if ($bookingId && $description && $amount > 0) {
+        // Get booking reference for message
+        $bookStmt = $db->prepare("SELECT booking_reference FROM bookings WHERE booking_id = ?");
+        $bookStmt->execute([$bookingId]);
+        $bookingRef = $bookStmt->fetchColumn() ?? 'Booking';
+        
         $stmt = $db->prepare("INSERT INTO booking_charges (booking_id, description, amount, charge_type, created_by) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$bookingId, $description, $amount, $chargeType, $userId]);
-        $_SESSION['success'] = 'Charge added successfully';
+        $_SESSION['success'] = 'Charge "' . $description . '" (' . formatPrice($amount) . ') added to ' . $bookingRef;
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
     }
@@ -29,9 +34,16 @@ if (isset($_POST['add_charge'])) {
 if (isset($_POST['waive_charge'])) {
     $chargeId = $_POST['charge_id'] ?? 0;
     if ($chargeId) {
+        // Get charge details for message
+        $chargeStmt = $db->prepare("SELECT description, amount FROM booking_charges WHERE charge_id = ?");
+        $chargeStmt->execute([$chargeId]);
+        $chargeData = $chargeStmt->fetch();
+        $chargeDesc = $chargeData['description'] ?? 'Charge';
+        $chargeAmount = $chargeData['amount'] ?? 0;
+        
         $stmt = $db->prepare("UPDATE booking_charges SET status = 'waived' WHERE charge_id = ?");
         $stmt->execute([$chargeId]);
-        $_SESSION['success'] = 'Charge waived successfully';
+        $_SESSION['success'] = 'Charge "' . $chargeDesc . '" (' . formatPrice($chargeAmount) . ') waived';
     }
     redirect('staff-booking-charges.php');
 }
@@ -40,9 +52,16 @@ if (isset($_POST['waive_charge'])) {
 if (isset($_POST['mark_paid'])) {
     $chargeId = $_POST['charge_id'] ?? 0;
     if ($chargeId) {
+        // Get charge details for message
+        $chargeStmt = $db->prepare("SELECT description, amount FROM booking_charges WHERE charge_id = ?");
+        $chargeStmt->execute([$chargeId]);
+        $chargeData = $chargeStmt->fetch();
+        $chargeDesc = $chargeData['description'] ?? 'Charge';
+        $chargeAmount = $chargeData['amount'] ?? 0;
+        
         $stmt = $db->prepare("UPDATE booking_charges SET status = 'paid' WHERE charge_id = ?");
         $stmt->execute([$chargeId]);
-        $_SESSION['success'] = 'Charge marked as paid';
+        $_SESSION['success'] = 'Charge "' . $chargeDesc . '" (' . formatPrice($chargeAmount) . ') marked as paid';
     }
     redirect('staff-booking-charges.php');
 }
@@ -249,9 +268,9 @@ require_once '../includes/staff-header.php';
                                         <input type="hidden" name="charge_id" value="<?php echo $charge['charge_id']; ?>">
                                         <button type="submit" name="mark_paid" class="btn btn-sm btn-success" style="padding: 5px 12px; font-size: 11px;">Paid</button>
                                     </form>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Waive this charge?');">
+                                    <form method="POST" action="" style="display: inline;" id="waiveChargeForm<?php echo $charge['charge_id']; ?>">
                                         <input type="hidden" name="charge_id" value="<?php echo $charge['charge_id']; ?>">
-                                        <button type="submit" name="waive_charge" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 11px;">Waive</button>
+                                        <button type="button" onclick="openDeleteModal('waiveChargeForm<?php echo $charge['charge_id']; ?>', 'Waive Charge', 'Are you sure you want to waive this charge for <?php echo htmlspecialchars($charge['description']); ?> (₱<?php echo number_format($charge['amount'], 2); ?>)?', null, 'waive_charge')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 11px;">Waive</button>
                                     </form>
                                 </div>
                                 <?php else: ?>

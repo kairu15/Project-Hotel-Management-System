@@ -30,12 +30,18 @@ if (isset($_POST['update_staff_permissions'])) {
     $permissions = $_POST['permissions'] ?? [];
     
     if ($userId) {
+        // Get staff name for message
+        $staffStmt = $db->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
+        $staffStmt->execute([$userId]);
+        $staffData = $staffStmt->fetch();
+        $staffName = $staffData ? $staffData['first_name'] . ' ' . $staffData['last_name'] : 'Staff';
+        
         $pages = getPermissionPages();
         foreach ($pages as $pageKey => $pageInfo) {
             $canAccess = in_array($pageKey, $permissions) ? 1 : 0;
             setStaffPermission($userId, $pageKey, $canAccess);
         }
-        $_SESSION['success'] = 'Staff permissions updated successfully';
+        $_SESSION['success'] = $staffName . '\'s permissions updated successfully';
     }
     redirect('admin-staff-permissions.php');
 }

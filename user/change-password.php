@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $updateStmt = $db->prepare("UPDATE users SET password = ? WHERE user_id = ?");
             
             if ($updateStmt->execute([$newPassword, $_SESSION['user_id']])) {
-                $success = 'Password changed successfully!';
+                $success = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '\'s password changed successfully!';
                 logActivity('Password changed', 'User ID: ' . $_SESSION['user_id']);
             } else {
                 $error = 'Failed to update password. Please try again.';

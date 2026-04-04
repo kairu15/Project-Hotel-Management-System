@@ -89,8 +89,8 @@ require_once '../includes/admin-header.php';
     <div class="container">
         <div style="display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 20px;">
             <a href="admin-dashboard.php" class="btn btn-outline">Back to Dashboard</a>
-            <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Delete logs older than 90 days?');">
-                <button type="submit" name="cleanup_logs" class="btn btn-danger">Clean Up Old Logs</button>
+            <form method="POST" action="" style="display: inline;" id="cleanupLogsForm">
+                <button type="button" onclick="openDeleteModal('cleanupLogsForm', 'Clean Up Old Logs', 'Are you sure you want to delete logs older than 90 days?', null, 'cleanup_logs')" name="cleanup_logs_button" class="btn btn-danger">Clean Up Old Logs</button>
             </form>
         </div>
 
@@ -159,7 +159,7 @@ require_once '../includes/admin-header.php';
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Filter</button>
+                    <button type="submit" name="filter_button" class="btn btn-primary" style="padding: 10px 20px;">Filter</button>
                     <a href="admin-notification-logs.php" class="btn btn-secondary" style="padding: 10px 20px;">Reset</a>
                 </div>
             </form>
@@ -236,10 +236,10 @@ require_once '../includes/admin-header.php';
                             </td>
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
-                                    <button type="button" onclick="viewContent(<?php echo htmlspecialchars(json_encode($log)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">View</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Delete this log entry?');">
+                                    <button type="button" onclick="viewContent(<?php echo htmlspecialchars(json_encode($log)); ?>)" name="view_button" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">View</button>
+                                    <form method="POST" action="" style="display: inline;" id="deleteLogForm<?php echo $log['log_id']; ?>">
                                         <input type="hidden" name="log_id" value="<?php echo $log['log_id']; ?>">
-                                        <button type="submit" name="delete_log" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteLogForm<?php echo $log['log_id']; ?>', 'Delete Log Entry', 'Are you sure you want to delete this log entry?', null, 'delete_log')" name="delete_button" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

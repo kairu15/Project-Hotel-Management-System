@@ -11,8 +11,6 @@ require_once '../includes/user-header.php';
 
 $db = getDB();
 $userId = getUserId();
-$error = '';
-$success = '';
 
 // Get user data
 $stmt = $db->prepare("SELECT * FROM users WHERE user_id = ?");
@@ -29,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $country = sanitizeInput($_POST['country'] ?? '');
     
     if (empty($firstName) || empty($lastName)) {
-        $error = 'First name and last name are required';
+        $_SESSION['error'] = 'First name and last name are required';
+        redirect('profile.php');
     } else {
         // Handle profile picture upload
         $profilePicture = $user['profile_picture'] ?? null;
@@ -59,28 +58,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $profilePicture = 'assets/uploads/profile_pictures/' . $filename;
                 } else {
-                    $error = 'Failed to upload profile picture.';
+                    $_SESSION['error'] = 'Failed to upload profile picture.';
+                    redirect('profile.php');
                 }
             } else {
-                $error = 'Invalid file type. Only JPG, PNG, GIF, and WebP are allowed.';
+                $_SESSION['error'] = 'Invalid file type. Only JPG, PNG, GIF, and WebP are allowed.';
+                redirect('profile.php');
             }
         }
         
-        if (empty($error)) {
-            $updateStmt = $db->prepare("UPDATE users SET first_name = ?, last_name = ?, phone = ?, address = ?, city = ?, country = ?, profile_picture = ?, updated_at = NOW() WHERE user_id = ?");
-            if ($updateStmt->execute([$firstName, $lastName, $phone, $address, $city, $country, $profilePicture, $userId])) {
-                // Update session
-                $_SESSION['first_name'] = $firstName;
-                $_SESSION['last_name'] = $lastName;
-                $success = 'Profile updated successfully!';
-                logActivity('Profile updated', 'User ID: ' . $userId);
-                
-                // Refresh user data
-                $stmt->execute([$userId]);
-                $user = $stmt->fetch();
-            } else {
-                $error = 'Failed to update profile. Please try again.';
-            }
+        $updateStmt = $db->prepare("UPDATE users SET first_name = ?, last_name = ?, phone = ?, address = ?, city = ?, country = ?, profile_picture = ?, updated_at = NOW() WHERE user_id = ?");
+        if ($updateStmt->execute([$firstName, $lastName, $phone, $address, $city, $country, $profilePicture, $userId])) {
+            // Update session
+            $_SESSION['first_name'] = $firstName;
+            $_SESSION['last_name'] = $lastName;
+            $_SESSION['success'] = $firstName . ' ' . $lastName . '\'s profile updated successfully!';
+            logActivity('Profile updated', 'User ID: ' . $userId);
+            redirect('profile.php');
+        } else {
+            $_SESSION['error'] = 'Failed to update profile. Please try again.';
+            redirect('profile.php');
         }
     }
 }
@@ -92,18 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     
     <div class="card-body">
-        <?php if ($error): ?>
-        <div class="alert alert-danger" style="margin-bottom: 25px;">
-            <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
-        </div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-        <div class="alert alert-success" style="margin-bottom: 25px;">
-            <i class="fas fa-check-circle"></i> <?php echo $success; ?>
-        </div>
-        <?php endif; ?>
-        
         <form method="POST" action="" enctype="multipart/form-data">
             <!-- Profile Picture Section -->
             <div style="text-align: center; margin-bottom: 30px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px;">

@@ -393,10 +393,10 @@ $statusColors = [
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <?php if ($event['status'] === 'confirmed'): ?>
-                    <form method="POST" action="" style="display: inline;">
+                    <form method="POST" action="" style="display: inline;" id="completeEventForm<?php echo $event['event_booking_id']; ?>">
                         <input type="hidden" name="event_booking_id" value="<?php echo $event['event_booking_id']; ?>">
                         <input type="hidden" name="action" value="complete">
-                        <button type="submit" class="btn-action btn-complete" onclick="return confirm('Mark this event as completed?')">
+                        <button type="button" class="btn-action btn-complete" onclick="openDeleteModal('completeEventForm<?php echo $event['event_booking_id']; ?>', 'Complete Event', 'Are you sure you want to mark this event as completed?', null, 'action')">
                             <i class="fas fa-flag-checkered"></i> Complete Event
                         </button>
                     </form>

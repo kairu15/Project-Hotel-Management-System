@@ -17,9 +17,14 @@ if (isset($_POST['update_room_status'])) {
     $validStatuses = ['available', 'occupied', 'maintenance', 'cleaning'];
     
     if ($roomId && in_array($newStatus, $validStatuses)) {
+        // Get room number for message
+        $roomStmt = $db->prepare("SELECT room_number FROM rooms WHERE room_id = ?");
+        $roomStmt->execute([$roomId]);
+        $roomNumber = $roomStmt->fetchColumn() ?? 'Room';
+        
         $stmt = $db->prepare("UPDATE rooms SET status = ? WHERE room_id = ?");
         if ($stmt->execute([$newStatus, $roomId])) {
-            $_SESSION['success'] = 'Room status updated successfully';
+            $_SESSION['success'] = 'Room ' . $roomNumber . ' status updated to ' . ucfirst($newStatus);
         } else {
             $_SESSION['error'] = 'Failed to update room status';
         }
@@ -34,9 +39,14 @@ if (isset($_POST['update_housekeeping_status'])) {
     $validHkStatuses = ['clean', 'dirty', 'inspected'];
     
     if ($roomId && in_array($hkStatus, $validHkStatuses)) {
+        // Get room number for message
+        $roomStmt = $db->prepare("SELECT room_number FROM rooms WHERE room_id = ?");
+        $roomStmt->execute([$roomId]);
+        $roomNumber = $roomStmt->fetchColumn() ?? 'Room';
+        
         $stmt = $db->prepare("UPDATE rooms SET housekeeping_status = ? WHERE room_id = ?");
         if ($stmt->execute([$hkStatus, $roomId])) {
-            $_SESSION['success'] = 'Housekeeping status updated successfully';
+            $_SESSION['success'] = 'Room ' . $roomNumber . ' housekeeping status updated to ' . ucfirst($hkStatus);
         } else {
             $_SESSION['error'] = 'Failed to update housekeeping status';
         }
@@ -58,7 +68,7 @@ if (isset($_POST['save_room'])) {
             // Update existing room
             $stmt = $db->prepare("UPDATE rooms SET category_id = ?, room_number = ?, floor = ?, status = ?, housekeeping_status = ? WHERE room_id = ?");
             if ($stmt->execute([$categoryId, $roomNumber, $floor, $status, $housekeepingStatus, $roomId])) {
-                $_SESSION['success'] = 'Room updated successfully';
+                $_SESSION['success'] = 'Room ' . $roomNumber . ' updated successfully';
             } else {
                 $_SESSION['error'] = 'Failed to update room';
             }
@@ -66,7 +76,7 @@ if (isset($_POST['save_room'])) {
             // Add new room
             $stmt = $db->prepare("INSERT INTO rooms (category_id, room_number, floor, status, housekeeping_status) VALUES (?, ?, ?, ?, ?)");
             if ($stmt->execute([$categoryId, $roomNumber, $floor, $status, $housekeepingStatus])) {
-                $_SESSION['success'] = 'Room added successfully';
+                $_SESSION['success'] = 'Room ' . $roomNumber . ' added successfully';
             } else {
                 $_SESSION['error'] = 'Failed to add room. Room number may already exist.';
             }
@@ -81,15 +91,20 @@ if (isset($_POST['save_room'])) {
 if (isset($_POST['delete_room'])) {
     $roomId = $_POST['room_id'] ?? 0;
     if ($roomId) {
+        // Get room number before deletion for message
+        $roomStmt = $db->prepare("SELECT room_number FROM rooms WHERE room_id = ?");
+        $roomStmt->execute([$roomId]);
+        $roomNumber = $roomStmt->fetchColumn() ?? 'Room';
+        
         // Check if room has active bookings
         $checkStmt = $db->prepare("SELECT COUNT(*) FROM bookings WHERE room_id = ? AND status IN ('confirmed', 'checked_in')");
         $checkStmt->execute([$roomId]);
         if ($checkStmt->fetchColumn() > 0) {
-            $_SESSION['error'] = 'Cannot delete room with active bookings';
+            $_SESSION['error'] = 'Cannot delete room ' . $roomNumber . ' - has active bookings';
         } else {
             $stmt = $db->prepare("DELETE FROM rooms WHERE room_id = ?");
             if ($stmt->execute([$roomId])) {
-                $_SESSION['success'] = 'Room deleted successfully';
+                $_SESSION['success'] = 'Room ' . $roomNumber . ' deleted successfully';
             } else {
                 $_SESSION['error'] = 'Failed to delete room';
             }
@@ -308,9 +323,9 @@ require_once '../includes/admin-header.php';
                                         <input type="hidden" name="update_room_status" value="1">
                                     </form>
                                     
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteRoomForm<?php echo $room['room_id']; ?>">
                                         <input type="hidden" name="room_id" value="<?php echo $room['room_id']; ?>">
-                                        <button type="submit" name="delete_room" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteRoomForm<?php echo $room['room_id']; ?>', 'Delete Room', 'Are you sure you want to delete Room <?php echo htmlspecialchars($room['room_number']); ?>?', null, 'delete_room')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

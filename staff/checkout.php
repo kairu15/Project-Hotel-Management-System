@@ -279,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once '../includes/notifications.php';
             notifyBookingUpdate($booking['user_id'], $bookingId, 'checked_out');
             
-            $_SESSION['success'] = 'Guest checked out successfully';
+            $_SESSION['success'] = $booking['first_name'] . ' ' . $booking['last_name'] . ' checked out from Room ' . ($booking['room_number'] ?? 'N/A') . ' successfully';
             redirect('checkout.php');
             
         } catch (Exception $e) {

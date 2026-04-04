@@ -45,12 +45,12 @@ if (isset($_POST['save_item'])) {
                 $stmt = $db->prepare("UPDATE menu_items SET item_name = ?, cat_id = ?, description = ?, price = ?, is_special = ?, is_available = ?, dietary_info = ? WHERE item_id = ?");
                 $stmt->execute([$itemName, $catId, $description, $price, $isSpecial, $isAvailable, $dietaryInfo, $itemId]);
             }
-            $_SESSION['success'] = 'Menu item updated successfully';
+            $_SESSION['success'] = 'Menu item "' . $itemName . '" updated successfully';
         } else {
             // Add new item
             $stmt = $db->prepare("INSERT INTO menu_items (item_name, cat_id, description, price, is_special, is_available, dietary_info, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$itemName, $catId, $description, $price, $isSpecial, $isAvailable, $dietaryInfo, $image]);
-            $_SESSION['success'] = 'Menu item added successfully';
+            $_SESSION['success'] = 'Menu item "' . $itemName . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
@@ -62,9 +62,14 @@ if (isset($_POST['save_item'])) {
 if (isset($_POST['delete_item'])) {
     $itemId = $_POST['item_id'] ?? 0;
     if ($itemId) {
+        // Get item name before deletion
+        $nameStmt = $db->prepare("SELECT item_name FROM menu_items WHERE item_id = ?");
+        $nameStmt->execute([$itemId]);
+        $itemName = $nameStmt->fetchColumn() ?? 'Menu item';
+        
         $stmt = $db->prepare("DELETE FROM menu_items WHERE item_id = ?");
         if ($stmt->execute([$itemId])) {
-            $_SESSION['success'] = 'Menu item deleted successfully';
+            $_SESSION['success'] = 'Menu item "' . $itemName . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete menu item';
         }
@@ -265,9 +270,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editItem(<?php echo htmlspecialchars(json_encode($item)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteMenuItemForm<?php echo $item['item_id']; ?>">
                                         <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
-                                        <button type="submit" name="delete_item" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteMenuItemForm<?php echo $item['item_id']; ?>', 'Delete Menu Item', 'Are you sure you want to delete &quot;<?php echo htmlspecialchars($item['item_name']); ?>&quot;?', null, 'delete_item')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;" name="delete_item"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

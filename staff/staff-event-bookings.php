@@ -16,6 +16,11 @@ if (isset($_POST['confirm_booking'])) {
     $quotedPrice = $_POST['quoted_price'] ?? null;
     
     if ($bookingId) {
+        // Get event name for message
+        $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
+        $nameStmt->execute([$bookingId]);
+        $eventName = $nameStmt->fetchColumn() ?? 'Event';
+        
         if ($quotedPrice !== null && $quotedPrice !== '') {
             $stmt = $db->prepare("UPDATE event_bookings SET status = 'confirmed', quoted_price = ? WHERE event_booking_id = ?");
             $stmt->execute([$quotedPrice, $bookingId]);
@@ -23,7 +28,7 @@ if (isset($_POST['confirm_booking'])) {
             $stmt = $db->prepare("UPDATE event_bookings SET status = 'confirmed' WHERE event_booking_id = ?");
             $stmt->execute([$bookingId]);
         }
-        $_SESSION['success'] = 'Event booking confirmed successfully';
+        $_SESSION['success'] = 'Event booking "' . $eventName . '" confirmed successfully';
     }
     redirect('staff-event-bookings.php');
 }
@@ -32,9 +37,14 @@ if (isset($_POST['confirm_booking'])) {
 if (isset($_POST['complete_booking'])) {
     $bookingId = $_POST['booking_id'] ?? 0;
     if ($bookingId) {
+        // Get event name for message
+        $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
+        $nameStmt->execute([$bookingId]);
+        $eventName = $nameStmt->fetchColumn() ?? 'Event';
+        
         $stmt = $db->prepare("UPDATE event_bookings SET status = 'completed' WHERE event_booking_id = ?");
         $stmt->execute([$bookingId]);
-        $_SESSION['success'] = 'Event booking marked as completed successfully';
+        $_SESSION['success'] = 'Event booking "' . $eventName . '" marked as completed';
     }
     redirect('staff-event-bookings.php');
 }
@@ -45,9 +55,14 @@ if (isset($_POST['set_price'])) {
     $quotedPrice = $_POST['quoted_price'] ?? null;
     
     if ($bookingId && $quotedPrice !== null && $quotedPrice !== '') {
+        // Get event name for message
+        $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
+        $nameStmt->execute([$bookingId]);
+        $eventName = $nameStmt->fetchColumn() ?? 'Event';
+        
         $stmt = $db->prepare("UPDATE event_bookings SET quoted_price = ? WHERE event_booking_id = ?");
         $stmt->execute([$quotedPrice, $bookingId]);
-        $_SESSION['success'] = 'Quoted price updated successfully';
+        $_SESSION['success'] = 'Quoted price for "' . $eventName . '" set to ' . formatPrice($quotedPrice);
     }
     redirect('staff-event-bookings.php');
 }
@@ -239,9 +254,9 @@ require_once '../includes/staff-header.php';
                                     </button>
                                     <?php endif; ?>
                                     <?php if ($booking['status'] === 'confirmed'): ?>
-                                    <form method="POST" action="" style="display: inline;">
+                                    <form method="POST" action="" style="display: inline;" id="completeForm<?php echo $booking['event_booking_id']; ?>">
                                         <input type="hidden" name="booking_id" value="<?php echo $booking['event_booking_id']; ?>">
-                                        <button type="submit" name="complete_booking" class="btn btn-sm" style="padding: 5px 12px; font-size: 12px; background-color: #007bff; color: white;" onclick="return confirm('Mark this event booking as completed?');">
+                                        <button type="button" name="complete_booking" class="btn btn-sm" style="padding: 5px 12px; font-size: 12px; background-color: #007bff; color: white;" onclick="openDeleteModal('completeForm<?php echo $booking['event_booking_id']; ?>', 'Complete Booking', 'Are you sure you want to mark this event booking as completed?', null, 'complete_booking')">
                                             <i class="fas fa-check-double"></i> Complete
                                         </button>
                                     </form>

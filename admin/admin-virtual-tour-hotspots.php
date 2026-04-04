@@ -32,11 +32,11 @@ if (isset($_POST['save_hotspot'])) {
     if ($hotspotId) {
         $stmt = $db->prepare("UPDATE virtual_tour_hotspots SET hotspot_type = ?, pitch = ?, yaw = ?, text = ?, target_tour_id = ?, target_url = ?, css_class = ? WHERE hotspot_id = ?");
         $stmt->execute([$hotspotType, $pitch, $yaw, $text, $targetTourId, $targetUrl, $cssClass, $hotspotId]);
-        $_SESSION['success'] = 'Hotspot updated successfully';
+        $_SESSION['success'] = 'Hotspot "' . substr($text, 0, 30) . (strlen($text) > 30 ? '...' : '') . '" updated successfully';
     } else {
         $stmt = $db->prepare("INSERT INTO virtual_tour_hotspots (tour_id, hotspot_type, pitch, yaw, text, target_tour_id, target_url, css_class) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$tourId, $hotspotType, $pitch, $yaw, $text, $targetTourId, $targetUrl, $cssClass]);
-        $_SESSION['success'] = 'Hotspot added successfully';
+        $_SESSION['success'] = 'Hotspot "' . substr($text, 0, 30) . (strlen($text) > 30 ? '...' : '') . '" added successfully';
     }
     redirect('admin-virtual-tour-hotspots.php?tour_id=' . $tourId);
 }
@@ -44,9 +44,14 @@ if (isset($_POST['save_hotspot'])) {
 if (isset($_POST['delete_hotspot'])) {
     $hotspotId = $_POST['hotspot_id'] ?? 0;
     if ($hotspotId) {
+        // Get hotspot text before deletion
+        $nameStmt = $db->prepare("SELECT text FROM virtual_tour_hotspots WHERE hotspot_id = ?");
+        $nameStmt->execute([$hotspotId]);
+        $hotspotText = $nameStmt->fetchColumn() ?? 'Hotspot';
+        
         $stmt = $db->prepare("DELETE FROM virtual_tour_hotspots WHERE hotspot_id = ?");
         $stmt->execute([$hotspotId]);
-        $_SESSION['success'] = 'Hotspot deleted successfully';
+        $_SESSION['success'] = 'Hotspot "' . substr($hotspotText, 0, 30) . (strlen($hotspotText) > 30 ? '...' : '') . '" deleted successfully';
     }
     redirect('admin-virtual-tour-hotspots.php?tour_id=' . $tourId);
 }
@@ -97,9 +102,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;"><?php echo htmlspecialchars($hotspot['text']); ?></td>
                             <td style="padding: 15px 20px;">
                                 <button type="button" onclick="editHotspot(<?php echo htmlspecialchars(json_encode($hotspot)); ?>)" class="btn btn-sm btn-primary">Edit</button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete?');">
+                                <form method="POST" style="display: inline;" id="deleteHotspotForm<?php echo $hotspot['hotspot_id']; ?>">
                                     <input type="hidden" name="hotspot_id" value="<?php echo $hotspot['hotspot_id']; ?>">
-                                    <button type="submit" name="delete_hotspot" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                    <button type="button" onclick="openDeleteModal('deleteHotspotForm<?php echo $hotspot['hotspot_id']; ?>', 'Delete Hotspot', 'Are you sure you want to delete this hotspot?', null, 'delete_hotspot')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

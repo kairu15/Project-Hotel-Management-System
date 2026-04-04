@@ -521,13 +521,13 @@ $notificationTypes = [
             </a>
         <?php endforeach; ?>
         
-        <form method="POST" style="margin-left: auto; display: flex; gap: 10px;">
+        <form method="POST" style="margin-left: auto; display: flex; gap: 10px;" id="cleanupForm">
             <?php if ($unreadCount > 0): ?>
             <button type="submit" name="mark_all_read" class="mark-all-btn">
                 <i class="fas fa-check-double" style="margin-right: 5px;"></i>Mark All as Read
             </button>
             <?php endif; ?>
-            <button type="submit" name="cleanup" class="cleanup-btn" onclick="return confirm('Clean up notifications older than 30 days?');">
+            <button type="submit" name="cleanup" class="cleanup-btn">
                 <i class="fas fa-broom" style="margin-right: 5px;"></i>Clean Up Old
             </button>
         </form>
@@ -573,9 +573,9 @@ $notificationTypes = [
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                         <?php endif; ?>
-                        <form method="POST" style="display: inline;">
+                        <form method="POST" style="display: inline;" id="deleteForm<?php echo $notification['notification_id']; ?>">
                             <input type="hidden" name="notification_id" value="<?php echo $notification['notification_id']; ?>">
-                            <button type="submit" name="delete" class="action-btn delete" title="Delete" onclick="return confirm('Delete this notification?');">
+                            <button type="button" name="delete" class="action-btn delete" title="Delete" onclick="openDeleteModal('deleteForm<?php echo $notification['notification_id']; ?>', 'Delete Notification', 'Are you sure you want to delete this notification? This action cannot be undone.', null, 'delete')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>

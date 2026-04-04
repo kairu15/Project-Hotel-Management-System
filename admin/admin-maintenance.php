@@ -47,7 +47,14 @@ if (isset($_POST['update_status'])) {
             }
         }
         
-        $_SESSION['success'] = 'Maintenance request updated successfully';
+        // Get room number for message
+        $roomStmt = $db->prepare("SELECT r.room_number, mr.issue_type FROM maintenance_requests mr LEFT JOIN rooms r ON mr.room_id = r.room_id WHERE mr.request_id = ?");
+        $roomStmt->execute([$requestId]);
+        $roomData = $roomStmt->fetch();
+        $roomNumber = $roomData['room_number'] ?? 'Unknown';
+        $issueType = $roomData['issue_type'] ?? 'Maintenance';
+        
+        $_SESSION['success'] = $issueType . ' request for Room ' . $roomNumber . ' updated to ' . ucfirst($status);
     }
     redirect('admin-maintenance.php');
 }
@@ -56,9 +63,16 @@ if (isset($_POST['update_status'])) {
 if (isset($_POST['delete_request'])) {
     $requestId = $_POST['request_id'] ?? 0;
     if ($requestId) {
+        // Get room number and issue type before deletion
+        $roomStmt = $db->prepare("SELECT r.room_number, mr.issue_type FROM maintenance_requests mr LEFT JOIN rooms r ON mr.room_id = r.room_id WHERE mr.request_id = ?");
+        $roomStmt->execute([$requestId]);
+        $roomData = $roomStmt->fetch();
+        $roomNumber = $roomData['room_number'] ?? 'Unknown';
+        $issueType = $roomData['issue_type'] ?? 'Maintenance';
+        
         $stmt = $db->prepare("DELETE FROM maintenance_requests WHERE request_id = ?");
         if ($stmt->execute([$requestId])) {
-            $_SESSION['success'] = 'Maintenance request deleted successfully';
+            $_SESSION['success'] = $issueType . ' request for Room ' . $roomNumber . ' deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete request';
         }
@@ -251,9 +265,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editRequest(<?php echo htmlspecialchars(json_encode($request)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Update</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this request?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteMaintForm<?php echo $request['request_id']; ?>">
                                         <input type="hidden" name="request_id" value="<?php echo $request['request_id']; ?>">
-                                        <button type="submit" name="delete_request" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteMaintForm<?php echo $request['request_id']; ?>', 'Delete Maintenance Request', 'Are you sure you want to delete this <?php echo htmlspecialchars($request['issue_type']); ?> request for Room <?php echo htmlspecialchars($request['room_number'] ?? 'N/A'); ?>?', null, 'delete_request')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

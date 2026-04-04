@@ -21,9 +21,14 @@ if (isset($_POST['cancel_booking'])) {
         $booking = $checkStmt->fetch();
 
         if ($booking && in_array($booking['status'], ['pending', 'confirmed'])) {
+            // Get event name before cancelling
+            $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
+            $nameStmt->execute([$bookingId]);
+            $eventName = $nameStmt->fetchColumn() ?? 'Event';
+            
             $stmt = $db->prepare("UPDATE event_bookings SET status = 'cancelled' WHERE event_booking_id = ?");
             $stmt->execute([$bookingId]);
-            $_SESSION['success'] = 'Event booking cancelled successfully';
+            $_SESSION['success'] = 'Event booking "' . $eventName . '" cancelled successfully';
         } else {
             $_SESSION['error'] = 'Cannot cancel this booking';
         }
@@ -171,9 +176,9 @@ require_once '../includes/user-header.php'; ?>
                                 </button>
                                 <?php endif; ?>
                                 <?php if (in_array($booking['status'], ['pending']) || ($booking['status'] === 'confirmed' && $booking['payment_status'] !== 'paid')): ?>
-                                <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this event booking?');">
+                                <form method="POST" action="" style="display: inline;" id="cancelEventForm<?php echo $booking['event_booking_id']; ?>">
                                     <input type="hidden" name="booking_id" value="<?php echo $booking['event_booking_id']; ?>">
-                                    <button type="submit" name="cancel_booking" class="btn btn-danger" style="padding: 10px 20px;">Cancel Booking</button>
+                                    <button type="button" onclick="openDeleteModal('cancelEventForm<?php echo $booking['event_booking_id']; ?>', 'Cancel Event Booking', 'Are you sure you want to cancel this event booking?', null, 'cancel_booking')" class="btn btn-danger" style="padding: 10px 20px;">Cancel Booking</button>
                                 </form>
                                 <?php endif; ?>
                                 <?php if ($booking['status'] === 'completed' && !isItemRated('event', $booking['event_booking_id'], $userId)): ?>

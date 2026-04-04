@@ -24,7 +24,7 @@ if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
     if ($order && $order['status'] === 'pending') {
         $stmt = $db->prepare("UPDATE food_orders SET status = 'cancelled' WHERE order_id = ?");
         $stmt->execute([$orderId]);
-        showAlert('Order cancelled successfully', 'success');
+        showAlert('Order #' . str_pad($orderId, 6, '0', STR_PAD_LEFT) . ' cancelled successfully', 'success');
     } else {
         showAlert('Unable to cancel this order', 'danger');
     }
@@ -183,9 +183,9 @@ $totalSpent = array_sum(array_map(function($o) { return $o['status'] !== 'cancel
                     
                     <div style="display: flex; gap: 10px;">
                         <?php if ($canCancel): ?>
-                        <a href="?cancel=<?php echo $order['order_id']; ?>" class="btn btn-sm" style="background-color: #dc3545; color: white;" onclick="return confirm('Are you sure you want to cancel this order?');">
+                        <button type="button" class="btn btn-sm" style="background-color: #dc3545; color: white;" onclick="openDeleteModal(null, 'Cancel Order', 'Are you sure you want to cancel Order #<?php echo str_pad($order['order_id'], 6, '0', STR_PAD_LEFT); ?>? This action cannot be undone.', '<?php echo SITE_URL; ?>/user/my-food-orders.php?cancel=<?php echo $order['order_id']; ?>')">
                             <i class="fas fa-times"></i> Cancel Order
-                        </a>
+                        </button>
                         <?php endif; ?>
                         <?php if ($order['status'] === 'delivered' && !isItemRated('food', $order['order_id'], $userId)): ?>
                         <button type="button" class="btn btn-sm" style="background-color: #ffc107; color: #000;" onclick="openRateNowModal('food', <?php echo $order['order_id']; ?>, '<?php echo htmlspecialchars($order['item_name']); ?>')">

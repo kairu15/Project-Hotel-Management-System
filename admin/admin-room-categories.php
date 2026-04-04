@@ -112,7 +112,7 @@ if (isset($_POST['save_category'])) {
                 $stmt = $db->prepare("UPDATE room_categories SET category_name = ?, description = ?, base_price = ?, max_occupancy = ?, bed_type = ?, room_size_sqm = ?, amenities = ?, images_gallery = ?, status = ? WHERE category_id = ?");
                 $stmt->execute([$categoryName, $description, $basePrice, $maxOccupancy, $bedType, $roomSizeSqm, $amenities, implode(',', $allImages), $status, $categoryId]);
             }
-            $_SESSION['success'] = 'Room category updated successfully';
+            $_SESSION['success'] = 'Room category "' . $categoryName . '" updated successfully';
         } else {
             // Add new category
             $stmt = $db->prepare("INSERT INTO room_categories (category_name, description, base_price, max_occupancy, bed_type, room_size_sqm, amenities, image_primary, images_gallery, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -144,7 +144,7 @@ if (isset($_POST['save_category'])) {
                     $stmt->execute([implode(',', $newGalleryImages), $newCategoryId]);
                 }
             }
-            $_SESSION['success'] = 'Room category added successfully';
+            $_SESSION['success'] = 'Room category "' . $categoryName . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
@@ -156,11 +156,16 @@ if (isset($_POST['save_category'])) {
 if (isset($_POST['delete_category'])) {
     $categoryId = $_POST['category_id'] ?? 0;
     if ($categoryId) {
+        // Get category name before deletion
+        $nameStmt = $db->prepare("SELECT category_name FROM room_categories WHERE category_id = ?");
+        $nameStmt->execute([$categoryId]);
+        $categoryName = $nameStmt->fetchColumn() ?? 'Category';
+        
         // Check if category has rooms
         $checkStmt = $db->prepare("SELECT COUNT(*) FROM rooms WHERE category_id = ?");
         $checkStmt->execute([$categoryId]);
         if ($checkStmt->fetchColumn() > 0) {
-            $_SESSION['error'] = 'Cannot delete category that has rooms assigned';
+            $_SESSION['error'] = 'Cannot delete category "' . $categoryName . '" - has rooms assigned';
         } else {
             // Get and delete images
             $stmt = $db->prepare("SELECT image_primary, images_gallery FROM room_categories WHERE category_id = ?");
@@ -192,7 +197,7 @@ if (isset($_POST['delete_category'])) {
             
             $stmt = $db->prepare("DELETE FROM room_categories WHERE category_id = ?");
             if ($stmt->execute([$categoryId])) {
-                $_SESSION['success'] = 'Room category deleted successfully';
+                $_SESSION['success'] = 'Room category "' . $categoryName . '" deleted successfully';
             } else {
                 $_SESSION['error'] = 'Failed to delete room category';
             }
@@ -353,9 +358,9 @@ require_once '../includes/admin-header.php';
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                     <button type="button" onclick="editCategory(<?php echo htmlspecialchars(json_encode($category)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
                                     <button type="button" onclick="openImageManager(<?php echo $category['category_id']; ?>, '<?php echo htmlspecialchars($category['category_name']); ?>')" class="btn btn-sm btn-secondary" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-images"></i> Photos</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this category? This will also delete all associated images.');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteCategoryForm<?php echo $category['category_id']; ?>">
                                         <input type="hidden" name="category_id" value="<?php echo $category['category_id']; ?>">
-                                        <button type="submit" name="delete_category" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteCategoryForm<?php echo $category['category_id']; ?>', 'Delete Category', 'Are you sure you want to delete category &quot;<?php echo htmlspecialchars($category['category_name']); ?>&quot;? This will also delete all associated images.', null, 'delete_category')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -568,10 +573,10 @@ function openImageManager(categoryId, categoryName) {
                 div.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
                 div.innerHTML = `
                     <img src="../assets/${imgPath}" style="width: 100%; height: 150px; object-fit: cover;">
-                    <form method="POST" action="" onsubmit="return confirm('Delete this image?');" style="position: absolute; top: 5px; right: 5px;">
+                    <form method="POST" action="" id="deleteImgForm${categoryId}_${index}" style="position: absolute; top: 5px; right: 5px;">
                         <input type="hidden" name="category_id" value="${categoryId}">
                         <input type="hidden" name="image_path" value="${imgPath}">
-                        <button type="submit" name="delete_gallery_image" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px;">
+                        <button type="button" onclick="openDeleteModal('deleteImgForm${categoryId}_${index}', 'Delete Image', 'Are you sure you want to delete this image?', null, 'delete_gallery_image')" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

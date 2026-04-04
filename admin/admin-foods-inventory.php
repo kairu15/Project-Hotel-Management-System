@@ -307,9 +307,9 @@ $dietaryOptions = ['Vegan', 'Vegetarian', 'Gluten-Free', 'Dairy-Free', 'Nut-Free
                     <td style="padding: 15px; text-align: center;">
                         <div style="display: flex; gap: 5px; justify-content: center;">
                             <button type="button" onclick='openFoodModal(<?php echo json_encode($food); ?>)' class="btn btn-outline btn-sm" style="padding: 6px 12px;"><i class="fas fa-edit"></i></button>
-                            <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this food item?');">
+                            <form method="POST" action="" style="display: inline;" id="deleteFoodForm<?php echo $food['food_id']; ?>">
                                 <input type="hidden" name="food_id" value="<?php echo $food['food_id']; ?>">
-                                <button type="submit" name="delete_food" class="btn btn-danger btn-sm" style="padding: 6px 12px;"><i class="fas fa-trash"></i></button>
+                                <button type="button" onclick="openDeleteModal('deleteFoodForm<?php echo $food['food_id']; ?>', 'Delete Food Item', 'Are you sure you want to delete &quot;<?php echo htmlspecialchars($food['food_name']); ?>&quot;?', null, 'delete_food')" class="btn btn-danger btn-sm" style="padding: 6px 12px;"><i class="fas fa-trash"></i></button>
                             </form>
                         </div>
                     </td>

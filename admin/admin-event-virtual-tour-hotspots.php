@@ -135,9 +135,9 @@ require_once '../includes/admin-header.php';
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="editHotspot(<?php echo htmlspecialchars(json_encode($hotspot)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this hotspot?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteHotspotForm<?php echo $hotspot['hotspot_id']; ?>">
                                         <input type="hidden" name="hotspot_id" value="<?php echo $hotspot['hotspot_id']; ?>">
-                                        <button type="submit" name="delete_hotspot" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteHotspotForm<?php echo $hotspot['hotspot_id']; ?>', 'Delete Hotspot', 'Are you sure you want to delete this hotspot?', null, 'delete_hotspot')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

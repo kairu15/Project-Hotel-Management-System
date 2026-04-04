@@ -123,7 +123,7 @@ if (isset($_POST['save_space'])) {
             
             $stmt = $db->prepare("UPDATE event_spaces SET space_name = ?, description = ?, capacity = ?, area_sqm = ?, features = ?, price_per_day = ?, image_primary = ?, images = ?, status = ? WHERE space_id = ?");
             $stmt->execute([$spaceName, $description, $capacity, $areaSqm, $features, $pricePerDay, $finalPrimaryImage, implode(',', $allImages), $status, $spaceId]);
-            $_SESSION['success'] = 'Event space updated successfully';
+            $_SESSION['success'] = 'Event space "' . $spaceName . '" updated successfully';
         } else {
             // Add new space
             $stmt = $db->prepare("INSERT INTO event_spaces (space_name, description, capacity, area_sqm, features, price_per_day, image_primary, images, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -167,7 +167,7 @@ if (isset($_POST['save_space'])) {
                     $stmt->execute([$primaryImage, implode(',', $newGalleryImages), $newSpaceId]);
                 }
             }
-            $_SESSION['success'] = 'Event space added successfully';
+            $_SESSION['success'] = 'Event space "' . $spaceName . '" added successfully';
         }
     } else {
         $_SESSION['error'] = 'Please fill in all required fields';
@@ -179,11 +179,16 @@ if (isset($_POST['save_space'])) {
 if (isset($_POST['delete_space'])) {
     $spaceId = $_POST['space_id'] ?? 0;
     if ($spaceId) {
+        // Get space name before deletion
+        $nameStmt = $db->prepare("SELECT space_name FROM event_spaces WHERE space_id = ?");
+        $nameStmt->execute([$spaceId]);
+        $spaceName = $nameStmt->fetchColumn() ?? 'Event space';
+        
         // Check if space has bookings
         $checkStmt = $db->prepare("SELECT COUNT(*) FROM event_bookings WHERE space_id = ? AND status != 'cancelled'");
         $checkStmt->execute([$spaceId]);
         if ($checkStmt->fetchColumn() > 0) {
-            $_SESSION['error'] = 'Cannot delete space that has active bookings';
+            $_SESSION['error'] = 'Cannot delete "' . $spaceName . '" - has active bookings';
         } else {
             // Get and delete images
             $stmt = $db->prepare("SELECT images FROM event_spaces WHERE space_id = ?");
@@ -207,7 +212,7 @@ if (isset($_POST['delete_space'])) {
             
             $stmt = $db->prepare("DELETE FROM event_spaces WHERE space_id = ?");
             if ($stmt->execute([$spaceId])) {
-                $_SESSION['success'] = 'Event space deleted successfully';
+                $_SESSION['success'] = 'Event space "' . $spaceName . '" deleted successfully';
             } else {
                 $_SESSION['error'] = 'Failed to delete event space';
             }
@@ -389,9 +394,9 @@ require_once '../includes/admin-header.php';
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                     <button type="button" onclick="editSpace(<?php echo htmlspecialchars(json_encode($space)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
                                     <button type="button" onclick="openEventImageManager(<?php echo $space['space_id']; ?>, '<?php echo htmlspecialchars($space['space_name']); ?>')" class="btn btn-sm btn-secondary" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-images"></i> Photos</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this event space? This will also delete all associated images.');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteEventSpaceForm<?php echo $space['space_id']; ?>">
                                         <input type="hidden" name="space_id" value="<?php echo $space['space_id']; ?>">
-                                        <button type="submit" name="delete_space" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteEventSpaceForm<?php echo $space['space_id']; ?>', 'Delete Event Space', 'Are you sure you want to delete event space &quot;<?php echo htmlspecialchars($space['space_name']); ?>&quot;? This will also delete all associated images.', null, 'delete_space')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -595,10 +600,10 @@ function openEventImageManager(spaceId, spaceName) {
                 div.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
                 div.innerHTML = `
                     <img src="../assets/${imgPath}" style="width: 100%; height: 150px; object-fit: cover;">
-                    <form method="POST" action="" onsubmit="return confirm('Delete this image?');" style="position: absolute; top: 5px; right: 5px;">
+                    <form method="POST" action="" id="deleteEventImgForm${spaceId}_${index}" style="position: absolute; top: 5px; right: 5px;">
                         <input type="hidden" name="space_id" value="${spaceId}">
                         <input type="hidden" name="image_path" value="${imgPath}">
-                        <button type="submit" name="delete_event_image" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px;">
+                        <button type="button" onclick="openDeleteModal('deleteEventImgForm${spaceId}_${index}', 'Delete Image', 'Are you sure you want to delete this image?', null, 'delete_event_image')" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

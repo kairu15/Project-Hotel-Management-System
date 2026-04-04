@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         updateNotificationSetting($userId, $type, $emailEnabled, $popupEnabled);
     }
     
-    $_SESSION['alert'] = ['message' => 'Notification settings saved successfully!', 'type' => 'success'];
+    $_SESSION['alert'] = ['message' => $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '\'s notification settings saved successfully!', 'type' => 'success'];
     redirect('notification-settings.php');
 }
 

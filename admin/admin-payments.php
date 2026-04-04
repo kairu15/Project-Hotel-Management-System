@@ -16,9 +16,15 @@ if (isset($_POST['update_status'])) {
     $status = $_POST['status'] ?? '';
 
     if ($paymentId && $status) {
+        // Get payment reference for message
+        $payStmt = $db->prepare("SELECT p.booking_id, b.booking_reference FROM payments p JOIN bookings b ON p.booking_id = b.booking_id WHERE p.payment_id = ?");
+        $payStmt->execute([$paymentId]);
+        $payment = $payStmt->fetch();
+        $bookingRef = $payment['booking_reference'] ?? 'Booking';
+        
         $stmt = $db->prepare("UPDATE payments SET status = ? WHERE payment_id = ?");
         $stmt->execute([$status, $paymentId]);
-        $_SESSION['success'] = 'Payment status updated successfully';
+        $_SESSION['success'] = 'Payment for ' . $bookingRef . ' updated to ' . ucfirst($status);
     }
     redirect('admin-payments.php');
 }

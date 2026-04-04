@@ -64,7 +64,7 @@ if (isset($_POST['update_status'])) {
             notifyStaffEventAssignment($bookingId, $staffProcessType, $eventName, $eventDate);
         }
         
-        $_SESSION['success'] = 'Booking status updated successfully';
+        $_SESSION['success'] = 'Event booking for "' . $eventName . '" updated to ' . ucfirst($status);
     }
     redirect('admin-event-bookings.php');
 }
@@ -73,9 +73,14 @@ if (isset($_POST['update_status'])) {
 if (isset($_POST['delete_booking'])) {
     $bookingId = $_POST['booking_id'] ?? 0;
     if ($bookingId) {
+        // Get event name before deletion
+        $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
+        $nameStmt->execute([$bookingId]);
+        $eventName = $nameStmt->fetchColumn() ?? 'Event';
+        
         $stmt = $db->prepare("DELETE FROM event_bookings WHERE event_booking_id = ?");
         if ($stmt->execute([$bookingId])) {
-            $_SESSION['success'] = 'Event booking deleted successfully';
+            $_SESSION['success'] = 'Event booking "' . $eventName . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete booking';
         }
@@ -262,9 +267,9 @@ require_once '../includes/admin-header.php';
                                 <div style="display: flex; gap: 10px;">
                                     <button type="button" onclick="viewDetails(<?php echo htmlspecialchars(json_encode($booking)); ?>)" class="btn btn-sm btn-secondary" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-eye"></i> View</button>
                                     <button type="button" onclick="editBooking(<?php echo htmlspecialchars(json_encode($booking)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Update</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteEventBookingForm<?php echo $booking['event_booking_id']; ?>">
                                         <input type="hidden" name="booking_id" value="<?php echo $booking['event_booking_id']; ?>">
-                                        <button type="submit" name="delete_booking" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteEventBookingForm<?php echo $booking['event_booking_id']; ?>', 'Delete Event Booking', 'Are you sure you want to delete booking #<?php echo str_pad($booking['event_booking_id'], 6, '0', STR_PAD_LEFT); ?> for <?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?>?', null, 'delete_booking')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

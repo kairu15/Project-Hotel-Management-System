@@ -43,13 +43,13 @@ if (isset($_POST['save_gallery'])) {
                 $stmt = $db->prepare("UPDATE gallery SET title = ?, description = ?, category = ?, sort_order = ?, is_featured = ? WHERE image_id = ?");
                 $stmt->execute([$title, $description, $category, $sortOrder, $isFeatured, $imageId]);
             }
-            $_SESSION['success'] = 'Gallery item updated successfully';
+            $_SESSION['success'] = 'Gallery item "' . $title . '" updated successfully';
         } else {
             // Add new item
             if ($imagePath) {
                 $stmt = $db->prepare("INSERT INTO gallery (title, description, category, image_path, sort_order, is_featured) VALUES (?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$title, $description, $category, $imagePath, $sortOrder, $isFeatured]);
-                $_SESSION['success'] = 'Gallery item added successfully';
+                $_SESSION['success'] = 'Gallery item "' . $title . '" added successfully';
             } else {
                 $_SESSION['error'] = 'Please upload an image';
             }
@@ -64,9 +64,14 @@ if (isset($_POST['save_gallery'])) {
 if (isset($_POST['delete_gallery'])) {
     $imageId = $_POST['image_id'] ?? 0;
     if ($imageId) {
+        // Get title before deletion
+        $nameStmt = $db->prepare("SELECT title FROM gallery WHERE image_id = ?");
+        $nameStmt->execute([$imageId]);
+        $itemTitle = $nameStmt->fetchColumn() ?? 'Gallery item';
+        
         $stmt = $db->prepare("DELETE FROM gallery WHERE image_id = ?");
         if ($stmt->execute([$imageId])) {
-            $_SESSION['success'] = 'Gallery item deleted successfully';
+            $_SESSION['success'] = 'Gallery item "' . $itemTitle . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete gallery item';
         }
@@ -195,9 +200,9 @@ require_once '../includes/admin-header.php';
                                 <span style="font-size: 12px; color: #999;">Order: <?php echo $item['sort_order']; ?></span>
                                 <div style="display: flex; gap: 8px;">
                                     <button type="button" onclick="editGallery(<?php echo htmlspecialchars(json_encode($item)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteGalleryForm<?php echo $item['image_id']; ?>">
                                         <input type="hidden" name="image_id" value="<?php echo $item['image_id']; ?>">
-                                        <button type="submit" name="delete_gallery" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteGalleryForm<?php echo $item['image_id']; ?>', 'Delete Gallery Image', 'Are you sure you want to delete image &quot;<?php echo htmlspecialchars($item['title'] ?: 'Untitled'); ?>&quot;?', null, 'delete_gallery')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </div>

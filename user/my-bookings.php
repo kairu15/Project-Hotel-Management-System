@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $logStmt->execute([$bookingId, "Booking cancelled with refund of ₱" . number_format($refundAmount, 2) . " via $paymentMethod", $userId]);
                 
                 $db->commit();
-                $message = 'Your booking has been cancelled successfully. Refund of ' . formatPrice($refundAmount) . ' will be processed via ' . ucfirst(str_replace('_', ' ', $paymentMethod)) . ' within 5-7 business days.';
+                $message = 'Booking #' . str_pad($bookingId, 6, '0', STR_PAD_LEFT) . ' has been cancelled successfully. Refund of ' . formatPrice($refundAmount) . ' will be processed via ' . ucfirst(str_replace('_', ' ', $paymentMethod)) . ' within 5-7 business days.';
                 
             } catch (Exception $e) {
                 $db->rollBack();
@@ -167,9 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db->commit();
                     
                     if ($difference > 0) {
-                        $message = "Booking rescheduled successfully. Additional charge of " . formatPrice($difference) . " has been processed via " . ucfirst(str_replace('_', ' ', $paymentMethod)) . ".";
+                        $message = 'Booking #' . str_pad($bookingId, 6, '0', STR_PAD_LEFT) . ' rescheduled successfully. Additional charge of ' . formatPrice($difference) . ' has been processed via ' . ucfirst(str_replace('_', ' ', $paymentMethod)) . '.';
                     } else {
-                        $message = "Booking rescheduled successfully." . ($difference < 0 ? " A credit of " . formatPrice(abs($difference)) . " will be applied to your account." : "");
+                        $message = 'Booking #' . str_pad($bookingId, 6, '0', STR_PAD_LEFT) . ' rescheduled successfully.' . ($difference < 0 ? ' A credit of ' . formatPrice(abs($difference)) . ' will be applied to your account.' : '');
                     }
                     
                 } catch (Exception $e) {
@@ -625,7 +625,11 @@ function confirmCancel() {
         alert('Please select a refund method.');
         return false;
     }
-    return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');
+    const form = document.getElementById('cancelForm');
+    if (form) {
+        openDeleteModal('cancelForm', 'Cancel Booking', 'Are you sure you want to cancel this booking? This action cannot be undone.', null, 'confirm_cancel');
+    }
+    return false;
 }
 
 // Reschedule Modal Functions

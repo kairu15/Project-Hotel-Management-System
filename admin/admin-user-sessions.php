@@ -14,9 +14,15 @@ $db = getDB();
 if (isset($_POST['delete_session'])) {
     $sessionId = $_POST['session_id'] ?? '';
     if ($sessionId) {
+        // Get user info before deletion
+        $userStmt = $db->prepare("SELECT u.first_name, u.last_name, u.email FROM user_sessions us JOIN users u ON us.user_id = u.user_id WHERE us.session_id = ?");
+        $userStmt->execute([$sessionId]);
+        $userData = $userStmt->fetch();
+        $userName = $userData ? $userData['first_name'] . ' ' . $userData['last_name'] . ' (' . $userData['email'] . ')' : 'User';
+        
         $stmt = $db->prepare("DELETE FROM user_sessions WHERE session_id = ?");
         if ($stmt->execute([$sessionId])) {
-            $_SESSION['success'] = 'Session terminated successfully';
+            $_SESSION['success'] = 'Session for ' . $userName . ' terminated successfully';
         } else {
             $_SESSION['error'] = 'Failed to terminate session';
         }
@@ -28,7 +34,8 @@ if (isset($_POST['delete_session'])) {
 if (isset($_POST['cleanup_sessions'])) {
     $stmt = $db->prepare("DELETE FROM user_sessions WHERE expires_at < NOW() OR expires_at IS NULL");
     if ($stmt->execute()) {
-        $_SESSION['success'] = 'Expired sessions cleaned up successfully';
+        $rowCount = $stmt->rowCount();
+        $_SESSION['success'] = $rowCount . ' expired session' . ($rowCount !== 1 ? 's' : '') . ' cleaned up successfully';
     } else {
         $_SESSION['error'] = 'Failed to clean up sessions';
     }
@@ -80,8 +87,8 @@ require_once '../includes/admin-header.php';
     <div class="container">
         <div style="display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 20px;">
             <a href="admin-dashboard.php" class="btn btn-outline">Back to Dashboard</a>
-            <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to clean up all expired sessions?');">
-                <button type="submit" name="cleanup_sessions" class="btn btn-danger">Clean Up Expired Sessions</button>
+            <form method="POST" action="" style="display: inline;" id="cleanupSessionsForm">
+                <button type="button" onclick="openDeleteModal('cleanupSessionsForm', 'Clean Up Expired Sessions', 'Are you sure you want to clean up all expired sessions?', null, 'cleanup_sessions')" class="btn btn-danger">Clean Up Expired Sessions</button>
             </form>
         </div>
 
@@ -205,9 +212,9 @@ require_once '../includes/admin-header.php';
                             </td>
                             <td style="padding: 15px 20px;">
                                 <?php if ($isActive): ?>
-                                <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to terminate this session?');">
+                                <form method="POST" action="" style="display: inline;" id="terminateSessionForm<?php echo htmlspecialchars($session['session_id']); ?>">
                                     <input type="hidden" name="session_id" value="<?php echo htmlspecialchars($session['session_id']); ?>">
-                                    <button type="submit" name="delete_session" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;">
+                                    <button type="button" onclick="openDeleteModal('terminateSessionForm<?php echo htmlspecialchars($session['session_id']); ?>', 'Terminate Session', 'Are you sure you want to terminate this session for <?php echo htmlspecialchars($session['first_name'] . ' ' . $session['last_name']); ?>?', null, 'delete_session')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;">
                                         <i class="fas fa-sign-out-alt"></i> Terminate
                                     </button>
                                 </form>

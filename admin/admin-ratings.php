@@ -810,9 +810,9 @@ function renderStars($rating) {
                         <small style="color: #999;"><?php echo date('h:i A', strtotime($rating['created_at'])); ?></small>
                     </td>
                     <td>
-                        <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this rating?');">
+                        <form method="POST" action="" style="display: inline;" id="deleteRatingForm<?php echo $rating['rating_id']; ?>">
                             <input type="hidden" name="rating_id" value="<?php echo $rating['rating_id']; ?>">
-                            <button type="submit" name="delete_rating" class="delete-btn">
+                            <button type="button" onclick="openDeleteModal('deleteRatingForm<?php echo $rating['rating_id']; ?>', 'Delete Rating', 'Are you sure you want to delete this rating?', null, 'delete_rating')" class="delete-btn">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>

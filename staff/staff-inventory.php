@@ -13,9 +13,14 @@ if (isset($_POST['update_quantity'])) {
     $quantity = $_POST['quantity'] ?? 0;
 
     if ($itemId) {
+        // Get item name for message
+        $nameStmt = $db->prepare("SELECT item_name FROM inventory_items WHERE item_id = ?");
+        $nameStmt->execute([$itemId]);
+        $itemName = $nameStmt->fetchColumn() ?? 'Inventory item';
+        
         $stmt = $db->prepare("UPDATE inventory_items SET quantity = ? WHERE item_id = ?");
         $stmt->execute([$quantity, $itemId]);
-        $_SESSION['success'] = 'Inventory quantity updated successfully';
+        $_SESSION['success'] = $itemName . ' quantity updated to ' . $quantity;
     }
     redirect('staff-inventory.php');
 }

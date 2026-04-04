@@ -63,7 +63,7 @@ if (isset($_POST['save_tour'])) {
             
             $stmt = $db->prepare($sql);
             $stmt->execute($params);
-            $_SESSION['success'] = 'Event virtual tour updated successfully';
+            $_SESSION['success'] = 'Event virtual tour "' . $title . '" updated successfully';
         } else {
             // Add new tour
             if (!$panoramaImage) {
@@ -71,7 +71,7 @@ if (isset($_POST['save_tour'])) {
             } else {
                 $stmt = $db->prepare("INSERT INTO event_virtual_tours (space_id, panorama_image, thumbnail_image, title, description, is_active, display_order) VALUES (?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$spaceId, $panoramaImage, $thumbnailImage, $title, $description, $isActive, $displayOrder]);
-                $_SESSION['success'] = 'Event virtual tour added successfully';
+                $_SESSION['success'] = 'Event virtual tour "' . $title . '" added successfully';
             }
         }
     } else {
@@ -84,9 +84,14 @@ if (isset($_POST['save_tour'])) {
 if (isset($_POST['delete_tour'])) {
     $tourId = $_POST['tour_id'] ?? 0;
     if ($tourId) {
+        // Get tour title before deletion
+        $nameStmt = $db->prepare("SELECT title FROM event_virtual_tours WHERE tour_id = ?");
+        $nameStmt->execute([$tourId]);
+        $tourTitle = $nameStmt->fetchColumn() ?? 'Event virtual tour';
+        
         $stmt = $db->prepare("DELETE FROM event_virtual_tours WHERE tour_id = ?");
         if ($stmt->execute([$tourId])) {
-            $_SESSION['success'] = 'Event virtual tour deleted successfully';
+            $_SESSION['success'] = 'Event virtual tour "' . $tourTitle . '" deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete event virtual tour';
         }
@@ -207,9 +212,9 @@ require_once '../includes/admin-header.php';
                                 <div style="display: flex; gap: 10px;">
                                     <a href="admin-event-virtual-tour-hotspots.php?tour_id=<?php echo $tour['tour_id']; ?>" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Hotspots</a>
                                     <button type="button" onclick="editTour(<?php echo htmlspecialchars(json_encode($tour)); ?>)" class="btn btn-sm btn-primary" style="padding: 5px 12px; font-size: 12px;">Edit</button>
-                                    <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this virtual tour?');">
+                                    <form method="POST" action="" style="display: inline;" id="deleteEventTourForm<?php echo $tour['tour_id']; ?>">
                                         <input type="hidden" name="tour_id" value="<?php echo $tour['tour_id']; ?>">
-                                        <button type="submit" name="delete_tour" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
+                                        <button type="button" onclick="openDeleteModal('deleteEventTourForm<?php echo $tour['tour_id']; ?>', 'Delete Virtual Tour', 'Are you sure you want to delete virtual tour &quot;<?php echo htmlspecialchars($tour['title']); ?>&quot;?', null, 'delete_tour')" class="btn btn-sm btn-danger" style="padding: 5px 12px; font-size: 12px;"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

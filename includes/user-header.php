@@ -9,6 +9,11 @@ require_once __DIR__ . '/TranslationEngine.php';
 // Get alert if any
 $alert = getAlert();
 
+// Get success/error messages from session
+$successMessage = $_SESSION['success'] ?? null;
+$errorMessage = $_SESSION['error'] ?? null;
+unset($_SESSION['success'], $_SESSION['error']);
+
 // Get current page for active state
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
@@ -449,38 +454,143 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
             font-size: 13px;
         }
         
-        /* Alert Messages */
+        /* Floating Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+        
         .alert {
             padding: 15px 20px;
-            border-radius: 5px;
-            margin: 20px 30px 0;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            animation: slideInRight 0.4s ease-out, fadeOut 0.4s ease-in 4.6s forwards;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-left: 4px solid;
+            position: relative;
+            overflow: hidden;
+            min-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .alert::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.6);
+            animation: progressBar 5s linear forwards;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+        
+        @keyframes progressBar {
+            from { width: 100%; }
+            to { width: 0%; }
         }
         
         .alert-success {
-            background-color: #d4edda;
+            background: linear-gradient(135deg, rgba(212,237,218,0.95) 0%, rgba(195,230,203,0.95) 100%);
             color: #155724;
-            border: 1px solid #c3e6cb;
+            border-color: #28a745;
+        }
+        
+        .alert-success i {
+            color: #28a745;
+            font-size: 22px;
         }
         
         .alert-danger {
-            background-color: #f8d7da;
+            background: linear-gradient(135deg, rgba(248,215,218,0.95) 0%, rgba(245,198,203,0.95) 100%);
             color: #721c24;
-            border: 1px solid #f5c6cb;
+            border-color: #dc3545;
+        }
+        
+        .alert-danger i {
+            color: #dc3545;
+            font-size: 22px;
         }
         
         .alert-warning {
-            background-color: #fff3cd;
+            background: linear-gradient(135deg, rgba(255,243,205,0.95) 0%, rgba(255,234,167,0.95) 100%);
             color: #856404;
-            border: 1px solid #ffeaa7;
+            border-color: #ffc107;
+        }
+        
+        .alert-warning i {
+            color: #ffc107;
+            font-size: 22px;
         }
         
         .alert-info {
-            background-color: #d1ecf1;
+            background: linear-gradient(135deg, rgba(209,236,241,0.95) 0%, rgba(190,229,235,0.95) 100%);
             color: #0c5460;
-            border: 1px solid #bee5eb;
+            border-color: #17a2b8;
+        }
+        
+        .alert-info i {
+            color: #17a2b8;
+            font-size: 22px;
+        }
+        
+        /* Persistent alert (no auto-dismiss) */
+        .alert-persistent {
+            animation: slideInRight 0.4s ease-out;
+        }
+        
+        .alert-persistent::before {
+            display: none;
+        }
+        
+        /* Mobile responsive toast */
+        @media (max-width: 768px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            .alert {
+                min-width: auto;
+                animation: slideInUp 0.4s ease-out, fadeOut 0.4s ease-in 4.6s forwards;
+            }
+            
+            @keyframes slideInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         }
         
         /* Container */
@@ -882,6 +992,74 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 width: calc(100% - 40px);
                 right: 20px;
                 left: 20px;
+                top: 60px;
+                max-height: calc(100vh - 80px);
+            }
+            
+            .notification-panel-header {
+                padding: 12px 15px;
+            }
+            
+            .notification-panel-header h3 {
+                font-size: 14px;
+            }
+            
+            .notification-panel-header .actions a {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+            
+            .notification-item {
+                padding: 12px 15px;
+                gap: 10px;
+            }
+            
+            .notification-icon {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .notification-icon i {
+                font-size: 14px;
+            }
+            
+            .notification-content h4 {
+                font-size: 13px;
+                margin-bottom: 3px;
+            }
+            
+            .notification-content p {
+                font-size: 12px;
+                -webkit-line-clamp: 3;
+            }
+            
+            .notification-time {
+                font-size: 10px;
+            }
+            
+            .notification-panel-footer {
+                padding: 10px 15px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .notification-panel {
+                width: calc(100% - 20px);
+                right: 10px;
+                left: 10px;
+            }
+            
+            .notification-panel-header .actions {
+                gap: 5px;
+            }
+            
+            .notification-panel-header .actions a {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+            
+            .notification-content p {
+                -webkit-line-clamp: 2;
             }
         }
         
@@ -939,6 +1117,18 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
             
             .alert {
                 margin: 15px 20px 0;
+                padding: 12px 15px;
+                font-size: 14px;
+                flex-wrap: wrap;
+                gap: 8px;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+            }
+            
+            .alert i {
+                font-size: 16px;
+                flex-shrink: 0;
             }
             
             .btn {
@@ -952,6 +1142,25 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
             
             .card-body {
                 padding: 20px;
+            }
+            
+            .notification-bell .badge {
+                font-size: 9px;
+                padding: 1px 4px;
+                min-width: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .alert {
+                margin: 10px 15px 0;
+                padding: 10px 12px;
+                font-size: 13px;
+                border-radius: 4px;
+            }
+            
+            .alert i {
+                font-size: 14px;
             }
         }
     </style>
@@ -1073,13 +1282,29 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 </div>
             </header>
             
-            <!-- Alert Messages -->
-            <?php if ($alert): ?>
-            <div class="alert alert-<?php echo $alert['type']; ?>">
-                <i class="fas fa-<?php echo $alert['type'] == 'success' ? 'check-circle' : ($alert['type'] == 'danger' ? 'exclamation-circle' : 'info-circle'); ?>"></i>
-                <?php echo $alert['message']; ?>
+            <!-- Toast Notification Container -->
+            <div class="toast-container">
+                <?php if ($alert): ?>
+                <div class="alert alert-<?php echo $alert['type']; ?>">
+                    <i class="fas fa-<?php echo $alert['type'] == 'success' ? 'check-circle' : ($alert['type'] == 'danger' ? 'exclamation-circle' : 'info-circle'); ?>"></i>
+                    <span><?php echo $alert['message']; ?></span>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($successMessage): ?>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span><?php echo $successMessage; ?></span>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($errorMessage): ?>
+                <div class="alert alert-danger alert-persistent">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span><?php echo $errorMessage; ?></span>
+                </div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
             
             <!-- Notification Overlay -->
             <div class="notification-overlay" id="notification-overlay" onclick="closeNotifications()"></div>
@@ -1235,4 +1460,91 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 div.textContent = text;
                 return div.innerHTML;
             }
+            
+            // CSS Confirmation Modal for Delete/Cancel actions
+            let currentDeleteForm = null;
+            let currentDeleteUrl = null;
+            let currentDeleteButtonName = null;
+            
+            function openDeleteModal(formId, title, message, redirectUrl = null, buttonName = null) {
+                // Close any existing modal first
+                closeDeleteModal();
+                
+                currentDeleteForm = formId;
+                currentDeleteUrl = redirectUrl;
+                currentDeleteButtonName = buttonName;
+                
+                // Create modal HTML
+                const modal = document.createElement('div');
+                modal.id = 'deleteConfirmModal';
+                modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:10000;justify-content:center;align-items:center;';
+                modal.innerHTML = `
+                    <div style="background:white;border-radius:16px;width:90%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.3s ease;overflow:hidden;">
+                        <div style="background:linear-gradient(135deg,#dc3545,#c82333);color:white;padding:20px 25px;display:flex;justify-content:space-between;align-items:center;">
+                            <h3 style="margin:0;font-size:18px;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:10px;"></i>${title}</h3>
+                            <button type="button" onclick="closeDeleteModal()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;">&times;</button>
+                        </div>
+                        <div style="padding:25px;">
+                            <p style="margin:0 0 25px 0;color:#555;font-size:15px;line-height:1.5;">${message}</p>
+                            <div style="display:flex;gap:12px;justify-content:flex-end;">
+                                <button type="button" onclick="closeDeleteModal()" style="padding:12px 24px;background:#f5f5f5;border:2px solid #ddd;border-radius:10px;font-size:14px;font-weight:500;color:#666;cursor:pointer;">Cancel</button>
+                                <button type="button" onclick="confirmDeleteAction()" style="padding:12px 24px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:10px;font-size:14px;font-weight:600;color:white;cursor:pointer;box-shadow:0 4px 15px rgba(220,53,69,0.3);">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                document.body.style.overflow = 'hidden';
+                
+                // Add animation style
+                const style = document.createElement('style');
+                style.id = 'deleteModalStyle';
+                style.textContent = '@keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }';
+                document.head.appendChild(style);
+            }
+            
+            function closeDeleteModal() {
+                const modal = document.getElementById('deleteConfirmModal');
+                if (modal) {
+                    modal.remove();
+                    document.body.style.overflow = 'auto';
+                }
+                const style = document.getElementById('deleteModalStyle');
+                if (style) style.remove();
+                currentDeleteForm = null;
+                currentDeleteUrl = null;
+                currentDeleteButtonName = null;
+            }
+            
+            function confirmDeleteAction() {
+                if (currentDeleteForm) {
+                    const form = document.getElementById(currentDeleteForm);
+                    if (form) {
+                        // Add hidden input for button name if specified
+                        if (currentDeleteButtonName) {
+                            let hiddenInput = form.querySelector('input[name="' + currentDeleteButtonName + '"]');
+                            if (!hiddenInput) {
+                                hiddenInput = document.createElement('input');
+                                hiddenInput.type = 'hidden';
+                                hiddenInput.name = currentDeleteButtonName;
+                                hiddenInput.value = '1';
+                                form.appendChild(hiddenInput);
+                            }
+                        }
+                        form.submit();
+                    }
+                } else if (currentDeleteUrl) {
+                    window.location.href = currentDeleteUrl;
+                }
+                closeDeleteModal();
+            }
+            
+            // Close modal when clicking outside
+            document.addEventListener('click', function(e) {
+                const modal = document.getElementById('deleteConfirmModal');
+                if (modal && e.target === modal) {
+                    closeDeleteModal();
+                }
+            });
             </script>

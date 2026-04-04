@@ -370,9 +370,9 @@ $totalRevenue = array_sum(array_map(function($o) { return $o['status'] !== 'canc
                             </form>
                             
                             <?php if (in_array($order['status'], ['cancelled', 'delivered'])): ?>
-                            <form method="POST" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this order?');">
+                            <form method="POST" action="" style="display: inline;" id="deleteOrderForm<?php echo $order['order_id']; ?>">
                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
-                                <button type="submit" name="delete_order" class="btn btn-danger btn-sm" style="padding: 6px 12px;"><i class="fas fa-trash"></i></button>
+                                <button type="button" onclick="openDeleteModal('deleteOrderForm<?php echo $order['order_id']; ?>', 'Delete Order', 'Are you sure you want to delete Order #<?php echo str_pad($order['order_id'], 6, '0', STR_PAD_LEFT); ?>?', null, 'delete_order')" class="btn btn-danger btn-sm" style="padding: 6px 12px;"><i class="fas fa-trash"></i></button>
                             </form>
                             <?php endif; ?>
                         </div>
