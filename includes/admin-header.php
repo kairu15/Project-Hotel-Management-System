@@ -969,7 +969,83 @@ unset($_SESSION['success'], $_SESSION['error']);
                 $userStmt->execute([$userId]);
                 $userData = $userStmt->fetch();
                 $profilePic = $userData['profile_picture'] ?? null;
+
+                // Fetch badge counts for menu items
+                $badgeCounts = [];
+
+                // Bookings & Payments
+                $badgeCounts['bookings'] = $db->query("SELECT COUNT(*) FROM bookings WHERE status IN ('pending', 'confirmed')")->fetchColumn() ?: 0;
+                $badgeCounts['payments_pending'] = $db->query("SELECT COUNT(*) FROM payments WHERE status = 'pending'")->fetchColumn() ?: 0;
+
+                // Rooms & Amenities
+                $badgeCounts['rooms'] = $db->query("SELECT COUNT(*) FROM rooms")->fetchColumn() ?: 0;
+                $badgeCounts['room_categories'] = $db->query("SELECT COUNT(*) FROM room_categories WHERE status = 'active'")->fetchColumn() ?: 0;
+                $badgeCounts['amenities'] = $db->query("SELECT COUNT(*) FROM amenities WHERE is_available = 1")->fetchColumn() ?: 0;
+                $badgeCounts['virtual_tours'] = $db->query("SELECT COUNT(*) FROM room_virtual_tours WHERE is_active = 1")->fetchColumn() ?: 0;
+
+                // Maintenance
+                $badgeCounts['maintenance_open'] = $db->query("SELECT COUNT(*) FROM maintenance_requests WHERE status IN ('pending', 'in_progress')")->fetchColumn() ?: 0;
+
+                // Events & Dining
+                $badgeCounts['event_spaces'] = $db->query("SELECT COUNT(*) FROM event_spaces WHERE status = 'available'")->fetchColumn() ?: 0;
+                $badgeCounts['event_bookings'] = $db->query("SELECT COUNT(*) FROM event_bookings WHERE event_date >= CURDATE() AND status IN ('pending', 'confirmed')")->fetchColumn() ?: 0;
+                $badgeCounts['event_virtual_tours'] = $db->query("SELECT COUNT(*) FROM event_virtual_tours WHERE is_active = 1")->fetchColumn() ?: 0;
+                $badgeCounts['menu_categories'] = $db->query("SELECT COUNT(*) FROM menu_categories")->fetchColumn() ?: 0;
+                $badgeCounts['menu_items'] = $db->query("SELECT COUNT(*) FROM menu_items WHERE is_available = 1")->fetchColumn() ?: 0;
+
+                // Inventory Management
+                $badgeCounts['inventory_categories'] = $db->query("SELECT COUNT(*) FROM inventory_categories")->fetchColumn() ?: 0;
+                $badgeCounts['inventory_items'] = $db->query("SELECT COUNT(*) FROM inventory_items")->fetchColumn() ?: 0;
+                $badgeCounts['food_inventory_low'] = $db->query("SELECT COUNT(*) FROM inventory_items ii JOIN inventory_categories ic ON ii.inv_cat_id = ic.inv_cat_id WHERE ic.category_name LIKE '%food%' AND ii.quantity <= ii.reorder_level")->fetchColumn() ?: 0;
+
+                // Content & Marketing
+                $badgeCounts['homepage_slider'] = $db->query("SELECT COUNT(*) FROM homepage_slider WHERE is_active = 1")->fetchColumn() ?: 0;
+                $badgeCounts['promotions'] = $db->query("SELECT COUNT(*) FROM promotions WHERE is_active = 1 AND start_date <= CURDATE() AND (end_date IS NULL OR end_date >= CURDATE())")->fetchColumn() ?: 0;
+                $badgeCounts['gallery'] = $db->query("SELECT COUNT(*) FROM gallery")->fetchColumn() ?: 0;
+                $badgeCounts['faqs'] = $db->query("SELECT COUNT(*) FROM faqs WHERE is_active = 1")->fetchColumn() ?: 0;
+                $badgeCounts['reviews_new'] = $db->query("SELECT COUNT(*) FROM reviews WHERE is_approved = 0")->fetchColumn() ?: 0;
+
+                // Operations
+                $badgeCounts['staff_schedules'] = $db->query("SELECT COUNT(*) FROM staff_schedules WHERE work_date = CURDATE() AND status = 'scheduled'")->fetchColumn() ?: 0;
+                $badgeCounts['staff_permissions'] = $db->query("SELECT COUNT(DISTINCT user_id) FROM staff_permissions WHERE can_access = 1")->fetchColumn() ?: 0;
+
+                // Analytics & Reports
+                $badgeCounts['ratings'] = $db->query("SELECT COUNT(*) FROM reviews WHERE is_approved = 1")->fetchColumn() ?: 0;
+
+                // User Management
+                $badgeCounts['users'] = $db->query("SELECT COUNT(*) FROM users WHERE role = 'guest'")->fetchColumn() ?: 0;
+                $badgeCounts['user_sessions'] = $db->query("SELECT COUNT(*) FROM user_sessions WHERE expires_at > NOW()")->fetchColumn() ?: 0;
                 ?>
+
+                <style>
+                    .menu-badge {
+                        margin-left: auto;
+                        background: var(--primary-color);
+                        color: white;
+                        font-size: 11px;
+                        font-weight: 600;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        min-width: 20px;
+                        text-align: center;
+                    }
+                    .menu-badge.warning {
+                        background: var(--warning-color);
+                        color: var(--dark-color);
+                    }
+                    .menu-badge.danger {
+                        background: var(--danger-color);
+                    }
+                    .menu-badge.success {
+                        background: var(--success-color);
+                    }
+                    .sidebar-nav a {
+                        justify-content: flex-start;
+                    }
+                    .sidebar-nav a i {
+                        margin-right: 12px;
+                    }
+                </style>
                 <?php if (!empty($profilePic) && file_exists('../' . $profilePic)): ?>
                     <img src="../<?php echo htmlspecialchars($profilePic); ?>" alt="Profile" class="avatar" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color);">
                 <?php else: ?>
@@ -983,108 +1059,144 @@ unset($_SESSION['success'], $_SESSION['error']);
             
             <nav class="sidebar-nav">
                 <ul>
+                    <li class="nav-section">Dashboard</li>
                     <li><a href="admin-dashboard.php" class="<?php echo $currentPage === 'admin-dashboard' ? 'active' : ''; ?>">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                        <i class="fas fa-tachometer-alt"></i> Dashboard Overview
                     </a></li>
                     <li><a href="admin-calendar.php" class="<?php echo $currentPage === 'admin-calendar' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i> Calendar
                     </a></li>
+
+                    <li class="nav-section">Bookings & Payments</li>
                     <li><a href="admin-bookings.php" class="<?php echo $currentPage === 'admin-bookings' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-check"></i> Bookings
+                        <?php if ($badgeCounts['bookings'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['bookings']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-payments.php" class="<?php echo $currentPage === 'admin-payments' ? 'active' : ''; ?>">
                         <i class="fas fa-money-bill-wave"></i> Payments
+                        <?php if ($badgeCounts['payments_pending'] > 0): ?><span class="menu-badge warning"><?php echo $badgeCounts['payments_pending']; ?> Pending</span><?php endif; ?>
                     </a></li>
-                    
+
                     <li class="nav-section">Rooms & Amenities</li>
                     <li><a href="admin-rooms.php" class="<?php echo $currentPage === 'admin-rooms' ? 'active' : ''; ?>">
                         <i class="fas fa-bed"></i> Rooms
+                        <?php if ($badgeCounts['rooms'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['rooms']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-room-categories.php" class="<?php echo $currentPage === 'admin-room-categories' ? 'active' : ''; ?>">
                         <i class="fas fa-layer-group"></i> Room Categories
-                    </a></li>
-                    <li><a href="admin-virtual-tours.php" class="<?php echo $currentPage === 'admin-virtual-tours' ? 'active' : ''; ?>">
-                        <i class="fas fa-vr-cardboard"></i> Virtual Tours
+                        <?php if ($badgeCounts['room_categories'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['room_categories']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-amenities.php" class="<?php echo $currentPage === 'admin-amenities' ? 'active' : ''; ?>">
                         <i class="fas fa-spa"></i> Amenities
+                        <?php if ($badgeCounts['amenities'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['amenities']; ?></span><?php endif; ?>
                     </a></li>
+                    <li><a href="admin-virtual-tours.php" class="<?php echo $currentPage === 'admin-virtual-tours' ? 'active' : ''; ?>">
+                        <i class="fas fa-vr-cardboard"></i> Virtual Tours
+                        <?php if ($badgeCounts['virtual_tours'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['virtual_tours']; ?></span><?php endif; ?>
+                    </a></li>
+
+                    <li class="nav-section">Maintenance</li>
                     <li><a href="admin-maintenance.php" class="<?php echo $currentPage === 'admin-maintenance' ? 'active' : ''; ?>">
-                        <i class="fas fa-tools"></i> Maintenance
+                        <i class="fas fa-tools"></i> Maintenance Requests
+                        <?php if ($badgeCounts['maintenance_open'] > 0): ?><span class="menu-badge danger"><?php echo $badgeCounts['maintenance_open']; ?> Open</span><?php endif; ?>
                     </a></li>
-                    
+
                     <li class="nav-section">Events & Dining</li>
                     <li><a href="admin-event-spaces.php" class="<?php echo $currentPage === 'admin-event-spaces' ? 'active' : ''; ?>">
                         <i class="fas fa-building"></i> Event Spaces
+                        <?php if ($badgeCounts['event_spaces'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['event_spaces']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-event-bookings.php" class="<?php echo $currentPage === 'admin-event-bookings' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i> Event Bookings
+                        <?php if ($badgeCounts['event_bookings'] > 0): ?><span class="menu-badge success"><?php echo $badgeCounts['event_bookings']; ?> Upcoming</span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-event-virtual-tours.php" class="<?php echo $currentPage === 'admin-event-virtual-tours' ? 'active' : ''; ?>">
                         <i class="fas fa-vr-cardboard"></i> Event Virtual Tours
+                        <?php if ($badgeCounts['event_virtual_tours'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['event_virtual_tours']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-menu-categories.php" class="<?php echo $currentPage === 'admin-menu-categories' ? 'active' : ''; ?>">
                         <i class="fas fa-utensils"></i> Menu Categories
+                        <?php if ($badgeCounts['menu_categories'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['menu_categories']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-menu-items.php" class="<?php echo $currentPage === 'admin-menu-items' ? 'active' : ''; ?>">
                         <i class="fas fa-hamburger"></i> Menu Items
+                        <?php if ($badgeCounts['menu_items'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['menu_items']; ?></span><?php endif; ?>
                     </a></li>
-                    <li><a href="admin-foods-inventory.php" class="<?php echo $currentPage === 'admin-foods-inventory' ? 'active' : ''; ?>">
-                        <i class="fas fa-boxes"></i> Foods Inventory
-                    </a></li>
-                    
-                    <li class="nav-section">Content & Marketing</li>
-                    <li><a href="admin-faqs.php" class="<?php echo $currentPage === 'admin-faqs' ? 'active' : ''; ?>">
-                        <i class="fas fa-question-circle"></i> FAQs
-                    </a></li>
-                    <li><a href="admin-gallery.php" class="<?php echo $currentPage === 'admin-gallery' ? 'active' : ''; ?>">
-                        <i class="fas fa-images"></i> Gallery
-                    </a></li>
-                    <li><a href="admin-homepage-slider.php" class="<?php echo $currentPage === 'admin-homepage-slider' ? 'active' : ''; ?>">
-                        <i class="fas fa-sliders-h"></i> Homepage Slider
-                    </a></li>
-                    <li><a href="admin-promotions.php" class="<?php echo $currentPage === 'admin-promotions' ? 'active' : ''; ?>">
-                        <i class="fas fa-tags"></i> Promotions
-                    </a></li>
-                    <li><a href="admin-reviews.php" class="<?php echo $currentPage === 'admin-reviews' ? 'active' : ''; ?>">
-                        <i class="fas fa-star"></i> Reviews
-                    </a></li>
-                    
-                    <li class="nav-section">Operations</li>
-                    <li><a href="admin-analytics.php" class="<?php echo $currentPage === 'admin-analytics' ? 'active' : ''; ?>">
-                        <i class="fas fa-chart-line"></i> Analytics
-                    </a></li>
-                    <li><a href="admin-users.php" class="<?php echo $currentPage === 'admin-users' ? 'active' : ''; ?>">
-                        <i class="fas fa-users"></i> Users
-                    </a></li>
-                    <li><a href="admin-staff-permissions.php" class="<?php echo $currentPage === 'admin-staff-permissions' ? 'active' : ''; ?>">
-                        <i class="fas fa-user-shield"></i> Staff Permissions
-                    </a></li>
+
+                    <li class="nav-section">Inventory Management</li>
                     <li><a href="admin-inventory-categories.php" class="<?php echo $currentPage === 'admin-inventory-categories' ? 'active' : ''; ?>">
                         <i class="fas fa-folder"></i> Inventory Categories
+                        <?php if ($badgeCounts['inventory_categories'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['inventory_categories']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-inventory-items.php" class="<?php echo $currentPage === 'admin-inventory-items' ? 'active' : ''; ?>">
                         <i class="fas fa-boxes"></i> Inventory Items
+                        <?php if ($badgeCounts['inventory_items'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['inventory_items']; ?></span><?php endif; ?>
                     </a></li>
+                    <li><a href="admin-foods-inventory.php" class="<?php echo $currentPage === 'admin-foods-inventory' ? 'active' : ''; ?>">
+                        <i class="fas fa-utensils"></i> Food Inventory
+                        <?php if ($badgeCounts['food_inventory_low'] > 0): ?><span class="menu-badge danger"><?php echo $badgeCounts['food_inventory_low']; ?> Low Stock</span><?php endif; ?>
+                    </a></li>
+
+                    <li class="nav-section">Content & Marketing</li>
+                    <li><a href="admin-homepage-slider.php" class="<?php echo $currentPage === 'admin-homepage-slider' ? 'active' : ''; ?>">
+                        <i class="fas fa-sliders-h"></i> Homepage Slider
+                        <?php if ($badgeCounts['homepage_slider'] > 0): ?><span class="menu-badge success"><?php echo $badgeCounts['homepage_slider']; ?> Active</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-promotions.php" class="<?php echo $currentPage === 'admin-promotions' ? 'active' : ''; ?>">
+                        <i class="fas fa-tags"></i> Promotions
+                        <?php if ($badgeCounts['promotions'] > 0): ?><span class="menu-badge success"><?php echo $badgeCounts['promotions']; ?> Current</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-gallery.php" class="<?php echo $currentPage === 'admin-gallery' ? 'active' : ''; ?>">
+                        <i class="fas fa-images"></i> Gallery
+                        <?php if ($badgeCounts['gallery'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['gallery']; ?> Images</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-faqs.php" class="<?php echo $currentPage === 'admin-faqs' ? 'active' : ''; ?>">
+                        <i class="fas fa-question-circle"></i> FAQs
+                        <?php if ($badgeCounts['faqs'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['faqs']; ?></span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-reviews.php" class="<?php echo $currentPage === 'admin-reviews' ? 'active' : ''; ?>">
+                        <i class="fas fa-star"></i> Reviews
+                        <?php if ($badgeCounts['reviews_new'] > 0): ?><span class="menu-badge success"><?php echo $badgeCounts['reviews_new']; ?> New</span><?php endif; ?>
+                    </a></li>
+
+                    <li class="nav-section">Operations</li>
                     <li><a href="admin-staff-schedules.php" class="<?php echo $currentPage === 'admin-staff-schedules' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i> Staff Schedules
+                        <?php if ($badgeCounts['staff_schedules'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_schedules']; ?> Today</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-staff-permissions.php" class="<?php echo $currentPage === 'admin-staff-permissions' ? 'active' : ''; ?>">
+                        <i class="fas fa-user-shield"></i> Staff Permissions
+                        <?php if ($badgeCounts['staff_permissions'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_permissions']; ?> Assigned</span><?php endif; ?>
+                    </a></li>
+
+                    <li class="nav-section">Analytics & Reports</li>
+                    <li><a href="admin-analytics.php" class="<?php echo $currentPage === 'admin-analytics' ? 'active' : ''; ?>">
+                        <i class="fas fa-chart-line"></i> Analytics
                     </a></li>
                     <li><a href="admin-reports.php" class="<?php echo $currentPage === 'admin-reports' ? 'active' : ''; ?>">
                         <i class="fas fa-chart-bar"></i> Reports
                     </a></li>
                     <li><a href="admin-ratings.php" class="<?php echo $currentPage === 'admin-ratings' ? 'active' : ''; ?>">
                         <i class="fas fa-star-half-alt"></i> Ratings
+                        <?php if ($badgeCounts['ratings'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['ratings']; ?></span><?php endif; ?>
                     </a></li>
-                    
+
+                    <li class="nav-section">User Management</li>
+                    <li><a href="admin-users.php" class="<?php echo $currentPage === 'admin-users' ? 'active' : ''; ?>">
+                        <i class="fas fa-users"></i> Users
+                        <?php if ($badgeCounts['users'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['users']; ?></span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-user-sessions.php" class="<?php echo $currentPage === 'admin-user-sessions' ? 'active' : ''; ?>">
+                        <i class="fas fa-users-cog"></i> User Sessions
+                        <?php if ($badgeCounts['user_sessions'] > 0): ?><span class="menu-badge success"><?php echo $badgeCounts['user_sessions']; ?> Active</span><?php endif; ?>
+                    </a></li>
+
                     <li class="nav-section">System</li>
                     <li><a href="admin-profile.php" class="<?php echo $currentPage === 'admin-profile' ? 'active' : ''; ?>">
                         <i class="fas fa-user-circle"></i> My Profile
                     </a></li>
                     <li><a href="admin-settings.php" class="<?php echo $currentPage === 'admin-settings' ? 'active' : ''; ?>">
                         <i class="fas fa-cog"></i> Settings
-                    </a></li>
-                    <li><a href="admin-user-sessions.php" class="<?php echo $currentPage === 'admin-user-sessions' ? 'active' : ''; ?>">
-                        <i class="fas fa-users-cog"></i> User Sessions
                     </a></li>
                     <li><a href="../index.php" target="_blank">
                         <i class="fas fa-external-link-alt"></i> View Website
@@ -1111,6 +1223,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                         <i class="fas fa-bell"></i>
                         <span class="badge" id="notification-badge" style="display: none;">0</span>
                     </div>
+                    <a href="admin-settings.php" title="Settings"><i class="fas fa-cog"></i></a>
                     <a href="admin-profile.php" title="My Profile"><i class="fas fa-user-circle"></i></a>
                     <a href="admin-dashboard.php" title="Dashboard"><i class="fas fa-home"></i></a>
                     <a href="../auth/logout.php" title="Logout"><i class="fas fa-sign-out-alt"></i></a>

@@ -24,6 +24,76 @@ $userStmt = $db->prepare("SELECT * FROM users WHERE user_id = ?");
 $userStmt->execute([$userId]);
 $user = $userStmt->fetch();
 
+// Get reservation counts for inbox badges (for room bookings)
+$reservationCounts = [
+    'all' => 0,
+    'confirmed' => 0,
+    'checked_in' => 0,
+    'checked_out' => 0,
+    'cancelled' => 0,
+    'completed' => 0,
+    'pending' => 0,
+    'archived' => 0,
+    'trashed' => 0
+];
+
+if ($userId) {
+    // Room bookings counts
+    $countStmt = $db->prepare("
+        SELECT status, COUNT(*) as count 
+        FROM bookings 
+        WHERE user_id = ? 
+        AND is_deleted = 0 AND is_archived = 0
+        GROUP BY status
+    ");
+    $countStmt->execute([$userId]);
+    $bookingCounts = $countStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    
+    // Event bookings counts
+    $eventCountStmt = $db->prepare("
+        SELECT status, COUNT(*) as count 
+        FROM event_bookings 
+        WHERE user_id = ? 
+        AND is_deleted = 0 AND is_archived = 0
+        GROUP BY status
+    ");
+    $eventCountStmt->execute([$userId]);
+    $eventCounts = $eventCountStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    
+    // Merge counts from both tables
+    foreach (['confirmed', 'checked_in', 'checked_out', 'cancelled', 'completed', 'pending'] as $status) {
+        $reservationCounts[$status] = ($bookingCounts[$status] ?? 0) + ($eventCounts[$status] ?? 0);
+    }
+    
+    // Total active reservations (not archived or deleted)
+    $reservationCounts['all'] = array_sum($reservationCounts);
+    
+    // Archived count
+    $archivedStmt = $db->prepare("
+        SELECT 
+            (SELECT COUNT(*) FROM bookings WHERE user_id = ? AND is_archived = 1 AND is_deleted = 0) +
+            (SELECT COUNT(*) FROM event_bookings WHERE user_id = ? AND is_archived = 1 AND is_deleted = 0) as total
+    ");
+    $archivedStmt->execute([$userId, $userId]);
+    $reservationCounts['archived'] = $archivedStmt->fetchColumn() ?: 0;
+    
+    // Trashed count
+    $trashedStmt = $db->prepare("
+        SELECT 
+            (SELECT COUNT(*) FROM bookings WHERE user_id = ? AND is_deleted = 1) +
+            (SELECT COUNT(*) FROM event_bookings WHERE user_id = ? AND is_deleted = 1) as total
+    ");
+    $trashedStmt->execute([$userId, $userId]);
+    $reservationCounts['trashed'] = $trashedStmt->fetchColumn() ?: 0;
+}
+
+// Helper function to get badge HTML
+function getInboxBadge($count) {
+    if ($count == 0) return '';
+    $display = $count > 99 ? '99+' : $count;
+    return '<span class="inbox-badge">' . $display . '</span>';
+}
+
 // Generate initials
 $firstName = $_SESSION['first_name'] ?? '';
 $lastName = $_SESSION['last_name'] ?? '';
@@ -276,6 +346,86 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
         .sidebar-nav a.logout:hover {
             background-color: rgba(255,107,107,0.1);
             color: #ff6b6b;
+        }
+        
+        /* Inbox-Style Menu Badge System */
+        .inbox-badge {
+            margin-left: auto;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .inbox-badge.success {
+            background: linear-gradient(135deg, #28a745, #218838);
+        }
+        
+        .inbox-badge.warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #333;
+        }
+        
+        .inbox-badge.info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+        
+        .inbox-badge.secondary {
+            background: linear-gradient(135deg, #6c757d, #545b62);
+        }
+        
+        .sidebar-nav a .inbox-badge {
+            opacity: 0.95;
+        }
+        
+        /* Inbox menu item colors */
+        .sidebar-nav a.inbox-all:hover,
+        .sidebar-nav a.inbox-all.active {
+            border-left-color: #fff;
+        }
+        
+        .sidebar-nav a.inbox-confirmed:hover,
+        .sidebar-nav a.inbox-confirmed.active {
+            border-left-color: #28a745;
+        }
+        
+        .sidebar-nav a.inbox-checkin:hover,
+        .sidebar-nav a.inbox-checkin.active {
+            border-left-color: #17a2b8;
+        }
+        
+        .sidebar-nav a.inbox-checkout:hover,
+        .sidebar-nav a.inbox-checkout.active {
+            border-left-color: #6c757d;
+        }
+        
+        .sidebar-nav a.inbox-cancelled:hover,
+        .sidebar-nav a.inbox-cancelled.active {
+            border-left-color: #dc3545;
+        }
+
+        .sidebar-nav a.inbox-completed:hover,
+        .sidebar-nav a.inbox-completed.active {
+            border-left-color: #28a745;
+        }
+
+        .sidebar-nav a.inbox-pending:hover,
+        .sidebar-nav a.inbox-pending.active {
+            border-left-color: #ffc107;
+        }
+        
+        .sidebar-nav a.manage-archive:hover,
+        .sidebar-nav a.manage-archive.active {
+            border-left-color: #6c757d;
+        }
+        
+        .sidebar-nav a.manage-trash:hover,
+        .sidebar-nav a.manage-trash.active {
+            border-left-color: #dc3545;
         }
         
         /* Sidebar Footer - Quick Actions */
@@ -1204,7 +1354,8 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
             <!-- Navigation -->
             <nav class="sidebar-nav">
                 <ul>
-                    <li class="nav-section">Main Menu</li>
+                    <!-- Home Section -->
+                    <li class="nav-section">Home</li>
                     <li>
                         <a href="../index.php" class="<?php echo $currentPage === 'index' ? 'active' : ''; ?>">
                             <i class="fas fa-home"></i> Home
@@ -1220,23 +1371,89 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                             <i class="fas fa-calendar-alt"></i> My Calendar
                         </a>
                     </li>
-                    <li class="nav-section">My Reservations</li>
+                    
+                    <!-- Reservations -->
+                    <li class="nav-section">Reservations <i class="fas fa-inbox" style="margin-left: 5px;"></i></li>
                     <li>
-                        <a href="my-bookings.php" class="<?php echo $currentPage === 'my-bookings' ? 'active' : ''; ?>">
-                            <i class="fas fa-calendar-check"></i> My Room Bookings
+                        <a href="inbox.php" class="inbox-all <?php echo $currentPage === 'inbox' ? 'active' : ''; ?>">
+                            <i class="fas fa-inbox"></i> Inbox
+                            <?php echo getInboxBadge($reservationCounts['all']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="confirmed.php" class="inbox-confirmed <?php echo $currentPage === 'confirmed' ? 'active' : ''; ?>">
+                            <i class="fas fa-check-circle"></i> Confirmed Bookings
+                            <?php echo getInboxBadge($reservationCounts['confirmed']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="checkin.php" class="inbox-checkin <?php echo $currentPage === 'checkin' ? 'active' : ''; ?>">
+                            <i class="fas fa-door-open"></i> Check-In
+                            <?php echo getInboxBadge($reservationCounts['checked_in']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="checkout.php" class="inbox-checkout <?php echo $currentPage === 'checkout' ? 'active' : ''; ?>">
+                            <i class="fas fa-door-closed"></i> Check-Out
+                            <?php echo getInboxBadge($reservationCounts['checked_out']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="cancelled.php" class="inbox-cancelled <?php echo $currentPage === 'cancelled' ? 'active' : ''; ?>">
+                            <i class="fas fa-times-circle"></i> Cancelled
+                            <?php echo getInboxBadge($reservationCounts['cancelled']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="completed.php" class="inbox-completed <?php echo $currentPage === 'completed' ? 'active' : ''; ?>">
+                            <i class="fas fa-check-double"></i> Completed
+                            <?php echo getInboxBadge($reservationCounts['completed']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="pending.php" class="inbox-pending <?php echo $currentPage === 'pending' ? 'active' : ''; ?>">
+                            <i class="fas fa-clock"></i> Pending Requests
+                            <?php echo getInboxBadge($reservationCounts['pending']); ?>
+                        </a>
+                    </li>
+                    
+                    <!-- Bookings -->
+                    <li class="nav-section">Bookings</li>
+                    <li>
+                        <a href="my-bookings.php" class="<?php echo in_array($currentPage, ['my-bookings', 'booking-details']) ? 'active' : ''; ?>">
+                            <i class="fas fa-bed"></i> My Room Bookings
                         </a>
                     </li>
                     <li>
                         <a href="my-event-bookings.php" class="<?php echo $currentPage === 'my-event-bookings' ? 'active' : ''; ?>">
-                            <i class="fas fa-calendar-alt"></i> My Event Bookings
+                            <i class="fas fa-calendar-week"></i> My Event Bookings
                         </a>
                     </li>
+                    
+                    <!-- Orders -->
+                    <li class="nav-section">Orders</li>
                     <li>
                         <a href="my-food-orders.php" class="<?php echo $currentPage === 'my-food-orders' ? 'active' : ''; ?>">
                             <i class="fas fa-utensils"></i> My Food Orders
                         </a>
                     </li>
                     
+                    <!-- Manage -->
+                    <li class="nav-section">Manage</li>
+                    <li>
+                        <a href="archive.php" class="manage-archive <?php echo $currentPage === 'archive' ? 'active' : ''; ?>">
+                            <i class="fas fa-archive"></i> Archive
+                            <?php echo getInboxBadge($reservationCounts['archived']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="trash.php" class="manage-trash <?php echo $currentPage === 'trash' ? 'active' : ''; ?>">
+                            <i class="fas fa-trash-alt"></i> Trash
+                            <?php echo getInboxBadge($reservationCounts['trashed']); ?>
+                        </a>
+                    </li>
+                    
+                    <!-- Account -->
                     <li class="nav-section">Account</li>
                     <li>
                         <a href="profile.php" class="<?php echo $currentPage === 'profile' ? 'active' : ''; ?>">

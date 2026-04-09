@@ -32,6 +32,81 @@ $userId = getUserId();
 $canAccessInventory = $userRole === 'admin' || hasStaffPermission($userId, 'inventory');
 $canAccessMaintenance = $userRole === 'admin' || hasStaffPermission($userId, 'maintenance');
 $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 'booking_charges');
+
+// ==========================================
+// COMPREHENSIVE MENU BADGE COUNTERS
+// ==========================================
+$db = getDB();
+$today = date('Y-m-d');
+
+// Reservations & Bookings Counters
+$bookingCounts = $db->query("SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+    SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
+    SUM(CASE WHEN check_in = '$today' AND status = 'confirmed' THEN 1 ELSE 0 END) as checkin_today,
+    SUM(CASE WHEN check_out = '$today' AND status = 'checked_in' THEN 1 ELSE 0 END) as checkout_today
+FROM bookings")->fetch();
+
+// Event Bookings Counter
+$eventBookingCount = $db->query("SELECT COUNT(*) FROM event_bookings WHERE status IN ('pending', 'confirmed')")->fetchColumn();
+
+// Booking Charges Counter
+$bookingChargesCount = $db->query("SELECT COUNT(*) FROM booking_charges WHERE status = 'active'")->fetchColumn();
+
+// Food Orders Counters
+$foodOrderCounts = $db->query("SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+FROM food_orders")->fetch();
+
+// QR Scanner - New Inquiries (last 24 hours)
+$newInquiriesCount = $db->query("SELECT COUNT(*) FROM event_bookings WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) AND status = 'pending' AND inquiry_name IS NOT NULL")->fetchColumn();
+
+// Inventory Counters
+$inventoryCounts = ['total' => 0, 'low_stock' => 0];
+if ($canAccessInventory) {
+    $inventoryCounts = $db->query("SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN quantity <= reorder_level THEN 1 ELSE 0 END) as low_stock
+    FROM inventory_items")->fetch();
+}
+
+// Maintenance Counters
+$maintenanceCounts = ['total' => 0, 'ongoing' => 0];
+if ($canAccessMaintenance) {
+    $maintenanceCounts = $db->query("SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as ongoing
+    FROM maintenance_requests WHERE status IN ('pending', 'in_progress')")->fetch();
+}
+
+// Active Staff (online in last 15 minutes)
+$activeStaffCount = $db->query("SELECT COUNT(*) FROM users WHERE role IN ('admin', 'manager', 'receptionist') AND last_login >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)")->fetchColumn();
+
+// Staff Tasks Counter (placeholder - can be linked to staff_schedules or task system)
+$staffTasksCount = $db->query("SELECT COUNT(*) FROM staff_schedules WHERE work_date = '$today' AND status = 'scheduled'")->fetchColumn();
+
+// Unread Notifications Counter
+$unreadNotificationsCount = $db->query("SELECT COUNT(*) FROM notifications WHERE user_id = $userId AND status = 'unread'")->fetchColumn();
+
+// Helper function to render badges
+function renderBadge($count, $type = 'default') {
+    if ($count == 0) return '';
+    $class = 'badge-counter';
+    if ($type === 'new') $class .= ' badge-new';
+    if ($type === 'today') $class .= ' badge-today';
+    if ($type === 'online') $class .= ' badge-online';
+    if ($type === 'alert') $class .= ' badge-alert';
+    return '<span class="' . $class . '">' . ($count > 99 ? '99+' : $count) . '</span>';
+}
+
+function renderBadgeLabel($count, $label) {
+    if ($count == 0) return '';
+    return '<span class="badge-counter">' . ($count > 99 ? '99+' : $count) . ' ' . $label . '</span>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -227,7 +302,70 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
             padding: 20px 20px 10px;
             margin-top: 10px;
         }
-        
+
+        /* Badge Counters for Menu Items */
+        .badge-counter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            margin-left: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover .badge-counter {
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-nav a.active .badge-counter {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        /* Badge Variants */
+        .badge-new {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .badge-today {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #333;
+        }
+
+        .badge-online {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+
+        .badge-alert {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Submenu indentation for detailed views */
+        .submenu-item {
+            padding-left: 20px !important;
+            font-size: 13px !important;
+        }
+
+        .submenu-item i {
+            font-size: 12px !important;
+            color: rgba(255,255,255,0.5);
+        }
+
         /* Sidebar Footer */
         .sidebar-footer {
             padding: 15px 20px;
@@ -977,64 +1115,189 @@ $canAccessBookingCharges = $userRole === 'admin' || hasStaffPermission($userId, 
             
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="staff-dashboard.php" class="<?php echo $currentPage === 'staff-dashboard' ? 'active' : ''; ?>">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a></li>
-                    <li><a href="staff-calendar.php" class="<?php echo $currentPage === 'staff-calendar' ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-alt"></i> My Calendar
-                    </a></li>
-                    <li><a href="checkin.php" class="<?php echo $currentPage === 'checkin' ? 'active' : ''; ?>">
-                        <i class="fas fa-sign-in-alt"></i> Check-In
-                    </a></li>
-                    <li><a href="checkout.php" class="<?php echo $currentPage === 'checkout' ? 'active' : ''; ?>">
-                        <i class="fas fa-sign-out-alt"></i> Check-Out
-                    </a></li>
-                    <li><a href="confirm-booking.php" class="<?php echo $currentPage === 'confirm-booking' ? 'active' : ''; ?>">
-                        <i class="fas fa-clipboard-check"></i> Confirm Bookings
-                    </a></li>
-                    <li><a href="staff-qr-scanner.php" class="<?php echo $currentPage === 'staff-qr-scanner' ? 'active' : ''; ?>">
-                        <i class="fas fa-qrcode"></i> Room QR Scanner
-                    </a></li>
-                    <li><a href="staff-qr-scanner-event.php" class="<?php echo $currentPage === 'staff-qr-scanner-event' ? 'active' : ''; ?>">
-                        <i class="fas fa-qrcode"></i> Inquiry QR Scanner
-                    </a></li>
-                    <li><a href="staff-qr-scanner-food.php" class="<?php echo $currentPage === 'staff-qr-scanner-food' ? 'active' : ''; ?>">
-                        <i class="fas fa-qrcode"></i> Food QR Scanner
-                    </a></li>
-                    <li><a href="staff-event-bookings.php" class="<?php echo $currentPage === 'staff-event-bookings' ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-alt"></i> Event Bookings
-                    </a></li>
+                    <!-- DASHBOARD SECTION -->
+                    <li class="nav-section">Dashboard</li>
+                    <li>
+                        <a href="staff-dashboard.php" class="<?php echo $currentPage === 'staff-dashboard' ? 'active' : ''; ?>">
+                            <i class="fas fa-tachometer-alt"></i> Overview Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-calendar.php" class="<?php echo $currentPage === 'staff-calendar' ? 'active' : ''; ?>">
+                            <i class="fas fa-calendar-alt"></i> My Calendar
+                        </a>
+                    </li>
+
+                    <!-- RESERVATIONS & BOOKINGS SECTION -->
+                    <li class="nav-section">Reservations & Bookings</li>
+                    <li>
+                        <a href="staff-bookings.php" class="<?php echo $currentPage === 'staff-bookings' ? 'active' : ''; ?>">
+                            <i class="fas fa-list-alt"></i> All Reservations
+                            <?php echo renderBadge($bookingCounts['total']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="confirm-booking.php" class="<?php echo $currentPage === 'confirm-booking' ? 'active' : ''; ?>">
+                            <i class="fas fa-clipboard-check"></i> Confirmed Bookings
+                            <?php echo renderBadge($bookingCounts['confirmed']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-bookings.php?status=pending" class="submenu-item <?php echo $currentPage === 'staff-bookings-pending' ? 'active' : ''; ?>">
+                            <i class="fas fa-clock"></i> Pending Requests
+                            <?php echo renderBadge($bookingCounts['pending'], 'alert'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-bookings.php?status=cancelled" class="submenu-item <?php echo $currentPage === 'staff-bookings-cancelled' ? 'active' : ''; ?>">
+                            <i class="fas fa-times-circle"></i> Cancelled Bookings
+                            <?php echo renderBadge($bookingCounts['cancelled']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-event-bookings.php" class="<?php echo $currentPage === 'staff-event-bookings' ? 'active' : ''; ?>">
+                            <i class="fas fa-calendar-week"></i> Event Bookings
+                            <?php echo renderBadge($eventBookingCount); ?>
+                        </a>
+                    </li>
                     <?php if ($canAccessBookingCharges): ?>
-                    <li><a href="staff-booking-charges.php" class="<?php echo $currentPage === 'staff-booking-charges' ? 'active' : ''; ?>">
-                        <i class="fas fa-file-invoice-dollar"></i> Booking Charges
-                    </a></li>
+                    <li>
+                        <a href="staff-booking-charges.php" class="<?php echo $currentPage === 'staff-booking-charges' ? 'active' : ''; ?>">
+                            <i class="fas fa-file-invoice-dollar"></i> Booking Charges
+                            <?php echo renderBadge($bookingChargesCount); ?>
+                        </a>
+                    </li>
                     <?php endif; ?>
-                    <li><a href="staff-foods-orders.php" class="<?php echo $currentPage === 'staff-foods-orders' ? 'active' : ''; ?>">
-                        <i class="fas fa-utensils"></i> Food Orders
-                    </a></li>
-                    
+
+                    <!-- FRONT DESK OPERATIONS SECTION -->
+                    <li class="nav-section">Front Desk Operations</li>
+                    <li>
+                        <a href="checkin.php" class="<?php echo $currentPage === 'checkin' ? 'active' : ''; ?>">
+                            <i class="fas fa-sign-in-alt"></i> Check-In
+                            <?php echo renderBadgeLabel($bookingCounts['checkin_today'], 'Today'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="checkout.php" class="<?php echo $currentPage === 'checkout' ? 'active' : ''; ?>">
+                            <i class="fas fa-sign-out-alt"></i> Check-Out
+                            <?php echo renderBadgeLabel($bookingCounts['checkout_today'], 'Today'); ?>
+                        </a>
+                    </li>
+
+                    <!-- QR SCANNER TOOLS SECTION -->
+                    <li class="nav-section">QR Scanner Tools</li>
+                    <li>
+                        <a href="staff-qr-scanner.php" class="<?php echo $currentPage === 'staff-qr-scanner' ? 'active' : ''; ?>">
+                            <i class="fas fa-qrcode"></i> Room QR Scanner
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-qr-scanner-event.php" class="<?php echo $currentPage === 'staff-qr-scanner-event' ? 'active' : ''; ?>">
+                            <i class="fas fa-qrcode"></i> Inquiry QR Scanner
+                            <?php echo renderBadgeLabel($newInquiriesCount, 'New'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-qr-scanner-food.php" class="<?php echo $currentPage === 'staff-qr-scanner-food' ? 'active' : ''; ?>">
+                            <i class="fas fa-qrcode"></i> Food QR Scanner
+                        </a>
+                    </li>
+
+                    <!-- FOOD & ORDERS SECTION -->
+                    <li class="nav-section">Food & Orders</li>
+                    <li>
+                        <a href="staff-foods-orders.php" class="<?php echo $currentPage === 'staff-foods-orders' ? 'active' : ''; ?>">
+                            <i class="fas fa-list-alt"></i> All Orders
+                            <?php echo renderBadge($foodOrderCounts['total']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-foods-orders.php?status=pending" class="submenu-item <?php echo $currentPage === 'staff-foods-orders-pending' ? 'active' : ''; ?>">
+                            <i class="fas fa-clock"></i> Pending Orders
+                            <?php echo renderBadge($foodOrderCounts['pending'], 'alert'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-foods-orders.php?status=completed" class="submenu-item <?php echo $currentPage === 'staff-foods-orders-completed' ? 'active' : ''; ?>">
+                            <i class="fas fa-check-circle"></i> Completed Orders
+                            <?php echo renderBadge($foodOrderCounts['completed']); ?>
+                        </a>
+                    </li>
+
+                    <!-- OPERATIONS SECTION -->
                     <li class="nav-section">Operations</li>
+                    <li>
+                        <a href="staff-dashboard.php?section=operations" class="<?php echo $currentPage === 'staff-operations' ? 'active' : ''; ?>">
+                            <i class="fas fa-cogs"></i> General Operations
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-schedule.php" class="submenu-item <?php echo $currentPage === 'staff-schedule' ? 'active' : ''; ?>">
+                            <i class="fas fa-users"></i> Active Staff
+                            <?php echo renderBadgeLabel($activeStaffCount, 'Online'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-tasks.php" class="submenu-item <?php echo $currentPage === 'staff-tasks' ? 'active' : ''; ?>">
+                            <i class="fas fa-tasks"></i> Staff Tasks
+                            <?php echo renderBadge($staffTasksCount); ?>
+                        </a>
+                    </li>
+
+                    <!-- INVENTORY & MAINTENANCE SUB-SECTION -->
+                    <li class="nav-section" style="padding-top: 15px; margin-top: 5px;">Inventory & Maintenance</li>
                     <?php if ($canAccessInventory): ?>
-                    <li><a href="staff-inventory.php" class="<?php echo $currentPage === 'staff-inventory' ? 'active' : ''; ?>">
-                        <i class="fas fa-boxes"></i> Inventory Management
-                    </a></li>
+                    <li>
+                        <a href="staff-inventory.php" class="<?php echo $currentPage === 'staff-inventory' ? 'active' : ''; ?>">
+                            <i class="fas fa-boxes"></i> Inventory Items
+                            <?php echo renderBadge($inventoryCounts['total']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-inventory.php?filter=low_stock" class="submenu-item <?php echo $currentPage === 'staff-inventory-low' ? 'active' : ''; ?>">
+                            <i class="fas fa-exclamation-triangle"></i> Low Stock Items
+                            <?php echo renderBadge($inventoryCounts['low_stock'], 'alert'); ?>
+                        </a>
+                    </li>
                     <?php endif; ?>
                     <?php if ($canAccessMaintenance): ?>
-                    <li><a href="staff-maintenance.php" class="<?php echo $currentPage === 'staff-maintenance' ? 'active' : ''; ?>">
-                        <i class="fas fa-tools"></i> Maintenance Requests
-                    </a></li>
+                    <li>
+                        <a href="staff-maintenance.php" class="<?php echo $currentPage === 'staff-maintenance' ? 'active' : ''; ?>">
+                            <i class="fas fa-tools"></i> Maintenance Requests
+                            <?php echo renderBadge($maintenanceCounts['total']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-maintenance.php?status=in_progress" class="submenu-item <?php echo $currentPage === 'staff-maintenance-ongoing' ? 'active' : ''; ?>">
+                            <i class="fas fa-wrench"></i> Ongoing Repairs
+                            <?php echo renderBadge($maintenanceCounts['ongoing'], 'online'); ?>
+                        </a>
+                    </li>
                     <?php endif; ?>
-                    
-                    <li class="nav-section">System</li>
-                    <li><a href="staff-profile.php" class="<?php echo $currentPage === 'staff-profile' ? 'active' : ''; ?>">
-                        <i class="fas fa-user-circle"></i> My Profile
-                    </a></li>
-                    <li><a href="../index.php" target="_blank">
-                        <i class="fas fa-external-link-alt"></i> View Website
-                    </a></li>
-                    <li><a href="../auth/logout.php">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a></li>
+
+                    <!-- ACCOUNT & SYSTEM SECTION -->
+                    <li class="nav-section">Account & System</li>
+                    <li>
+                        <a href="staff-profile.php" class="<?php echo $currentPage === 'staff-profile' ? 'active' : ''; ?>">
+                            <i class="fas fa-user-circle"></i> My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../index.php" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> View Website
+                        </a>
+                    </li>
+                    <li>
+                        <a href="notifications.php" class="<?php echo $currentPage === 'notifications' ? 'active' : ''; ?>">
+                            <i class="fas fa-bell"></i> Notifications
+                            <?php echo renderBadgeLabel($unreadNotificationsCount, 'New'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../auth/logout.php">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
