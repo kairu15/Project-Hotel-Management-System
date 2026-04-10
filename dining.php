@@ -125,9 +125,15 @@ foreach ($menuItems as $item) {
                         <a href="foods-details.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 14px;">
                             <i class="fas fa-info-circle"></i> Details
                         </a>
-                        <a href="order-now.php?item_id=<?php echo $item['item_id']; ?>" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 14px;">
-                            <i class="fas fa-shopping-cart"></i> Order
-                        </a>
+                        <?php if (isLoggedIn()): ?>
+                            <a href="order-now.php?item_id=<?php echo $item['item_id']; ?>" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 14px;">
+                                <i class="fas fa-shopping-cart"></i> Order
+                            </a>
+                        <?php else: ?>
+                            <a href="#" onclick="return requireLoginForBooking('food_order', 'order-now.php?item_id=<?php echo $item['item_id']; ?>');" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 14px;">
+                                <i class="fas fa-shopping-cart"></i> Order
+                            </a>
+                        <?php endif; ?>
                     </div>
                     <?php if ($item['is_special']): ?>
                     <div style="margin-top: 10px;">

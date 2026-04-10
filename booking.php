@@ -42,7 +42,21 @@ require_once 'includes/header.php';
     <div class="container">
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
             <!-- Booking Form -->
-            <div>
+            <div style="position: relative;" id="bookingFormContainer">
+                <?php if (!isLoggedIn()): ?>
+                <!-- Login Required Overlay -->
+                <div id="loginOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer;" onclick="showLoginForBookingForm();">
+                    <div style="text-align: center; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 2px solid var(--primary-color);">
+                        <i class="fas fa-lock" style="font-size: 48px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 24px; margin-bottom: 10px; color: var(--dark-color);">Login Required</h3>
+                        <p style="color: #666;">Please login first in order to book a room.</p>
+                    </div>
+                </div>
+
+                <!-- Blurred Form -->
+                <div style="filter: blur(5px); pointer-events: none; user-select: none;">
+                <?php endif; ?>
+
                 <form id="bookingForm" style="background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
                     <h3 style="font-size: 24px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--gray-light);">Reservation Details</h3>
                     
@@ -184,17 +198,32 @@ require_once 'includes/header.php';
                         <label for="terms" style="font-size: 14px; cursor: pointer;">I agree to the <a href="terms.php" target="_blank" style="color: var(--primary-color);">Terms & Conditions</a> and <a href="privacy.php" target="_blank" style="color: var(--primary-color);">Privacy Policy</a></label>
                     </div>
                     
+                    <?php if (isLoggedIn()): ?>
                     <button type="button" id="proceedToPayment" class="btn btn-primary" style="width: 100%; padding: 18px; font-size: 18px;">
                         <i class="fas fa-calendar-check"></i> Complete Reservation
                     </button>
+                    <?php else: ?>
+                    <button type="button" disabled class="btn btn-primary" style="width: 100%; padding: 18px; font-size: 18px; opacity: 0.6; cursor: not-allowed;">
+                        <i class="fas fa-calendar-check"></i> Complete Reservation
+                    </button>
+                    <?php endif; ?>
                 </form>
+
+                <?php if (!isLoggedIn()): ?>
+                </div> <!-- End blurred form wrapper -->
+                <?php endif; ?>
             </div>
             
             <!-- Price Summary -->
             <div>
-                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); position: sticky; top: 100px;">
+                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); position: sticky; top: 100px; position: relative;" id="priceSummaryContainer">
+                    <?php if (!isLoggedIn()): ?>
+                    <!-- Blurred Content -->
+                    <div style="filter: blur(5px); pointer-events: none; user-select: none;">
+                    <?php endif; ?>
+
                     <h3 style="font-size: 20px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--gray-light);">Price Summary</h3>
-                    
+
                     <div id="priceSummary">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px;">
                             <span>Room Rate</span>
@@ -219,7 +248,7 @@ require_once 'includes/header.php';
                             </div>
                         </div>
                     </div>
-                    
+
                     <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--gray-light);">
                         <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
                             <i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 5px;"></i>
@@ -234,7 +263,7 @@ require_once 'includes/header.php';
                             No hidden charges
                         </p>
                     </div>
-                    
+
                     <div style="margin-top: 25px; background-color: var(--gray-light); padding: 20px; border-radius: 5px;">
                         <p style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Need Help?</p>
                         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Our reservations team is available 24/7</p>
@@ -242,6 +271,10 @@ require_once 'includes/header.php';
                             <i class="fas fa-phone" style="margin-right: 8px;"></i>+63 35 123 4567
                         </a>
                     </div>
+
+                    <?php if (!isLoggedIn()): ?>
+                    </div> <!-- End blurred content -->
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -856,5 +889,27 @@ document.addEventListener('DOMContentLoaded', calculateTotal);
 .otp-input:focus, .cc-otp-input:focus { outline: none; border-color: var(--primary-color) !important; }
 @media (max-width: 768px) { .payment-modal { max-width: 95% !important; margin: 10px; } }
 </style>
+
+<script>
+// Show login toast for booking form with 3 second countdown
+function showLoginForBookingForm() {
+    requireLoginForBooking('room_booking', window.location.href);
+    return false;
+}
+
+// Disable all form inputs when not logged in
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!isLoggedIn()): ?>
+    const form = document.getElementById('bookingForm');
+    if (form) {
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        inputs.forEach(function(input) {
+            input.disabled = true;
+            input.style.cursor = 'not-allowed';
+        });
+    }
+    <?php endif; ?>
+});
+</script>
 
 <?php require_once 'includes/footer.php'; ?>

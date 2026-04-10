@@ -154,7 +154,7 @@ require_once 'includes/header.php';
                     <p style="color: #666; line-height: 1.8;">
                         <strong>Bayawan Bai Hotel</strong><br>
                         Bayawan City, Negros Oriental, Philippines 6211<br>
-                        Email: info@bayawanbaihotel.com<br>
+                        Email: bayawanbaiminihotel@gmail.com<br>
                         Phone: +63 35 123 4567
                     </p>
                 </div>

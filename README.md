@@ -1547,7 +1547,7 @@ For existing installations, follow these steps to enable new features:
 
 **📍 Location**: Bayawan City, Negros Oriental, Philippines  
 **🌐 Website**: www.bayawanbaihotel.com  
-**📧 Email**: info@bayawanbaihotel.com
+**📧 Email**: bayawanbaiminihotel@gmail.com
 
 ---
 

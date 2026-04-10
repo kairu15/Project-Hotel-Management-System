@@ -572,6 +572,169 @@ if (isLoggedIn()) {
                 font-size: 12px;
             }
         }
+
+        /* Floating Login Notification Toast */
+        .login-toast-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .login-toast-overlay.active {
+            display: flex;
+        }
+
+        .login-toast {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+            border-top: 5px solid var(--danger-color);
+        }
+
+        .login-toast-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .login-toast-icon i {
+            font-size: 36px;
+            color: white;
+        }
+
+        .login-toast-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 15px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .login-toast-message {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .login-toast-countdown {
+            font-size: 14px;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .login-toast-countdown i {
+            margin-right: 8px;
+        }
+
+        .login-toast-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .login-toast-btn {
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .login-toast-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .login-toast-btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .login-toast-btn-secondary {
+            background: var(--gray-light);
+            color: var(--text-color);
+        }
+
+        .login-toast-btn-secondary:hover {
+            background: var(--gray-medium);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 576px) {
+            .login-toast {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+
+            .login-toast-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .login-toast-icon i {
+                font-size: 28px;
+            }
+
+            .login-toast-title {
+                font-size: 20px;
+            }
+
+            .login-toast-buttons {
+                flex-direction: column;
+            }
+
+            .login-toast-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -581,7 +744,7 @@ if (isLoggedIn()) {
             <div>
                 <i class="fas fa-phone"></i> +63 35 123 4567
                 <span style="margin: 0 15px;">|</span>
-                <i class="fas fa-envelope"></i> info@bayawanbaihotel.com
+                <i class="fas fa-envelope"></i> bayawanbaiminihotel@gmail.com
             </div>
             <div>
                 <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -682,4 +845,114 @@ if (isLoggedIn()) {
                 dropdown.classList.remove('active');
             }
         });
+
+        // Login Required Toast Notification System
+        let loginRedirectTimer = null;
+        let countdownValue = 3;
+
+        function showLoginToast(message, redirectUrl = null, actionType = null) {
+            // Store intended action for post-login redirect
+            if (actionType && redirectUrl) {
+                storeIntendedAction(actionType, redirectUrl);
+            }
+
+            // Update toast message
+            document.getElementById('loginToastMessage').textContent = message;
+
+            // Show toast
+            const overlay = document.getElementById('loginToastOverlay');
+            overlay.classList.add('active');
+
+            // Start countdown
+            countdownValue = 5;
+            updateCountdown();
+
+            // Start auto-redirect timer
+            loginRedirectTimer = setInterval(function() {
+                countdownValue--;
+                updateCountdown();
+
+                if (countdownValue <= 0) {
+                    clearInterval(loginRedirectTimer);
+                    redirectToLogin(redirectUrl);
+                }
+            }, 1000);
+        }
+
+        function updateCountdown() {
+            const countdownEl = document.getElementById('loginToastCountdown');
+            if (countdownEl) {
+                countdownEl.innerHTML = '<i class="fas fa-clock"></i> Redirecting in ' + countdownValue + ' second' + (countdownValue !== 1 ? 's' : '');
+            }
+        }
+
+        function redirectToLogin(customUrl) {
+            const baseUrl = '/bayawanhotel/auth/login.php';
+            const returnUrl = customUrl || window.location.href;
+            window.location.href = baseUrl + '?redirect=' + encodeURIComponent(returnUrl);
+        }
+
+        function closeLoginToast() {
+            const overlay = document.getElementById('loginToastOverlay');
+            overlay.classList.remove('active');
+
+            if (loginRedirectTimer) {
+                clearInterval(loginRedirectTimer);
+                loginRedirectTimer = null;
+            }
+        }
+
+        function storeIntendedAction(actionType, redirectUrl) {
+            // Store in session storage for persistence across pages
+            sessionStorage.setItem('intended_action', actionType);
+            sessionStorage.setItem('intended_redirect', redirectUrl);
+
+            // Also send to server via AJAX to store in PHP session
+            fetch('/bayawanhotel/api/store-intended-action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: actionType,
+                    redirect_url: redirectUrl
+                })
+            }).catch(function(error) {
+                console.log('Failed to store intended action:', error);
+            });
+        }
+
+        // Predefined messages for different booking types
+        const loginMessages = {
+            room_booking: 'Please login first in order to book a room.',
+            event_booking: 'Please login first in order to book an event.',
+            food_order: 'Please login first in order to place a food order.'
+        };
+
+        function requireLoginForBooking(actionType, redirectUrl) {
+            const message = loginMessages[actionType] || 'Please login first to continue.';
+            showLoginToast(message, redirectUrl, actionType);
+            return false;
+        }
     </script>
+
+    <!-- Login Required Toast Notification -->
+    <div id="loginToastOverlay" class="login-toast-overlay">
+        <div class="login-toast">
+            <div class="login-toast-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h3 class="login-toast-title">Login Required</h3>
+            <p id="loginToastMessage" class="login-toast-message">Please login first to continue.</p>
+            <p id="loginToastCountdown" class="login-toast-countdown">
+                <i class="fas fa-clock"></i> Redirecting in 5 seconds
+            </p>
+            <div class="login-toast-buttons">
+                <a href="/bayawanhotel/auth/login.php" class="login-toast-btn login-toast-btn-primary" onclick="closeLoginToast()">
+                    <i class="fas fa-sign-in-alt"></i> Login Now
+                </a>
+                <button type="button" class="login-toast-btn login-toast-btn-secondary" onclick="closeLoginToast()">
+                    <i class="fas fa-times"></i> Stay Here
+                </button>
+            </div>
+        </div>
+    </div>
+</body>

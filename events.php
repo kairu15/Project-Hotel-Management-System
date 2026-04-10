@@ -263,20 +263,34 @@ $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDE
                 <p style="color: rgba(255,255,255,0.9); font-size: 18px;">Tell us about your event, and we will create a customized package for you.</p>
             </div>
             
-            <div style="background-color: white; padding: 50px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="background-color: white; padding: 50px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;" id="quotationFormContainer">
                 <?php if ($error): ?>
                 <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
                     <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
                 </div>
                 <?php endif; ?>
-                
+
                 <?php if ($success): ?>
                 <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
                     <i class="fas fa-check-circle"></i> <?php echo $success; ?>
                 </div>
                 <?php endif; ?>
-                
-                <form method="POST" action="#inquiry">
+
+                <?php if (!isLoggedIn()): ?>
+                <!-- Login Required Overlay -->
+                <div id="loginOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer;" onclick="showLoginForEventForm();">
+                    <div style="text-align: center; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 2px solid var(--primary-color);">
+                        <i class="fas fa-lock" style="font-size: 48px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 24px; margin-bottom: 10px; color: var(--dark-color);">Login Required</h3>
+                        <p style="color: #666;">Please login first in order to book an event.</p>
+                    </div>
+                </div>
+
+                <!-- Blurred Form -->
+                <div style="filter: blur(5px); pointer-events: none; user-select: none;">
+                <?php endif; ?>
+
+                <form method="POST" action="#inquiry" id="eventInquiryForm">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div>
                             <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Event Type *</label>
@@ -351,10 +365,20 @@ $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDE
                         <textarea name="message" rows="4" placeholder="Tell us more about your event requirements..." style="width: 100%; padding: 14px; border: 2px solid var(--gray-medium); border-radius: 8px; font-size: 15px; resize: vertical;"></textarea>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px;">
-                        <i class="fas fa-paper-plane"></i> Submit Inquiry
-                    </button>
+                    <?php if (isLoggedIn()): ?>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px;">
+                            <i class="fas fa-paper-plane"></i> Submit Inquiry
+                        </button>
+                    <?php else: ?>
+                        <button type="button" disabled class="btn btn-primary" style="width: 100%; padding: 16px; opacity: 0.6; cursor: not-allowed;">
+                            <i class="fas fa-paper-plane"></i> Submit Inquiry
+                        </button>
+                    <?php endif; ?>
                 </form>
+
+                <?php if (!isLoggedIn()): ?>
+                </div> <!-- End blurred form wrapper -->
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -372,6 +396,26 @@ function prefillSpace(spaceId, spaceName) {
     }
     document.querySelector('#inquiry').scrollIntoView({ behavior: 'smooth' });
 }
+
+// Show login toast for event form with 3 second countdown
+function showLoginForEventForm() {
+    requireLoginForBooking('event_booking', 'events.php#inquiry');
+    return false;
+}
+
+// Disable all form inputs when not logged in
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!isLoggedIn()): ?>
+    const form = document.getElementById('eventInquiryForm');
+    if (form) {
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        inputs.forEach(function(input) {
+            input.disabled = true;
+            input.style.cursor = 'not-allowed';
+        });
+    }
+    <?php endif; ?>
+});
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

@@ -51,7 +51,7 @@
                         </li>
                         <li style="margin-bottom: 15px; display: flex; align-items: center; gap: 12px;">
                             <i class="fas fa-envelope" style="color: var(--primary-color);"></i>
-                            <span style="color: rgba(255,255,255,0.7); font-size: 14px;">info@bayawanbaihotel.com</span>
+                            <span style="color: rgba(255,255,255,0.7); font-size: 14px;">bayawanbaiminihotel@gmail.com</span>
                         </li>
                         <li style="display: flex; align-items: center; gap: 12px;">
                             <i class="fas fa-clock" style="color: var(--primary-color);"></i>

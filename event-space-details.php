@@ -238,9 +238,15 @@ $eventImages = array_slice($eventImages, 0, 7);
                 
                 <!-- CTA Buttons -->
                 <div style="display: flex; gap: 20px; margin-bottom: 40px;">
-                    <a href="events.php#inquiry" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
-                        <i class="fas fa-paper-plane"></i> Request Quotation
-                    </a>
+                    <?php if (isLoggedIn()): ?>
+                        <a href="events.php#inquiry" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-paper-plane"></i> Request Quotation
+                        </a>
+                    <?php else: ?>
+                        <a href="#" onclick="return requireLoginForBooking('event_booking', 'events.php#inquiry');" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-paper-plane"></i> Request Quotation
+                        </a>
+                    <?php endif; ?>
                     <a href="event-virtual-tour.php?space=<?php echo $spaceId; ?>" class="btn btn-outline" style="flex: 1; padding: 18px 40px; font-size: 18px; text-align: center;">
                         <i class="fas fa-vr-cardboard"></i> 360° Virtual Tour
                     </a>

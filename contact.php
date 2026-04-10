@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <h4 style="font-size: 18px; margin-bottom: 5px;">Email</h4>
                             <p style="color: #666; line-height: 1.6;">
-                                <a href="mailto:info@bayawanbaihotel.com" style="color: var(--primary-color);">info@bayawanbaihotel.com</a><br>
+                                <a href="mailto:bayawanbaiminihotel@gmail.com" style="color: var(--primary-color);">bayawanbaiminihotel@gmail.com</a><br>
                                 <a href="mailto:reservations@bayawanbaihotel.com" style="color: var(--primary-color);">reservations@bayawanbaihotel.com</a>
                             </p>
                         </div>

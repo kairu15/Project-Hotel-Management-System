@@ -339,9 +339,15 @@ $roomImages = array_slice($roomImages, 0, 7);
                         </button>
                     </form>
                     
-                    <a href="booking.php?room=<?php echo $categoryId; ?>" class="btn btn-dark" style="width: 100%; display: block; text-align: center;">
-                        Book Now
-                    </a>
+                    <?php if (isLoggedIn()): ?>
+                        <a href="booking.php?room=<?php echo $categoryId; ?>" class="btn btn-dark" style="width: 100%; display: block; text-align: center;">
+                            Book Now
+                        </a>
+                    <?php else: ?>
+                        <a href="#" onclick="return requireLoginForBooking('room_booking', 'booking.php?room=<?php echo $categoryId; ?>');" class="btn btn-dark" style="width: 100%; display: block; text-align: center;">
+                            Book Now
+                        </a>
+                    <?php endif; ?>
                     
                     <a href="virtual-tour.php?category=<?php echo $categoryId; ?>" class="btn btn-outline" style="width: 100%; display: block; text-align: center; margin-top: 10px;">
                         <i class="fas fa-vr-cardboard"></i> 360° Virtual Tour

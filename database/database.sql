@@ -1040,7 +1040,7 @@ INSERT INTO settings (setting_key, setting_value, setting_group) VALUES
 
 ('hotel_phone', '+63 35 123 4567', 'general'),
 
-('hotel_email', 'info@bayawanbaihotel.com', 'general'),
+('hotel_email', 'bayawanbaiminihotel@gmail.com', 'general'),
 
 ('check_in_time', '14:00', 'operations'),
 
@@ -1382,7 +1382,7 @@ INSERT INTO chatbot_knowledge (category, question_pattern, answer, keywords, pri
 -- Bookings
 ('booking', 'book.*room|reserve.*room|make.*booking|how.*book', 'You can book a room by visiting our Rooms page and selecting your preferred dates. Would you like me to guide you to the booking page?', 'book,room,reservation,booking,reserve', 9),
 ('booking', 'cancel.*booking|how.*cancel', 'To cancel a booking, please go to My Bookings in your dashboard. You can cancel confirmed bookings there. Note that cancellation policies may apply.', 'cancel,booking,refund', 9),
-('booking', 'modify.*booking|change.*booking|edit.*booking', 'To modify your booking, please contact our front desk at +63 35 123 4567 or email us at info@bayawanbaihotel.com with your booking reference.', 'modify,change,edit,booking', 8),
+('booking', 'modify.*booking|change.*booking|edit.*booking', 'To modify your booking, please contact our front desk at +63 35 123 4567 or email us at bayawanbaiminihotel@gmail.com with your booking reference.', 'modify,change,edit,booking', 8),
 ('booking', 'booking.*status|check.*booking', 'You can check your booking status in the My Bookings section of your dashboard. You\'ll see all your current and past reservations there.', 'status,booking,check,reservation', 9),
 
 -- Room Information
@@ -1419,7 +1419,7 @@ INSERT INTO chatbot_knowledge (category, question_pattern, answer, keywords, pri
 
 -- Support
 ('support', 'help|support|assistance', 'I\'m here to help! I can assist with bookings, room information, dining options, amenities, and general hotel inquiries. What do you need help with?', 'help,support,assist', 10),
-('support', 'contact|phone|email|reach.*you', 'You can reach us at:\n📞 Phone: +63 35 123 4567\n📧 Email: info@bayawanbaihotel.com\n🌐 Website: www.bayawanbaihotel.com\n\nFront desk is available 24/7!', 'contact,phone,email,reach,call', 9),
+('support', 'contact|phone|email|reach.*you', 'You can reach us at:\n📞 Phone: +63 35 123 4567\n📧 Email: bayawanbaiminihotel@gmail.com\n🌐 Website: www.bayawanbaihotel.com\n\nFront desk is available 24/7!', 'contact,phone,email,reach,call', 9),
 ('support', 'complaint|problem|issue|unhappy', 'I\'m sorry to hear you\'re experiencing an issue. For immediate assistance with complaints or urgent problems, please contact our front desk directly at +63 35 123 4567 or speak to a manager on duty.', 'complaint,problem,issue,unhappy,bad', 10),
 ('support', 'speak.*human|talk.*person|real.*person|staff', 'I can connect you with a staff member. Please hold while I transfer you to our front desk, or you can call us directly at +63 35 123 4567 for immediate assistance.', 'human,person,staff,agent,representative', 10),
 

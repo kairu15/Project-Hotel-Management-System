@@ -4,7 +4,21 @@ require_once '../includes/config.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
+    // Check if there's an intended redirect after login
+    if (isset($_SESSION['intended_redirect']) && !empty($_SESSION['intended_redirect'])) {
+        $redirectUrl = $_SESSION['intended_redirect'];
+        unset($_SESSION['intended_action']);
+        unset($_SESSION['intended_redirect']);
+        unset($_SESSION['intended_action_timestamp']);
+        redirect('../' . $redirectUrl);
+    }
     redirect('../user/dashboard.php');
+}
+
+// Get redirect URL from query parameter if available
+$redirectAfterLogin = $_GET['redirect'] ?? null;
+if ($redirectAfterLogin) {
+    $_SESSION['intended_redirect'] = $redirectAfterLogin;
 }
 
 $error = '';
@@ -35,7 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $updateStmt->execute([$user['user_id']]);
             
             logActivity('User login', 'User ID: ' . $user['user_id']);
-            
+
+            // Check for intended redirect first (for booking actions)
+            if (isset($_SESSION['intended_redirect']) && !empty($_SESSION['intended_redirect'])) {
+                $redirectUrl = $_SESSION['intended_redirect'];
+                unset($_SESSION['intended_action']);
+                unset($_SESSION['intended_redirect']);
+                unset($_SESSION['intended_action_timestamp']);
+                redirect('../' . $redirectUrl);
+            }
+
             // Redirect based on role
             if ($user['role'] === 'admin') {
                 redirect('../admin/admin-dashboard.php');

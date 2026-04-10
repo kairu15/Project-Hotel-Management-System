@@ -1,18 +1,6 @@
 <?php
-// Start output buffering to prevent "headers already sent" errors
-ob_start();
-
 $pageTitle = 'Order Now';
 require_once 'includes/config.php';
-
-// Check if user is logged in BEFORE including header (which outputs HTML)
-if (!isLoggedIn()) {
-    $_SESSION['redirect_after_login'] = 'order-now.php' . ($_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : '');
-    showAlert('Please log in to place a food order', 'warning');
-    ob_end_clean(); // Clear buffer before redirect
-    redirect('auth/login.php');
-}
-
 require_once 'includes/header.php';
 
 $db = getDB();
@@ -51,8 +39,8 @@ foreach ($menuItems as $item) {
 // Get pre-selected item if provided
 $preSelectedItemId = isset($_GET['food_id']) ? intval($_GET['food_id']) : (isset($_GET['item_id']) ? intval($_GET['item_id']) : 0);
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle form submission (only for logged in users)
+if (isLoggedIn() && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $itemId = intval($_POST['item_id'] ?? $_POST['food_id'] ?? 0);
     $quantity = intval($_POST['quantity'] ?? 1);
     $orderType = $_POST['order_type'] ?? 'dine_in';
@@ -60,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $roomNumber = $_POST['room_number'] ?? null;
     $specialInstructions = $_POST['special_instructions'] ?? '';
     $paymentMethod = $_POST['payment_method'] ?? 'pay_at_hotel';
-    
+
     // Validate
     if (!$itemId || $quantity < 1) {
         showAlert('Please select a food item and valid quantity', 'danger');
@@ -174,15 +162,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section style="padding: 80px 0; background-color: var(--light-color);">
     <div class="container">
         <div style="max-width: 900px; margin: 0 auto;">
-            <div style="background-color: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden;">
+            <div style="background-color: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; position: relative;" id="orderFormContainer">
+                <?php if (!isLoggedIn()): ?>
+                <!-- Login Required Overlay -->
+                <div id="loginOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 20px; cursor: pointer;" onclick="showLoginForOrderForm();">
+                    <div style="text-align: center; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 2px solid var(--primary-color);">
+                        <i class="fas fa-lock" style="font-size: 48px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 24px; margin-bottom: 10px; color: var(--dark-color);">Login Required</h3>
+                        <p style="color: #666;">Please login first in order to place a food order.</p>
+                    </div>
+                </div>
+
+                <!-- Blurred Form -->
+                <div style="filter: blur(5px); pointer-events: none; user-select: none;">
+                <?php endif; ?>
+
                 <!-- Form Header -->
                 <div style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); padding: 40px; text-align: center; color: white;">
                     <h2 style="color: white; font-size: 32px; margin-bottom: 10px;"><i class="fas fa-utensils"></i> Place Your Order</h2>
                     <p style="opacity: 0.9;">Choose from our delicious menu and enjoy our culinary delights</p>
                 </div>
-                
+
                 <!-- Form -->
-                <form method="POST" style="padding: 40px;">
+                <form method="POST" style="padding: 40px;" id="foodOrderForm">
                     <!-- Order Type Selection -->
                     <div style="margin-bottom: 30px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 15px; font-size: 18px;">Order Type</label>
@@ -329,14 +331,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <!-- Submit Button -->
                     <div style="display: flex; gap: 20px;">
+                        <?php if (isLoggedIn()): ?>
                         <button type="submit" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
                             <i class="fas fa-check"></i> Place Order
                         </button>
+                        <?php else: ?>
+                        <button type="button" disabled class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600; opacity: 0.6; cursor: not-allowed;">
+                            <i class="fas fa-check"></i> Place Order
+                        </button>
+                        <?php endif; ?>
                         <a href="dining.php" class="btn btn-outline" style="padding: 18px 40px; font-size: 18px;">
                             Cancel
                         </a>
                     </div>
                 </form>
+
+                <?php if (!isLoggedIn()): ?>
+                </div> <!-- End blurred form wrapper -->
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -864,4 +876,26 @@ function showReceipt(data) {
 }
 </style>
 
-<?php require_once 'includes/footer.php'; ob_end_flush(); ?>
+<script>
+// Show login toast for order form with 3 second countdown
+function showLoginForOrderForm() {
+    requireLoginForBooking('food_order', window.location.href);
+    return false;
+}
+
+// Disable all form inputs when not logged in
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!isLoggedIn()): ?>
+    const form = document.getElementById('foodOrderForm');
+    if (form) {
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        inputs.forEach(function(input) {
+            input.disabled = true;
+            input.style.cursor = 'not-allowed';
+        });
+    }
+    <?php endif; ?>
+});
+</script>
+
+<?php require_once 'includes/footer.php'; ?>

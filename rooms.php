@@ -149,7 +149,11 @@ $filterBed = $_GET['bed'] ?? '';
                     <!-- Actions -->
                     <div style="display: flex; gap: 10px;">
                         <a href="room-details.php?id=<?php echo $room['category_id']; ?>" class="btn btn-outline" style="flex: 1; text-align: center;"><?php echo __('View Details'); ?></a>
-                        <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary" style="flex: 1; text-align: center;"><?php echo __('Book Now'); ?></a>
+                        <?php if (isLoggedIn()): ?>
+                            <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary" style="flex: 1; text-align: center;"><?php echo __('Book Now'); ?></a>
+                        <?php else: ?>
+                            <a href="#" onclick="return requireLoginForBooking('room_booking', 'booking.php?room=<?php echo $room['category_id']; ?>');" class="btn btn-primary" style="flex: 1; text-align: center;"><?php echo __('Book Now'); ?></a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -198,7 +202,11 @@ $filterBed = $_GET['bed'] ?? '';
                             <td style="padding: 15px 20px; font-weight: 500;"><?php echo __('Action'); ?></td>
                             <?php foreach ($rooms as $room): ?>
                             <td style="padding: 15px 20px; text-align: center;">
-                                <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary btn-sm"><?php echo __('Book'); ?></a>
+                                <?php if (isLoggedIn()): ?>
+                                    <a href="booking.php?room=<?php echo $room['category_id']; ?>" class="btn btn-primary btn-sm"><?php echo __('Book'); ?></a>
+                                <?php else: ?>
+                                    <a href="#" onclick="return requireLoginForBooking('room_booking', 'booking.php?room=<?php echo $room['category_id']; ?>');" class="btn btn-primary btn-sm"><?php echo __('Book'); ?></a>
+                                <?php endif; ?>
                             </td>
                             <?php endforeach; ?>
                         </tr>

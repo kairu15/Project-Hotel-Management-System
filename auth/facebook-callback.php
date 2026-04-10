@@ -91,12 +91,22 @@ try {
     $_SESSION['user_name'] = $name;
     $_SESSION['user_email'] = $email;
     $_SESSION['role'] = empty($user) ? 'user' : $user['role'];
-    
+
     // Split name into first and last name for header compatibility
     $nameParts = explode(' ', $name, 2);
     $_SESSION['first_name'] = $nameParts[0] ?? $name;
     $_SESSION['last_name'] = $nameParts[1] ?? '';
-    
+
+    // Check for intended redirect first (for booking actions)
+    if (isset($_SESSION['intended_redirect']) && !empty($_SESSION['intended_redirect'])) {
+        $redirectUrl = $_SESSION['intended_redirect'];
+        unset($_SESSION['intended_action']);
+        unset($_SESSION['intended_redirect']);
+        unset($_SESSION['intended_action_timestamp']);
+        header('Location: ' . SITE_URL . '/' . $redirectUrl);
+        exit;
+    }
+
     header('Location: ' . SITE_URL . '/index.php');
     exit;
     

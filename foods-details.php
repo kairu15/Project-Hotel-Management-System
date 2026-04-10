@@ -183,9 +183,15 @@ require_once 'includes/header.php';
                 
                 <!-- Order Buttons -->
                 <div style="display: flex; gap: 20px; margin-bottom: 40px;">
-                    <a href="order-now.php?item_id=<?php echo $item['item_id']; ?>" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
-                        <i class="fas fa-shopping-cart"></i> Order Now
-                    </a>
+                    <?php if (isLoggedIn()): ?>
+                        <a href="order-now.php?item_id=<?php echo $item['item_id']; ?>" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-shopping-cart"></i> Order Now
+                        </a>
+                    <?php else: ?>
+                        <a href="#" onclick="return requireLoginForBooking('food_order', 'order-now.php?item_id=<?php echo $item['item_id']; ?>');" class="btn btn-primary" style="flex: 1; padding: 18px 40px; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-shopping-cart"></i> Order Now
+                        </a>
+                    <?php endif; ?>
                     <a href="dining.php" class="btn btn-outline" style="padding: 18px 40px; font-size: 18px;">
                         <i class="fas fa-arrow-left"></i> Back to Menu
                     </a>

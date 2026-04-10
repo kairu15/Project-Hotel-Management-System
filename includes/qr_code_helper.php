@@ -40,7 +40,7 @@ function generateReferenceQRCode($referenceNumber, $type = 'reference', $size = 
             'type' => $type,
             'reference' => $referenceNumber,
             'hotel' => 'Bayawan Bai Hotel',
-            'email' => defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'info@bayawanbaihotel.com',
+            'email' => defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'bayawanbaiminihotel@gmail.com',
             'website' => 'https://bayawanbaihotel.com'
         ], JSON_UNESCAPED_SLASHES);
         
