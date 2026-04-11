@@ -1,6 +1,14 @@
 <?php
 require_once '../includes/config.php';
 
+// Set active_status to 0 (offline) before logout
+if (isLoggedIn()) {
+    $db = getDB();
+    $userId = getUserId();
+    $stmt = $db->prepare("UPDATE users SET active_status = 0 WHERE user_id = ?");
+    $stmt->execute([$userId]);
+}
+
 // Clear all session data
 $_SESSION = array();
 

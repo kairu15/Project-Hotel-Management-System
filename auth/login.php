@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['last_name'] = $user['last_name'];
             $_SESSION['role'] = $user['role'];
             
-            // Update last login
-            $updateStmt = $db->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
+            // Update last login and set active status to 1 (online)
+            $updateStmt = $db->prepare("UPDATE users SET last_login = NOW(), active_status = 1 WHERE user_id = ?");
             $updateStmt->execute([$user['user_id']]);
             
             logActivity('User login', 'User ID: ' . $user['user_id']);

@@ -531,7 +531,7 @@ function notifyStaffNewBooking($bookingId, $guestName, $checkInDate) {
         ['admin', 'manager', 'receptionist'],
         'booking',
         'New Booking Received',
-        "New booking from {$guestName} for " . date('M d, Y', strtotime($checkInDate)),
+        "New booking from {$guestName}",
         [
             'related_id' => $bookingId,
             'related_type' => 'booking',

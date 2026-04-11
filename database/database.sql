@@ -58,7 +58,9 @@ CREATE TABLE users (
 
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    last_login TIMESTAMP NULL
+    last_login TIMESTAMP NULL,
+
+    active_status BOOLEAN DEFAULT 0
 
 );
 
@@ -127,6 +129,8 @@ CREATE TABLE rooms (
 CREATE TABLE bookings (
 
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    booking_ref VARCHAR(20) UNIQUE,
 
     user_id INT NOT NULL,
 
@@ -735,6 +739,30 @@ CREATE TABLE booking_logs (
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
 
     FOREIGN KEY (created_by) REFERENCES users(user_id)
+
+);
+
+
+
+-- Activity Logs (for tracking user activities and system events)
+
+CREATE TABLE activity_logs (
+
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT,
+
+    action VARCHAR(255) NOT NULL,
+
+    details TEXT,
+
+    ip_address VARCHAR(45),
+
+    user_agent TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
 
 );
 

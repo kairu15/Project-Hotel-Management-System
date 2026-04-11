@@ -18,7 +18,7 @@ if (isset($_POST['update_status'])) {
     
     if ($bookingId && in_array($newStatus, $validStatuses)) {
         // Get booking reference for message
-        $bookingStmt = $db->prepare("SELECT booking_reference FROM bookings WHERE booking_id = ?");
+        $bookingStmt = $db->prepare("SELECT booking_ref FROM bookings WHERE booking_id = ?");
         $bookingStmt->execute([$bookingId]);
         $bookingRef = $bookingStmt->fetchColumn() ?? 'Booking';
         

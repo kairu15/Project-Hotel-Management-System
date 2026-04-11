@@ -188,6 +188,173 @@ unset($_SESSION['success'], $_SESSION['error']);
             margin: 0;
         }
         
+        /* Sidebar Search */
+        .sidebar-search {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-search-input-wrapper {
+            position: relative;
+        }
+        
+        .sidebar-search input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background-color: rgba(255,255,255,0.1);
+            color: var(--light-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .sidebar-search input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .sidebar-search input:focus {
+            border-color: var(--primary-color);
+            background-color: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 3px rgba(54,125,138,0.2);
+        }
+        
+        .sidebar-search .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 16px;
+        }
+        
+        .sidebar-search .clear-search {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            width: 22px;
+            height: 22px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar-search .clear-search:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .sidebar-search .clear-search.visible {
+            display: flex;
+        }
+        
+        .sidebar-search .search-icon.hidden {
+            display: none;
+        }
+        
+        /* Search Results Panel */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--dark-color);
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-result-item i {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .search-result-info {
+            flex: 1;
+        }
+        
+        .search-result-info h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .search-result-info p {
+            margin: 3px 0 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .search-no-results {
+            padding: 30px 20px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .search-no-results i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: var(--gray-medium);
+        }
+        
+        .search-highlight {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+        
+        /* Mobile search */
+        @media (max-width: 992px) {
+            .search-results {
+                position: fixed;
+                top: auto;
+                left: 10px;
+                right: 10px;
+                max-height: 50vh;
+            }
+        }
+        
         /* Navigation */
         .sidebar-nav {
             flex: 1;
@@ -1008,6 +1175,8 @@ unset($_SESSION['success'], $_SESSION['error']);
                 // Operations
                 $badgeCounts['staff_schedules'] = $db->query("SELECT COUNT(*) FROM staff_schedules WHERE work_date = CURDATE() AND status = 'scheduled'")->fetchColumn() ?: 0;
                 $badgeCounts['staff_permissions'] = $db->query("SELECT COUNT(DISTINCT user_id) FROM staff_permissions WHERE can_access = 1")->fetchColumn() ?: 0;
+                $badgeCounts['active_staff'] = $db->query("SELECT COUNT(*) FROM users WHERE role IN ('admin', 'manager', 'receptionist') AND last_login >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)")->fetchColumn() ?: 0;
+                $badgeCounts['staff_tasks'] = $db->query("SELECT COUNT(*) FROM staff_schedules WHERE work_date = CURDATE() AND status = 'scheduled'")->fetchColumn() ?: 0;
 
                 // Analytics & Reports
                 $badgeCounts['ratings'] = $db->query("SELECT COUNT(*) FROM reviews WHERE is_approved = 1")->fetchColumn() ?: 0;
@@ -1057,6 +1226,16 @@ unset($_SESSION['success'], $_SESSION['error']);
                 </div>
             </div>
             
+            <!-- Sidebar Search -->
+            <div class="sidebar-search">
+                <div class="sidebar-search-input-wrapper">
+                    <input type="text" id="sidebarSearchInput" placeholder="Search menu... (e.g., Bookings, Rooms, Users)" autocomplete="off">
+                    <i class="fas fa-search search-icon" id="searchIcon"></i>
+                    <span class="clear-search" id="clearSearch" onclick="clearSidebarSearch()" title="Clear search"><i class="fas fa-times"></i></span>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+            
             <nav class="sidebar-nav">
                 <ul>
                     <li class="nav-section">Dashboard</li>
@@ -1099,6 +1278,27 @@ unset($_SESSION['success'], $_SESSION['error']);
                     <li><a href="admin-maintenance.php" class="<?php echo $currentPage === 'admin-maintenance' ? 'active' : ''; ?>">
                         <i class="fas fa-tools"></i> Maintenance Requests
                         <?php if ($badgeCounts['maintenance_open'] > 0): ?><span class="menu-badge danger"><?php echo $badgeCounts['maintenance_open']; ?> Open</span><?php endif; ?>
+                    </a></li>
+
+                    <li class="nav-section" style="cursor: pointer;" onclick="window.location.href='admin-operations.php'">Operations</li>
+                    <li><a href="admin-operations.php" class="<?php echo $currentPage === 'admin-operations' ? 'active' : ''; ?>">
+                        <i class="fas fa-th-large"></i> Operations Dashboard
+                    </a></li>
+                    <li><a href="admin-active.php" class="<?php echo $currentPage === 'admin-active' ? 'active' : ''; ?>">
+                        <i class="fas fa-users"></i> Active Staff
+                        <?php if ($badgeCounts['active_staff'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['active_staff']; ?> Online</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-tasks.php" class="<?php echo $currentPage === 'admin-tasks' ? 'active' : ''; ?>">
+                        <i class="fas fa-tasks"></i> Staff Tasks
+                        <?php if ($badgeCounts['staff_tasks'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_tasks']; ?> Today</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-staff-schedules.php" class="<?php echo $currentPage === 'admin-staff-schedules' ? 'active' : ''; ?>">
+                        <i class="fas fa-calendar-alt"></i> Staff Schedules
+                        <?php if ($badgeCounts['staff_schedules'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_schedules']; ?> Today</span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-staff-permissions.php" class="<?php echo $currentPage === 'admin-staff-permissions' ? 'active' : ''; ?>">
+                        <i class="fas fa-user-shield"></i> Staff Permissions
+                        <?php if ($badgeCounts['staff_permissions'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_permissions']; ?> Assigned</span><?php endif; ?>
                     </a></li>
 
                     <li class="nav-section">Events & Dining</li>
@@ -1157,16 +1357,6 @@ unset($_SESSION['success'], $_SESSION['error']);
                     <li><a href="admin-reviews.php" class="<?php echo $currentPage === 'admin-reviews' ? 'active' : ''; ?>">
                         <i class="fas fa-star"></i> Reviews
                         <?php if ($badgeCounts['reviews_new'] > 0): ?><span class="menu-badge success"><?php echo $badgeCounts['reviews_new']; ?> New</span><?php endif; ?>
-                    </a></li>
-
-                    <li class="nav-section">Operations</li>
-                    <li><a href="admin-staff-schedules.php" class="<?php echo $currentPage === 'admin-staff-schedules' ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-alt"></i> Staff Schedules
-                        <?php if ($badgeCounts['staff_schedules'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_schedules']; ?> Today</span><?php endif; ?>
-                    </a></li>
-                    <li><a href="admin-staff-permissions.php" class="<?php echo $currentPage === 'admin-staff-permissions' ? 'active' : ''; ?>">
-                        <i class="fas fa-user-shield"></i> Staff Permissions
-                        <?php if ($badgeCounts['staff_permissions'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['staff_permissions']; ?> Assigned</span><?php endif; ?>
                     </a></li>
 
                     <li class="nav-section">Analytics & Reports</li>
@@ -1495,4 +1685,190 @@ unset($_SESSION['success'], $_SESSION['error']);
                     closeDeleteModal();
                 }
             });
+            
+            // ============================================
+            // SIDEBAR SEARCH FUNCTIONALITY
+            // ============================================
+            
+            // Menu items data for search
+            const menuItems = [
+                { name: 'Dashboard Overview', keywords: 'dashboard overview main home', url: 'admin-dashboard.php', icon: 'tachometer-alt', section: 'Dashboard' },
+                { name: 'Calendar', keywords: 'calendar schedule events dates', url: 'admin-calendar.php', icon: 'calendar-alt', section: 'Dashboard' },
+                { name: 'Bookings', keywords: 'bookings reservations rooms', url: 'admin-bookings.php', icon: 'calendar-check', section: 'Bookings & Payments' },
+                { name: 'Payments', keywords: 'payments billing invoice transactions', url: 'admin-payments.php', icon: 'money-bill-wave', section: 'Bookings & Payments' },
+                { name: 'Rooms', keywords: 'rooms accommodation', url: 'admin-rooms.php', icon: 'bed', section: 'Rooms & Amenities' },
+                { name: 'Room Categories', keywords: 'room categories types', url: 'admin-room-categories.php', icon: 'layer-group', section: 'Rooms & Amenities' },
+                { name: 'Amenities', keywords: 'amenities facilities features', url: 'admin-amenities.php', icon: 'spa', section: 'Rooms & Amenities' },
+                { name: 'Virtual Tours', keywords: 'virtual tours vr rooms', url: 'admin-virtual-tours.php', icon: 'vr-cardboard', section: 'Rooms & Amenities' },
+                { name: 'Maintenance Requests', keywords: 'maintenance repair fix requests', url: 'admin-maintenance.php', icon: 'tools', section: 'Maintenance' },
+                { name: 'Event Spaces', keywords: 'event spaces venues halls', url: 'admin-event-spaces.php', icon: 'building', section: 'Events & Dining' },
+                { name: 'Event Bookings', keywords: 'event bookings inquiries', url: 'admin-event-bookings.php', icon: 'calendar-alt', section: 'Events & Dining' },
+                { name: 'Event Virtual Tours', keywords: 'event virtual tours vr', url: 'admin-event-virtual-tours.php', icon: 'vr-cardboard', section: 'Events & Dining' },
+                { name: 'Menu Categories', keywords: 'menu categories food dining', url: 'admin-menu-categories.php', icon: 'utensils', section: 'Events & Dining' },
+                { name: 'Menu Items', keywords: 'menu items food dishes meals', url: 'admin-menu-items.php', icon: 'hamburger', section: 'Events & Dining' },
+                { name: 'Inventory Categories', keywords: 'inventory categories stock', url: 'admin-inventory-categories.php', icon: 'folder', section: 'Inventory Management' },
+                { name: 'Inventory Items', keywords: 'inventory items stock products', url: 'admin-inventory-items.php', icon: 'boxes', section: 'Inventory Management' },
+                { name: 'Food Inventory', keywords: 'food inventory stock kitchen', url: 'admin-foods-inventory.php', icon: 'utensils', section: 'Inventory Management' },
+                { name: 'Homepage Slider', keywords: 'homepage slider banner hero', url: 'admin-homepage-slider.php', icon: 'sliders-h', section: 'Content & Marketing' },
+                { name: 'Promotions', keywords: 'promotions deals offers discounts', url: 'admin-promotions.php', icon: 'tags', section: 'Content & Marketing' },
+                { name: 'Gallery', keywords: 'gallery images photos media', url: 'admin-gallery.php', icon: 'images', section: 'Content & Marketing' },
+                { name: 'FAQs', keywords: 'faqs questions answers help', url: 'admin-faqs.php', icon: 'question-circle', section: 'Content & Marketing' },
+                { name: 'Reviews', keywords: 'reviews ratings feedback testimonials', url: 'admin-reviews.php', icon: 'star', section: 'Content & Marketing' },
+                { name: 'Staff Schedules', keywords: 'staff schedules roster shifts', url: 'admin-staff-schedules.php', icon: 'calendar-alt', section: 'Operations' },
+                { name: 'Staff Permissions', keywords: 'staff permissions roles access', url: 'admin-staff-permissions.php', icon: 'user-shield', section: 'Operations' },
+                { name: 'Analytics', keywords: 'analytics statistics charts data', url: 'admin-analytics.php', icon: 'chart-line', section: 'Analytics & Reports' },
+                { name: 'Reports', keywords: 'reports summary data export', url: 'admin-reports.php', icon: 'chart-bar', section: 'Analytics & Reports' },
+                { name: 'Ratings', keywords: 'ratings stars reviews scores', url: 'admin-ratings.php', icon: 'star-half-alt', section: 'Analytics & Reports' },
+                { name: 'Users', keywords: 'users guests customers accounts', url: 'admin-users.php', icon: 'users', section: 'User Management' },
+                { name: 'User Sessions', keywords: 'user sessions login activity', url: 'admin-user-sessions.php', icon: 'users-cog', section: 'User Management' },
+                { name: 'My Profile', keywords: 'profile account user settings', url: 'admin-profile.php', icon: 'user-circle', section: 'System' },
+                { name: 'Settings', keywords: 'settings configuration options', url: 'admin-settings.php', icon: 'cog', section: 'System' },
+                { name: 'View Website', keywords: 'website view site public', url: '../index.php', icon: 'external-link-alt', section: 'System' },
+                { name: 'Logout', keywords: 'logout signout exit', url: '../auth/logout.php', icon: 'sign-out-alt', section: 'System' }
+            ];
+            
+            let searchInput, searchResults, searchIcon, clearSearchBtn;
+            
+            // Initialize search on DOM load
+            document.addEventListener('DOMContentLoaded', function() {
+                searchInput = document.getElementById('sidebarSearchInput');
+                searchResults = document.getElementById('searchResults');
+                searchIcon = document.getElementById('searchIcon');
+                clearSearchBtn = document.getElementById('clearSearch');
+                
+                if (searchInput) {
+                    // Live search on input
+                    searchInput.addEventListener('input', function() {
+                        performSearch(this.value);
+                    });
+                    
+                    // Handle keyboard navigation
+                    searchInput.addEventListener('keydown', function(e) {
+                        handleSearchKeydown(e);
+                    });
+                    
+                    // Close search when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!e.target.closest('.sidebar-search')) {
+                            hideSearchResults();
+                        }
+                    });
+                }
+            });
+            
+            function performSearch(query) {
+                query = query.trim().toLowerCase();
+                
+                // Toggle clear button visibility
+                if (query.length > 0) {
+                    clearSearchBtn.classList.add('visible');
+                    searchIcon.classList.add('hidden');
+                } else {
+                    clearSearchBtn.classList.remove('visible');
+                    searchIcon.classList.remove('hidden');
+                    hideSearchResults();
+                    return;
+                }
+                
+                // Search in menu items
+                const results = menuItems.filter(item => {
+                    return item.name.toLowerCase().includes(query) || 
+                           item.keywords.toLowerCase().includes(query);
+                });
+                
+                displaySearchResults(results, query);
+            }
+            
+            function displaySearchResults(results, query) {
+                if (results.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="search-no-results">
+                            <i class="fas fa-search"></i>
+                            <p>No results found for "${escapeHtml(query)}"</p>
+                        </div>
+                    `;
+                } else {
+                    searchResults.innerHTML = results.map(item => {
+                        const highlightedName = highlightText(item.name, query);
+                        return `
+                            <a href="${item.url}" class="search-result-item" data-result-index="${results.indexOf(item)}">
+                                <i class="fas fa-${item.icon}"></i>
+                                <div class="search-result-info">
+                                    <h4>${highlightedName}</h4>
+                                    <p>${escapeHtml(item.section)}</p>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
+                            </a>
+                        `;
+                    }).join('');
+                }
+                
+                searchResults.classList.add('active');
+            }
+            
+            function highlightText(text, query) {
+                if (!query) return escapeHtml(text);
+                const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+                return escapeHtml(text).replace(regex, '<span class="search-highlight">$1</span>');
+            }
+            
+            function escapeRegex(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+            
+            function hideSearchResults() {
+                if (searchResults) {
+                    searchResults.classList.remove('active');
+                }
+            }
+            
+            function clearSidebarSearch() {
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.focus();
+                    clearSearchBtn.classList.remove('visible');
+                    searchIcon.classList.remove('hidden');
+                    hideSearchResults();
+                }
+            }
+            
+            function handleSearchKeydown(e) {
+                const items = searchResults.querySelectorAll('.search-result-item');
+                let currentIndex = -1;
+                
+                // Find current focused item
+                items.forEach((item, index) => {
+                    if (item.classList.contains('focused')) {
+                        currentIndex = index;
+                    }
+                });
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (currentIndex < items.length - 1) {
+                        if (currentIndex >= 0) items[currentIndex].classList.remove('focused');
+                        items[currentIndex + 1].classList.add('focused');
+                        items[currentIndex + 1].style.backgroundColor = '#f0f9ff';
+                        if (currentIndex >= 0) items[currentIndex].style.backgroundColor = '';
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        items[currentIndex].classList.remove('focused');
+                        items[currentIndex].style.backgroundColor = '';
+                        items[currentIndex - 1].classList.add('focused');
+                        items[currentIndex - 1].style.backgroundColor = '#f0f9ff';
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentIndex >= 0) {
+                        window.location.href = items[currentIndex].href;
+                    } else if (items.length > 0) {
+                        window.location.href = items[0].href;
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSearchResults();
+                    searchInput.blur();
+                }
+            }
             </script>

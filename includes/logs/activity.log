@@ -199,3 +199,11 @@
 [2026-04-09 16:13:27] [User: 28] Payment processed - Booking ID: 59, Method: gcash, Status: paid
 [2026-04-09 16:15:49] [User: 28] Food Order Placed - Order ID: 24, User: 28, Amount: 520, Method: gcash
 [2026-04-10 15:15:20] [User: 28] Payment processed - Booking ID: 60, Method: gcash, Status: paid
+[2026-04-11 11:07:55] [User: 28] Payment processed - Booking ID: 61, Method: gcash, Status: paid
+[2026-04-11 11:24:17] [User: 28] Payment processed - Booking ID: 62, Method: gcash, Status: paid
+[2026-04-11 11:37:13] [User: 28] Payment processed - Booking ID: 63, Method: gcash, Status: paid
+[2026-04-11 11:43:06] [User: 28] Payment processed - Booking ID: 64, Method: gcash, Status: paid
+[2026-04-11 15:00:25] [User: 1] Updated operation setting: check_in_time - 
+[2026-04-11 15:16:32] [User: 1] User login - User ID: 1
+[2026-04-11 15:42:21] [User: guest] New user registration - Email: ljchu147@gmail.com
+[2026-04-11 15:42:42] [User: 29] User login - User ID: 29

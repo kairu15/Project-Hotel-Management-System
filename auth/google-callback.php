@@ -100,6 +100,10 @@ try {
     $_SESSION['first_name'] = $nameParts[0] ?? $name;
     $_SESSION['last_name'] = $nameParts[1] ?? '';
 
+    // Update active_status to 1 (online)
+    $updateStmt = $db->prepare("UPDATE users SET active_status = 1, last_login = NOW() WHERE user_id = ?");
+    $updateStmt->execute([$userId]);
+
     // Check for intended redirect first (for booking actions)
     if (isset($_SESSION['intended_redirect']) && !empty($_SESSION['intended_redirect'])) {
         $redirectUrl = $_SESSION['intended_redirect'];

@@ -17,7 +17,7 @@ if (isset($_POST['add_charge'])) {
 
     if ($bookingId && $description && $amount > 0) {
         // Get booking reference for message
-        $bookStmt = $db->prepare("SELECT booking_reference FROM bookings WHERE booking_id = ?");
+        $bookStmt = $db->prepare("SELECT booking_ref FROM bookings WHERE booking_id = ?");
         $bookStmt->execute([$bookingId]);
         $bookingRef = $bookStmt->fetchColumn() ?? 'Booking';
         

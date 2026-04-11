@@ -222,6 +222,173 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
             margin: 5px 0 0 0;
         }
         
+        /* Sidebar Search */
+        .sidebar-search {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-search-input-wrapper {
+            position: relative;
+        }
+        
+        .sidebar-search input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background-color: rgba(255,255,255,0.1);
+            color: var(--light-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .sidebar-search input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .sidebar-search input:focus {
+            border-color: var(--primary-color);
+            background-color: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 3px rgba(54,125,138,0.2);
+        }
+        
+        .sidebar-search .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 16px;
+        }
+        
+        .sidebar-search .clear-search {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            width: 22px;
+            height: 22px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar-search .clear-search:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .sidebar-search .clear-search.visible {
+            display: flex;
+        }
+        
+        .sidebar-search .search-icon.hidden {
+            display: none;
+        }
+        
+        /* Search Results Panel */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--dark-color);
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-result-item i {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .search-result-info {
+            flex: 1;
+        }
+        
+        .search-result-info h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .search-result-info p {
+            margin: 3px 0 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .search-no-results {
+            padding: 30px 20px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .search-no-results i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: var(--gray-medium);
+        }
+        
+        .search-highlight {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+        
+        /* Mobile search */
+        @media (max-width: 992px) {
+            .search-results {
+                position: fixed;
+                top: auto;
+                left: 10px;
+                right: 10px;
+                max-height: 50vh;
+            }
+        }
+        
         /* User Profile Card in Sidebar */
         .sidebar-user {
             padding: 20px;
@@ -1336,6 +1503,16 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 <p>Member since <?php echo date('M Y', strtotime($user['member_since'] ?? 'now')); ?></p>
             </div>
             
+            <!-- Sidebar Search -->
+            <div class="sidebar-search">
+                <div class="sidebar-search-input-wrapper">
+                    <input type="text" id="sidebarSearchInput" placeholder="Search menu... (e.g., Bookings, Food, Profile)" autocomplete="off">
+                    <i class="fas fa-search search-icon" id="searchIcon"></i>
+                    <span class="clear-search" id="clearSearch" onclick="clearSidebarSearch()" title="Clear search"><i class="fas fa-times"></i></span>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+            
             <!-- User Profile -->
             <div class="sidebar-user">
                 <?php if (!empty($user['profile_picture']) && file_exists('../' . $user['profile_picture'])): ?>
@@ -1764,4 +1941,176 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                     closeDeleteModal();
                 }
             });
+            
+            // ============================================
+            // SIDEBAR SEARCH FUNCTIONALITY
+            // ============================================
+            
+            // Menu items data for search
+            const menuItems = [
+                { name: 'Home', keywords: 'home main index', url: '../index.php', icon: 'home', section: 'Home' },
+                { name: 'Dashboard Overview', keywords: 'dashboard overview main', url: 'dashboard.php', icon: 'tachometer-alt', section: 'Home' },
+                { name: 'My Calendar', keywords: 'calendar schedule events dates', url: 'user-calendar.php', icon: 'calendar-alt', section: 'Home' },
+                { name: 'Inbox', keywords: 'inbox messages all', url: 'inbox.php', icon: 'inbox', section: 'Reservations' },
+                { name: 'Confirmed Bookings', keywords: 'confirmed bookings reservations', url: 'confirmed.php', icon: 'check-circle', section: 'Reservations' },
+                { name: 'Check-In', keywords: 'checkin check-in arrival', url: 'checkin.php', icon: 'door-open', section: 'Reservations' },
+                { name: 'Check-Out', keywords: 'checkout check-out departure', url: 'checkout.php', icon: 'door-closed', section: 'Reservations' },
+                { name: 'Cancelled', keywords: 'cancelled canceled', url: 'cancelled.php', icon: 'times-circle', section: 'Reservations' },
+                { name: 'Completed', keywords: 'completed finished done', url: 'completed.php', icon: 'check-double', section: 'Reservations' },
+                { name: 'Pending Requests', keywords: 'pending waiting requests', url: 'pending.php', icon: 'clock', section: 'Reservations' },
+                { name: 'My Room Bookings', keywords: 'room bookings rooms hotels stays', url: 'my-bookings.php', icon: 'bed', section: 'Bookings' },
+                { name: 'My Event Bookings', keywords: 'event bookings events spaces', url: 'my-event-bookings.php', icon: 'calendar-week', section: 'Bookings' },
+                { name: 'My Food Orders', keywords: 'food orders meals dining restaurant', url: 'my-food-orders.php', icon: 'utensils', section: 'Orders' },
+                { name: 'Archive', keywords: 'archive archived history', url: 'archive.php', icon: 'archive', section: 'Manage' },
+                { name: 'Trash', keywords: 'trash deleted recycle bin', url: 'trash.php', icon: 'trash-alt', section: 'Manage' },
+                { name: 'Profile Settings', keywords: 'profile settings account user', url: 'profile.php', icon: 'user-cog', section: 'Account' },
+                { name: 'Change Password', keywords: 'password security', url: 'change-password.php', icon: 'lock', section: 'Account' },
+                { name: 'Notifications', keywords: 'notifications alerts', url: 'notifications.php', icon: 'bell', section: 'Account' },
+                { name: 'Logout', keywords: 'logout signout exit', url: '../auth/logout.php', icon: 'sign-out-alt', section: 'Account' }
+            ];
+            
+            let searchInput, searchResults, searchIcon, clearSearchBtn;
+            
+            // Initialize search on DOM load
+            document.addEventListener('DOMContentLoaded', function() {
+                searchInput = document.getElementById('sidebarSearchInput');
+                searchResults = document.getElementById('searchResults');
+                searchIcon = document.getElementById('searchIcon');
+                clearSearchBtn = document.getElementById('clearSearch');
+                
+                if (searchInput) {
+                    // Live search on input
+                    searchInput.addEventListener('input', function() {
+                        performSearch(this.value);
+                    });
+                    
+                    // Handle keyboard navigation
+                    searchInput.addEventListener('keydown', function(e) {
+                        handleSearchKeydown(e);
+                    });
+                    
+                    // Close search when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!e.target.closest('.sidebar-search')) {
+                            hideSearchResults();
+                        }
+                    });
+                }
+            });
+            
+            function performSearch(query) {
+                query = query.trim().toLowerCase();
+                
+                // Toggle clear button visibility
+                if (query.length > 0) {
+                    clearSearchBtn.classList.add('visible');
+                    searchIcon.classList.add('hidden');
+                } else {
+                    clearSearchBtn.classList.remove('visible');
+                    searchIcon.classList.remove('hidden');
+                    hideSearchResults();
+                    return;
+                }
+                
+                // Search in menu items
+                const results = menuItems.filter(item => {
+                    return item.name.toLowerCase().includes(query) || 
+                           item.keywords.toLowerCase().includes(query);
+                });
+                
+                displaySearchResults(results, query);
+            }
+            
+            function displaySearchResults(results, query) {
+                if (results.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="search-no-results">
+                            <i class="fas fa-search"></i>
+                            <p>No results found for "${escapeHtml(query)}"</p>
+                        </div>
+                    `;
+                } else {
+                    searchResults.innerHTML = results.map(item => {
+                        const highlightedName = highlightText(item.name, query);
+                        return `
+                            <a href="${item.url}" class="search-result-item" data-result-index="${results.indexOf(item)}">
+                                <i class="fas fa-${item.icon}"></i>
+                                <div class="search-result-info">
+                                    <h4>${highlightedName}</h4>
+                                    <p>${escapeHtml(item.section)}</p>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
+                            </a>
+                        `;
+                    }).join('');
+                }
+                
+                searchResults.classList.add('active');
+            }
+            
+            function highlightText(text, query) {
+                if (!query) return escapeHtml(text);
+                const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+                return escapeHtml(text).replace(regex, '<span class="search-highlight">$1</span>');
+            }
+            
+            function escapeRegex(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+            
+            function hideSearchResults() {
+                if (searchResults) {
+                    searchResults.classList.remove('active');
+                }
+            }
+            
+            function clearSidebarSearch() {
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.focus();
+                    clearSearchBtn.classList.remove('visible');
+                    searchIcon.classList.remove('hidden');
+                    hideSearchResults();
+                }
+            }
+            
+            function handleSearchKeydown(e) {
+                const items = searchResults.querySelectorAll('.search-result-item');
+                let currentIndex = -1;
+                
+                // Find current focused item
+                items.forEach((item, index) => {
+                    if (item.classList.contains('focused')) {
+                        currentIndex = index;
+                    }
+                });
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (currentIndex < items.length - 1) {
+                        if (currentIndex >= 0) items[currentIndex].classList.remove('focused');
+                        items[currentIndex + 1].classList.add('focused');
+                        items[currentIndex + 1].style.backgroundColor = '#f0f9ff';
+                        if (currentIndex >= 0) items[currentIndex].style.backgroundColor = '';
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        items[currentIndex].classList.remove('focused');
+                        items[currentIndex].style.backgroundColor = '';
+                        items[currentIndex - 1].classList.add('focused');
+                        items[currentIndex - 1].style.backgroundColor = '#f0f9ff';
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentIndex >= 0) {
+                        window.location.href = items[currentIndex].href;
+                    } else if (items.length > 0) {
+                        window.location.href = items[0].href;
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSearchResults();
+                    searchInput.blur();
+                }
+            }
             </script>
