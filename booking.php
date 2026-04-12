@@ -543,8 +543,14 @@ function submitPayment(method, paymentData) {
         if (data.success) {
             showReceipt(data);
         } else {
-            alert(data.message || 'Payment processing failed. Please try again.');
-            closePaymentModal();
+            const message = data.message || 'Payment processing failed. Please try again.';
+            // Check if it's a "No rooms available" error
+            if (message.toLowerCase().includes('no rooms available')) {
+                showNoRoomsModal(message);
+            } else {
+                alert(message);
+                closePaymentModal();
+            }
         }
     })
     .catch(error => {
@@ -552,6 +558,29 @@ function submitPayment(method, paymentData) {
         alert('Payment error: ' + error.message);
         closePaymentModal();
     });
+}
+
+function showNoRoomsModal(message) {
+    closePaymentModal();
+    document.getElementById('noRoomsModal').style.display = 'flex';
+    document.getElementById('noRoomsMessage').textContent = message;
+    
+    let countdown = 5;
+    const countdownElement = document.getElementById('countdownTimer');
+    countdownElement.textContent = countdown;
+    
+    const interval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(interval);
+            location.reload();
+        }
+    }, 1000);
+}
+
+function closeNoRoomsModal() {
+    document.getElementById('noRoomsModal').style.display = 'none';
 }
 
 function showReceipt(data) {
@@ -876,6 +905,33 @@ document.addEventListener('DOMContentLoaded', calculateTotal);
         <p id="processingText" style="font-size: 14px; color: #666;">Please do not close this window</p>
     </div>
 </div>
+
+<!-- No Rooms Available Modal -->
+<div id="noRoomsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 20px; max-width: 450px; width: 90%; padding: 40px; text-align: center; box-shadow: 0 25px 80px rgba(0,0,0,0.4); animation: modalPop 0.4s ease;">
+        <div style="width: 90px; height: 90px; background: linear-gradient(135deg, #dc3545, #c82333); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; box-shadow: 0 10px 30px rgba(220,53,69,0.3);">
+            <i class="fas fa-bed" style="font-size: 40px; color: white;"></i>
+        </div>
+        <h3 style="font-size: 26px; margin-bottom: 15px; color: #333; font-weight: 700;">No Rooms Available</h3>
+        <p id="noRoomsMessage" style="font-size: 16px; color: #666; margin-bottom: 30px; line-height: 1.5;"></p>
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+            <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">Refreshing page in</p>
+            <div style="font-size: 42px; font-weight: 700; color: var(--primary-color);" id="countdownTimer">5</div>
+            <p style="font-size: 12px; color: #999; margin: 5px 0 0 0;">seconds</p>
+        </div>
+        <button onclick="closeNoRoomsModal(); location.reload();" style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: 600; transition: transform 0.2s;">
+            <i class="fas fa-sync-alt" style="margin-right: 8px;"></i>Refresh Now
+        </button>
+    </div>
+</div>
+
+<style>
+@keyframes modalPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style>
 
 <style>
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

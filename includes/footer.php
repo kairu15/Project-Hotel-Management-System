@@ -104,6 +104,17 @@
                     <a href="/bayawanhotel/faq.php" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; transition: color 0.3s;"><?php echo __('FAQ'); ?></a>
                 </div>
             </div>
+
+            <!-- Developer Info -->
+            <div style="padding: 15px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0;">
+                    <?php echo __('Developed by'); ?> <strong style="color: rgba(255,255,255,0.7);">Kylle Ian D. Acibron</strong>
+                    <span style="margin: 0 8px;">•</span>
+                    <?php echo __('Contact'); ?>: <a href="mailto:kylleacibron@gmail.com" style="color: rgba(255,255,255,0.6); text-decoration: none;">kylleacibron@gmail.com</a>
+                    <span style="margin: 0 8px;">•</span>
+                    <?php echo __('Version'); ?>: 1.0.0
+                </p>
+            </div>
         </div>
     </footer>
     

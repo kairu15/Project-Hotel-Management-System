@@ -207,3 +207,6 @@
 [2026-04-11 15:16:32] [User: 1] User login - User ID: 1
 [2026-04-11 15:42:21] [User: guest] New user registration - Email: ljchu147@gmail.com
 [2026-04-11 15:42:42] [User: 29] User login - User ID: 29
+[2026-04-11 15:46:12] [User: 29] Payment processed - Booking ID: 65, Method: pay_at_hotel, Status: partial
+[2026-04-11 15:48:12] [User: 29] User login - User ID: 29
+[2026-04-12 02:25:56] [User: 28] Payment processed - Booking ID: 66, Method: gcash, Status: pending

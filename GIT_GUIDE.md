@@ -183,7 +183,7 @@ git diff --cached
 ### Step 4: Commit Changes
 
 ```bash
-git commit -m "Description of changes made"
+git commit -m "Updated"
 ```
 
 **Good commit message examples:**

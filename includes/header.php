@@ -934,6 +934,120 @@ if (isLoggedIn()) {
         }
     </script>
 
+    <!-- Localhost Development Warning -->
+    <?php if (strpos(SITE_URL, 'localhost') !== false): ?>
+    <style>
+        .localhost-warning {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #856404;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+            z-index: 9998;
+            max-width: 320px;
+            font-family: 'Lato', sans-serif;
+            animation: slideInRight 0.4s ease;
+            border-left: 5px solid #856404;
+        }
+
+        .localhost-warning-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .localhost-warning-header i {
+            font-size: 18px;
+        }
+
+        .localhost-warning-body {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .localhost-warning-close {
+            background: rgba(133, 100, 4, 0.2);
+            border: none;
+            color: #856404;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .localhost-warning-close:hover {
+            background: rgba(133, 100, 4, 0.35);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .localhost-warning {
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                max-width: none;
+            }
+        }
+    </style>
+
+    <div id="localhostWarning" class="localhost-warning">
+        <div class="localhost-warning-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Development Mode</span>
+        </div>
+        <div class="localhost-warning-body">
+            This site is currently running on <strong>localhost</strong>. Some features like social login may not work properly.
+        </div>
+        <button type="button" class="localhost-warning-close" onclick="closeLocalhostWarning()">
+            <i class="fas fa-times"></i> Dismiss
+        </button>
+    </div>
+
+    <script>
+        function closeLocalhostWarning() {
+            const warning = document.getElementById('localhostWarning');
+            if (warning) {
+                warning.style.opacity = '0';
+                warning.style.transform = 'translateX(100px)';
+                warning.style.transition = 'all 0.3s ease';
+                setTimeout(() => warning.remove(), 300);
+            }
+            // Store dismissal in sessionStorage so it stays hidden during the session
+            sessionStorage.setItem('localhost_warning_dismissed', 'true');
+        }
+
+        // Check if warning was already dismissed this session
+        document.addEventListener('DOMContentLoaded', function() {
+            if (sessionStorage.getItem('localhost_warning_dismissed') === 'true') {
+                const warning = document.getElementById('localhostWarning');
+                if (warning) warning.remove();
+            }
+        });
+    </script>
+    <?php endif; ?>
+
     <!-- Login Required Toast Notification -->
     <div id="loginToastOverlay" class="login-toast-overlay">
         <div class="login-toast">

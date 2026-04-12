@@ -82,6 +82,14 @@ if (isset($_POST['delete_user'])) {
             if ($checkStmt->fetchColumn() > 0) {
                 $_SESSION['error'] = 'Cannot delete user with booking history';
             } else {
+                // Delete related records from chatbot_context first
+                $deleteContextStmt = $db->prepare("DELETE FROM chatbot_context WHERE user_id = ?");
+                $deleteContextStmt->execute([$userId]);
+                
+                // Delete user sessions
+                $deleteSessionsStmt = $db->prepare("DELETE FROM user_sessions WHERE user_id = ?");
+                $deleteSessionsStmt->execute([$userId]);
+                
                 $stmt = $db->prepare("DELETE FROM users WHERE user_id = ?");
                 if ($stmt->execute([$userId])) {
                     $_SESSION['success'] = 'User ' . $userName . ' deleted successfully';
@@ -102,7 +110,8 @@ $search = $_GET['search'] ?? '';
 $sql = "
     SELECT u.*, 
            (SELECT COUNT(*) FROM bookings WHERE user_id = u.user_id) as booking_count,
-           (SELECT MAX(created_at) FROM bookings WHERE user_id = u.user_id) as last_booking
+           (SELECT MAX(created_at) FROM bookings WHERE user_id = u.user_id) as last_booking,
+           (SELECT COUNT(*) FROM user_sessions WHERE user_id = u.user_id AND expires_at > NOW()) as session_count
     FROM users u 
     WHERE 1=1
 ";
@@ -212,6 +221,7 @@ require_once '../includes/admin-header.php';
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">User</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Contact</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Role</th>
+                            <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Status</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Bookings</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Member Since</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Actions</th>
@@ -248,6 +258,27 @@ require_once '../includes/admin-header.php';
                                 <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?php echo $color[0]; ?>; color: <?php echo $color[1]; ?>; text-transform: capitalize;">
                                     <?php echo $user['role']; ?>
                                 </span>
+                            </td>
+                            <td style="padding: 15px 20px;">
+                                <?php if ($user['session_count'] > 0 || $user['active_status']): ?>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="width: 10px; height: 10px; background-color: #28a745; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #28a745;"></span>
+                                        <span style="font-size: 12px; font-weight: 600; color: #28a745;">Online</span>
+                                    </div>
+                                    <?php if ($user['last_login']): ?>
+                                        <div style="font-size: 11px; color: #666; margin-top: 3px;">Last seen: <?php echo formatDate($user['last_login'], 'M d, Y H:i'); ?></div>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="width: 10px; height: 10px; background-color: #6c757d; border-radius: 50%; display: inline-block;"></span>
+                                        <span style="font-size: 12px; font-weight: 600; color: #6c757d;">Offline</span>
+                                    </div>
+                                    <?php if ($user['last_login']): ?>
+                                        <div style="font-size: 11px; color: #666; margin-top: 3px;">Last seen: <?php echo formatDate($user['last_login'], 'M d, Y H:i'); ?></div>
+                                    <?php else: ?>
+                                        <div style="font-size: 11px; color: #999; margin-top: 3px;">Never logged in</div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </td>
                             <td style="padding: 15px 20px;">
                                 <span style="font-weight: 600;"><?php echo $user['booking_count']; ?></span> bookings
