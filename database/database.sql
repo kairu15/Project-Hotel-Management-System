@@ -454,7 +454,11 @@ CREATE TABLE reviews (
 
     is_approved BOOLEAN DEFAULT FALSE,
 
+    is_featured BOOLEAN DEFAULT FALSE,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(user_id),
 
@@ -1306,6 +1310,9 @@ CREATE TABLE notifications (
 
 );
 
+-- Add action_url column to notifications for existing installations
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS action_url VARCHAR(500) NULL AFTER priority;
+
  
 
 -- Notification Settings Table (per user preferences)
@@ -1730,5 +1737,51 @@ ADD FOREIGN KEY (event_booking_id) REFERENCES event_bookings(event_booking_id) O
 
 ALTER TABLE payments 
 MODIFY COLUMN booking_id INT NULL;
+
+-- =====================================================
+-- Team Members Table for About Page
+-- =====================================================
+CREATE TABLE IF NOT EXISTS team_members (
+    member_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    position VARCHAR(100) NOT NULL,
+    description TEXT,
+    image VARCHAR(255),
+    display_order INT DEFAULT 0,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- Contact Messages Table
+-- =====================================================
+CREATE TABLE IF NOT EXISTS contact_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    subject VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    status ENUM('new', 'read', 'in_progress', 'replied', 'resolved', 'archived') DEFAULT 'new',
+    priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+    assigned_to INT,
+    admin_notes TEXT,
+    replied_at TIMESTAMP NULL,
+    replied_by INT,
+    reply_message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_status (status),
+    INDEX idx_priority (priority),
+    INDEX idx_assigned_to (assigned_to),
+    INDEX idx_created_at (created_at),
+    INDEX idx_subject (subject),
+    INDEX idx_user_id (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_to) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (replied_by) REFERENCES users(user_id) ON DELETE SET NULL
+);
 
 SELECT 'All database migration files combined successfully!' AS message;

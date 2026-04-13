@@ -210,3 +210,17 @@
 [2026-04-11 15:46:12] [User: 29] Payment processed - Booking ID: 65, Method: pay_at_hotel, Status: partial
 [2026-04-11 15:48:12] [User: 29] User login - User ID: 29
 [2026-04-12 02:25:56] [User: 28] Payment processed - Booking ID: 66, Method: gcash, Status: pending
+[2026-04-13 05:57:42] [User: 28] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 1)
+[2026-04-13 05:58:34] [User: 28] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 2)
+[2026-04-13 05:59:24] [User: 1] Contact message replied - Message ID: 2, Replied to: kylleacibron@gmail.com
+[2026-04-13 06:15:58] [User: 28] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 3)
+[2026-04-13 06:16:19] [User: 1] Contact message replied - Message ID: 3, Replied to: kylleacibron@gmail.com
+[2026-04-13 06:19:37] [User: 28] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 1)
+[2026-04-13 06:19:49] [User: 1] Contact message replied - Message ID: 1, Replied to: kylleacibron@gmail.com
+[2026-04-13 06:22:35] [User: 28] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 2)
+[2026-04-13 06:22:43] [User: 1] Contact message replied - Message ID: 2, Replied to: kylleacibron@gmail.com
+[2026-04-13 06:37:07] [User: 28] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 1)
+[2026-04-13 06:37:18] [User: 1] Contact message replied - Message ID: 1, Replied to: kylleacibron@gmail.com
+[2026-04-13 06:54:51] [User: 2] User login - User ID: 2
+[2026-04-13 07:59:08] [User: guest] New user registration - Email: panaliganreyann3@gmail.com
+[2026-04-13 07:59:30] [User: 30] User login - User ID: 30

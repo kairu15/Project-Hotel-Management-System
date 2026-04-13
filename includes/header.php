@@ -749,7 +749,6 @@ if (isLoggedIn()) {
             <div>
                 <a href="#"><i class="fab fa-facebook-f"></i></a>
                 <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
                 <span style="margin: 0 15px;">|</span>
                 <?php include __DIR__ . '/language-selector.php'; ?>
                 <?php if (isLoggedIn()): ?>
@@ -804,7 +803,7 @@ if (isLoggedIn()) {
                                 <a href="/bayawanhotel/admin/admin-dashboard.php"><i class="fas fa-cog"></i> Admin Panel</a>
                             <?php endif; ?>
                             <hr>
-                            <a href="/bayawanhotel/auth/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <a href="javascript:void(0);" onclick="openLogoutModal();"><i class="fas fa-sign-out-alt"></i> Logout</a>
                         </div>
                     </div>
                 <?php else: ?>
@@ -1069,4 +1068,52 @@ if (isLoggedIn()) {
             </div>
         </div>
     </div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background-color: white; border-radius: 15px; width: 90%; max-width: 400px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; animation: modalSlideIn 0.3s ease;">
+        <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-sign-out-alt" style="font-size: 30px; color: white;"></i>
+        </div>
+        <h3 style="font-size: 22px; color: #333; margin-bottom: 10px; font-weight: 600;">Logout Confirmation</h3>
+        <p style="color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5;">Are you sure you want to logout?</p>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button onclick="closeLogoutModal()" style="padding: 12px 30px; border: 2px solid #ddd; background-color: white; color: #666; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;">No</button>
+            <a href="/bayawanhotel/auth/logout.php" style="padding: 12px 30px; border: none; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.3s;">Yes</a>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-50px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+#logoutModal button:hover, #logoutModal a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+#logoutModal button:hover {
+    border-color: #bbb;
+}
+</style>
+<script>
+function openLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+}
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+// Close modal when clicking outside
+document.getElementById('logoutModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeLogoutModal();
+    }
+});
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLogoutModal();
+    }
+});
+</script>
 </body>

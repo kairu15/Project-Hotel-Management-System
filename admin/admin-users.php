@@ -239,7 +239,7 @@ require_once '../includes/admin-header.php';
                         <tr style="border-bottom: 1px solid var(--gray-light);">
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                    <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
                                         <?php echo strtoupper(substr($user['first_name'], 0, 1)); ?>
                                     </div>
                                     <div>

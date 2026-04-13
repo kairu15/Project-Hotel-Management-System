@@ -85,6 +85,17 @@ if ($userId) {
     ");
     $trashedStmt->execute([$userId, $userId]);
     $reservationCounts['trashed'] = $trashedStmt->fetchColumn() ?: 0;
+    
+    // Get unread contact message notifications count (only for messages that exist for this user)
+    $userEmail = $_SESSION['email'] ?? '';
+    $unreadStmt = $db->prepare("
+        SELECT COUNT(*) FROM notifications n
+        JOIN contact_messages cm ON n.related_id = cm.message_id
+        WHERE n.user_id = ? AND n.related_type = 'contact_message' AND n.status = 'unread'
+        AND (cm.user_id = ? OR cm.email = ?)
+    ");
+    $unreadStmt->execute([$userId, $userId, $userEmail]);
+    $unreadCount = $unreadStmt->fetchColumn() ?: 0;
 }
 
 // Helper function to get badge HTML
@@ -1630,6 +1641,22 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                         </a>
                     </li>
                     
+                    <!-- Feedback -->
+                    <li class="nav-section">Feedback</li>
+                    <li>
+                        <a href="my-reviews.php" class="<?php echo $currentPage === 'my-reviews' ? 'active' : ''; ?>">
+                            <i class="fas fa-star"></i> My Reviews
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-messages.php" class="<?php echo $currentPage === 'my-messages' ? 'active' : ''; ?>">
+                            <i class="fas fa-envelope"></i> My Messages
+                            <?php if ($unreadCount > 0): ?>
+                            <span class="inbox-badge"><?php echo $unreadCount > 99 ? '99+' : $unreadCount; ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    
                     <!-- Account -->
                     <li class="nav-section">Account</li>
                     <li>
@@ -1643,7 +1670,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                         </a>
                     </li>
                     <li>
-                        <a href="../auth/logout.php" class="logout">
+                        <a href="javascript:void(0);" class="logout" onclick="openLogoutModal();">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>
@@ -1671,7 +1698,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                             <span class="badge" id="notification-badge" style="display: none;">0</span>
                         </div>
                         <a href="../index.php" title="Home"><i class="fas fa-home"></i></a>
-                        <a href="../auth/logout.php" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+                        <a href="javascript:void(0);" title="Logout" onclick="openLogoutModal();"><i class="fas fa-sign-out-alt"></i></a>
                     </div>
                 </div>
             </header>
@@ -1961,6 +1988,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 { name: 'My Room Bookings', keywords: 'room bookings rooms hotels stays', url: 'my-bookings.php', icon: 'bed', section: 'Bookings' },
                 { name: 'My Event Bookings', keywords: 'event bookings events spaces', url: 'my-event-bookings.php', icon: 'calendar-week', section: 'Bookings' },
                 { name: 'My Food Orders', keywords: 'food orders meals dining restaurant', url: 'my-food-orders.php', icon: 'utensils', section: 'Orders' },
+                { name: 'My Reviews', keywords: 'reviews testimonials feedback ratings', url: 'my-reviews.php', icon: 'star', section: 'Feedback' },
                 { name: 'Archive', keywords: 'archive archived history', url: 'archive.php', icon: 'archive', section: 'Manage' },
                 { name: 'Trash', keywords: 'trash deleted recycle bin', url: 'trash.php', icon: 'trash-alt', section: 'Manage' },
                 { name: 'Profile Settings', keywords: 'profile settings account user', url: 'profile.php', icon: 'user-cog', section: 'Account' },
@@ -2114,3 +2142,51 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 }
             }
             </script>
+
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background-color: white; border-radius: 15px; width: 90%; max-width: 400px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; animation: modalSlideIn 0.3s ease;">
+        <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-sign-out-alt" style="font-size: 30px; color: white;"></i>
+        </div>
+        <h3 style="font-size: 22px; color: #333; margin-bottom: 10px; font-weight: 600;">Logout Confirmation</h3>
+        <p style="color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5;">Are you sure you want to logout?</p>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button onclick="closeLogoutModal()" style="padding: 12px 30px; border: 2px solid #ddd; background-color: white; color: #666; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;">No</button>
+            <a href="../auth/logout.php" style="padding: 12px 30px; border: none; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.3s;">Yes</a>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-50px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+#logoutModal button:hover, #logoutModal a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+#logoutModal button:hover {
+    border-color: #bbb;
+}
+</style>
+<script>
+function openLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+}
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+// Close modal when clicking outside
+document.getElementById('logoutModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeLogoutModal();
+    }
+});
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLogoutModal();
+    }
+});
+</script>

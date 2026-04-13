@@ -47,7 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update last login and set active status to 1 (online)
             $updateStmt = $db->prepare("UPDATE users SET last_login = NOW(), active_status = 1 WHERE user_id = ?");
             $updateStmt->execute([$user['user_id']]);
-            
+
+            // Create user session record for tracking
+            $sessionId = session_id();
+            $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+            $expiresAt = date('Y-m-d H:i:s', time() + (24 * 60 * 60)); // 24 hours
+
+            $sessionStmt = $db->prepare("INSERT INTO user_sessions (session_id, user_id, ip_address, user_agent, created_at, expires_at) VALUES (?, ?, ?, ?, NOW(), ?) ON DUPLICATE KEY UPDATE ip_address = VALUES(ip_address), user_agent = VALUES(user_agent), created_at = VALUES(created_at), expires_at = VALUES(expires_at)");
+            $sessionStmt->execute([$sessionId, $user['user_id'], $ipAddress, $userAgent, $expiresAt]);
+
             logActivity('User login', 'User ID: ' . $user['user_id']);
 
             // Check for intended redirect first (for booking actions)

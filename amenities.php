@@ -1,11 +1,24 @@
 <?php
 require_once 'includes/header.php';
+require_once 'includes/config.php';
 $pageTitle = __('Spa & Amenities');
 
 // Get amenities from database
 $db = getDB();
 $stmt = $db->query("SELECT * FROM amenities WHERE is_available = 1 ORDER BY category, amenity_name");
 $amenities = $stmt->fetchAll();
+
+// Get approved amenities reviews for testimonials
+$reviewsStmt = $db->prepare("
+    SELECT r.*, u.first_name, u.last_name, u.city, u.country 
+    FROM reviews r
+    JOIN users u ON r.user_id = u.user_id
+    WHERE r.category = 'amenities' AND r.is_approved = 1
+    ORDER BY r.is_featured DESC, r.created_at DESC
+    LIMIT 5
+");
+$reviewsStmt->execute();
+$amenitiesReviews = $reviewsStmt->fetchAll();
 
 // Group amenities by category
 $groupedAmenities = [];
@@ -222,21 +235,77 @@ $categoryIcons = [
     </div>
 </section>
 
-<!-- Testimonial -->
+<!-- Testimonials Section -->
 <section style="padding: 80px 0; background: linear-gradient(rgba(54,125,138,0.9), rgba(40,95,107,0.9)), url('https://images.unsplash.com/photo-1600334129128-685c5582fd35?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover fixed no-repeat;">
     <div class="container" style="text-align: center; max-width: 800px;">
-        <i class="fas fa-quote-left" style="font-size: 50px; color: rgba(255,255,255,0.3); margin-bottom: 20px;"></i>
-        <p style="font-size: 24px; color: white; line-height: 1.8; font-style: italic; margin-bottom: 30px;">
-            "The spa experience at Bayawan Bai Hotel was absolutely divine. The therapists are highly skilled, and the atmosphere is so peaceful. It's the perfect place to unwind after exploring the beautiful sights of Negros Oriental."
-        </p>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-            <div style="width: 60px; height: 60px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 24px; font-weight: 600;">EP</div>
-            <div style="text-align: left;">
-                <h4 style="color: white; font-size: 18px; margin-bottom: 3px;">Emily Parker</h4>
-                <p style="color: rgba(255,255,255,0.8); font-size: 14px;">Manila, Philippines</p>
+        <?php if (count($amenitiesReviews) > 0): ?>
+            <?php foreach ($amenitiesReviews as $index => $review): 
+                $initials = strtoupper(substr($review['first_name'], 0, 1) . substr($review['last_name'], 0, 1));
+                $location = trim(($review['city'] ?? '') . ', ' . ($review['country'] ?? ''), ', ');
+                if (empty($location)) $location = 'Philippines';
+            ?>
+            <div class="testimonial-item" style="display: <?php echo $index === 0 ? 'block' : 'none'; ?>;" data-index="<?php echo $index; ?>">
+                <i class="fas fa-quote-left" style="font-size: 50px; color: rgba(255,255,255,0.3); margin-bottom: 20px;"></i>
+                <p style="font-size: 24px; color: white; line-height: 1.8; font-style: italic; margin-bottom: 30px;">
+                    "<?php echo htmlspecialchars($review['review_text']); ?>"
+                </p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    <div style="width: 60px; height: 60px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 24px; font-weight: 600;"><?php echo $initials; ?></div>
+                    <div style="text-align: left;">
+                        <h4 style="color: white; font-size: 18px; margin-bottom: 3px;"><?php echo htmlspecialchars($review['first_name'] . ' ' . $review['last_name']); ?></h4>
+                        <div style="color: #ffc107; margin-bottom: 3px;">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <i class="fas fa-star<?php echo $i <= $review['rating'] ? '' : '-o'; ?>"></i>
+                            <?php endfor; ?>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 14px;"><?php echo htmlspecialchars($location); ?></p>
+                    </div>
+                </div>
             </div>
-        </div>
+            <?php endforeach; ?>
+            
+            <?php if (count($amenitiesReviews) > 1): ?>
+            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 10px;">
+                <?php foreach ($amenitiesReviews as $index => $review): ?>
+                <button onclick="showTestimonial(<?php echo $index; ?>)" class="testimonial-dot" data-index="<?php echo $index; ?>" style="width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; background-color: <?php echo $index === 0 ? 'white' : 'rgba(255,255,255,0.4)'; ?>;"></button>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        <?php else: ?>
+            <!-- Fallback testimonial when no reviews exist -->
+            <i class="fas fa-quote-left" style="font-size: 50px; color: rgba(255,255,255,0.3); margin-bottom: 20px;"></i>
+            <p style="font-size: 24px; color: white; line-height: 1.8; font-style: italic; margin-bottom: 30px;">
+                "The spa experience at Bayawan Bai Hotel was absolutely divine. The therapists are highly skilled, and the atmosphere is so peaceful. It's the perfect place to unwind after exploring the beautiful sights of Negros Oriental."
+            </p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <div style="width: 60px; height: 60px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 24px; font-weight: 600;">EP</div>
+                <div style="text-align: left;">
+                    <h4 style="color: white; font-size: 18px; margin-bottom: 3px;">Emily Parker</h4>
+                    <div style="color: #ffc107; margin-bottom: 3px;">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 14px;">Manila, Philippines</p>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
+
+<script>
+function showTestimonial(index) {
+    // Hide all testimonials
+    document.querySelectorAll('.testimonial-item').forEach(function(item) {
+        item.style.display = 'none';
+    });
+    // Show selected testimonial
+    document.querySelector('.testimonial-item[data-index="' + index + '"]').style.display = 'block';
+    
+    // Update dots
+    document.querySelectorAll('.testimonial-dot').forEach(function(dot) {
+        dot.style.backgroundColor = 'rgba(255,255,255,0.4)';
+    });
+    document.querySelector('.testimonial-dot[data-index="' + index + '"]').style.backgroundColor = 'white';
+}
+</script>
 
 <?php require_once 'includes/footer.php'; ?>

@@ -38,12 +38,38 @@ if (isset($_POST['delete_review'])) {
         $reviewStmt->execute([$reviewId]);
         $reviewer = $reviewStmt->fetch();
         $reviewerName = $reviewer ? $reviewer['first_name'] . ' ' . $reviewer['last_name'] : 'Review';
-        
+
         $stmt = $db->prepare("DELETE FROM reviews WHERE review_id = ?");
         if ($stmt->execute([$reviewId])) {
             $_SESSION['success'] = $reviewerName . '\'s review deleted successfully';
         } else {
             $_SESSION['error'] = 'Failed to delete review';
+        }
+    }
+    redirect('admin-reviews.php');
+}
+
+// Handle featured status toggle
+if (isset($_POST['toggle_featured'])) {
+    $reviewId = $_POST['review_id'] ?? 0;
+    $isFeatured = isset($_POST['is_featured']) ? (int)$_POST['is_featured'] : 0;
+
+    if ($reviewId) {
+        // Get reviewer name and current status for message
+        $reviewStmt = $db->prepare("SELECT u.first_name, u.last_name, r.is_approved FROM reviews r JOIN users u ON r.user_id = u.user_id WHERE r.review_id = ?");
+        $reviewStmt->execute([$reviewId]);
+        $reviewer = $reviewStmt->fetch();
+        $reviewerName = $reviewer ? $reviewer['first_name'] . ' ' . $reviewer['last_name'] : 'Review';
+        
+        // If featuring a pending review, auto-approve it too
+        if ($isFeatured && !$reviewer['is_approved']) {
+            $stmt = $db->prepare("UPDATE reviews SET is_featured = ?, is_approved = 1 WHERE review_id = ?");
+            $stmt->execute([$isFeatured, $reviewId]);
+            $_SESSION['success'] = $reviewerName . '\'s review approved and added to featured testimonials';
+        } else {
+            $stmt = $db->prepare("UPDATE reviews SET is_featured = ? WHERE review_id = ?");
+            $stmt->execute([$isFeatured, $reviewId]);
+            $_SESSION['success'] = $reviewerName . '\'s review ' . ($isFeatured ? 'added to' : 'removed from') . ' featured testimonials';
         }
     }
     redirect('admin-reviews.php');
@@ -228,6 +254,7 @@ require_once '../includes/admin-header.php';
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Review</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Date</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Status</th>
+                            <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Featured</th>
                             <th style="padding: 15px 20px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Actions</th>
                         </tr>
                     </thead>
@@ -260,17 +287,35 @@ require_once '../includes/admin-header.php';
                                 <?php echo formatDate($review['created_at'], 'M d, Y'); ?>
                             </td>
                             <td style="padding: 15px 20px;">
-                                <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?php echo $review['is_approved'] ? '#d4edda' : '#fff3cd'; ?>; color: <?php echo $review['is_approved'] ? '#155724' : '#856404'; ?>;">
+                                <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: <?php echo $review['is_approved'] ? '#d4edda' : '#fff3cd'; ?>; color: <?php echo $review['is_approved'] ? '#155724' : '#856404'; ?>">
                                     <?php echo $review['is_approved'] ? 'Approved' : 'Pending'; ?>
                                 </span>
                             </td>
                             <td style="padding: 15px 20px;">
-                                <div style="display: flex; gap: 10px;">
+                                <?php if ($review['is_featured']): ?>
+                                <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: #e3f2fd; color: #1976d2;">
+                                    <i class="fas fa-star" style="margin-right: 5px;"></i>Featured
+                                </span>
+                                <?php else: ?>
+                                <span style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: #f5f5f5; color: #999;">Unfeatured</span>
+                                <?php endif; ?>
+                            </td>
+                            <td style="padding: 15px 20px;">
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <?php if (!$review['is_approved']): ?>
                                     <form method="POST" action="" style="display: inline;">
                                         <input type="hidden" name="review_id" value="<?php echo $review['review_id']; ?>">
-                                        <input type="checkbox" name="is_approved" value="1" <?php echo $review['is_approved'] ? 'checked' : ''; ?> style="display: none;">
-                                        <button type="submit" name="update_review" class="btn btn-sm <?php echo $review['is_approved'] ? 'btn-secondary' : 'btn-success'; ?>" style="padding: 5px 12px; font-size: 12px;">
-                                            <?php echo $review['is_approved'] ? 'Unapprove' : 'Approve'; ?>
+                                        <input type="hidden" name="is_approved" value="1">
+                                        <button type="submit" name="update_review" class="btn btn-sm btn-success" style="padding: 5px 12px; font-size: 12px;">
+                                            Approve
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
+                                    <form method="POST" action="" style="display: inline;">
+                                        <input type="hidden" name="review_id" value="<?php echo $review['review_id']; ?>">
+                                        <input type="hidden" name="is_featured" value="<?php echo $review['is_featured'] ? '0' : '1'; ?>">
+                                        <button type="submit" name="toggle_featured" class="btn btn-sm <?php echo $review['is_featured'] ? 'btn-warning' : 'btn-info'; ?>" style="padding: 5px 12px; font-size: 12px;" title="<?php echo $review['is_featured'] ? 'Remove from homepage' : ($review['is_approved'] ? 'Show on homepage' : 'Approve and show on homepage'); ?>">
+                                            <i class="fas fa-star" style="margin-right: 5px;"></i><?php echo $review['is_featured'] ? 'Unfeature' : 'Feature'; ?>
                                         </button>
                                     </form>
                                     <form method="POST" action="" style="display: inline;" id="deleteReviewForm<?php echo $review['review_id']; ?>">

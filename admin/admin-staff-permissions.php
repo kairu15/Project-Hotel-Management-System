@@ -15,10 +15,12 @@ if (isset($_POST['update_global_settings'])) {
     $allowAllInventory = isset($_POST['allow_all_inventory']) ? 'true' : 'false';
     $allowAllMaintenance = isset($_POST['allow_all_maintenance']) ? 'true' : 'false';
     $allowAllBookingCharges = isset($_POST['allow_all_booking_charges']) ? 'true' : 'false';
+    $allowAllContactMessages = isset($_POST['allow_all_contact_messages']) ? 'true' : 'false';
     
     setStaffPermissionSetting('allow_all_staff_inventory', $allowAllInventory);
     setStaffPermissionSetting('allow_all_staff_maintenance', $allowAllMaintenance);
     setStaffPermissionSetting('allow_all_staff_booking_charges', $allowAllBookingCharges);
+    setStaffPermissionSetting('allow_all_staff_contact_messages', $allowAllContactMessages);
     
     $_SESSION['success'] = 'Global permission settings updated successfully';
     redirect('admin-staff-permissions.php');
@@ -59,7 +61,8 @@ $staffMembers = $db->query("
 $globalSettings = [
     'inventory' => getStaffPermissionSetting('allow_all_staff_inventory') === 'true',
     'maintenance' => getStaffPermissionSetting('allow_all_staff_maintenance') === 'true',
-    'booking_charges' => getStaffPermissionSetting('allow_all_staff_booking_charges') === 'true'
+    'booking_charges' => getStaffPermissionSetting('allow_all_staff_booking_charges') === 'true',
+    'contact_messages' => getStaffPermissionSetting('allow_all_staff_contact_messages') === 'true'
 ];
 
 // Get permission pages
@@ -151,7 +154,7 @@ require_once '../includes/admin-header.php';
                         <tr style="border-bottom: 1px solid var(--gray-light);">
                             <td style="padding: 15px 20px;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="width: 40px; height: 40px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                    <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
                                         <?php echo strtoupper(substr($staff['first_name'], 0, 1) . substr($staff['last_name'], 0, 1)); ?>
                                     </div>
                                     <div>

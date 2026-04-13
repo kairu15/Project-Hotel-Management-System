@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/header.php';
+require_once 'includes/notifications.php';
 $pageTitle = __('Contact Us');
 
 $success = '';
@@ -18,9 +19,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = __('Please enter a valid email address');
     } else {
-        // In production, send email here
-        $success = __('Thank you for your message! We will get back to you within 24 hours.');
-        logActivity('Contact form submitted', 'From: ' . $email);
+        // Save message to database
+        $db = getDB();
+        $userId = isLoggedIn() ? getUserId() : null;
+        $stmt = $db->prepare("INSERT INTO contact_messages (user_id, name, email, phone, subject, message, status, priority, created_at) VALUES (?, ?, ?, ?, ?, ?, 'new', 'medium', NOW())");
+
+        if ($stmt->execute([$userId, $name, $email, $phone, $subject, $message])) {
+            $messageId = $db->lastInsertId();
+            $success = __('Thank you for your message! We will get back to you within 24 hours.');
+            logActivity('Contact form submitted', 'From: ' . $email . ' (Message ID: ' . $messageId . ')');
+
+            // Notify all admin and manager users about new contact message
+            createRoleNotifications(
+                ['admin', 'manager'],
+                'system',
+                'New Contact Message',
+                'New message from ' . $name . ' regarding ' . $subject,
+                [
+                    'priority' => 'medium',
+                    'action_url' => '/bayawanhotel/admin/admin-contact-messages.php?view=' . $messageId
+                ]
+            );
+        } else {
+            $error = __('Failed to send message. Please try again later.');
+        }
     }
 }
 ?>
@@ -99,18 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div>
                     <h4 style="font-size: 18px; margin-bottom: 20px;">Follow Us</h4>
                     <div style="display: flex; gap: 15px;">
-                        <a href="#" style="width: 45px; height: 45px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--secondary-color)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)'">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" style="width: 45px; height: 45px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--secondary-color)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)'">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" style="width: 45px; height: 45px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--secondary-color)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)'">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" style="width: 45px; height: 45px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--secondary-color)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)'">
-                            <i class="fab fa-tripadvisor"></i>
-                        </a>
+                        <a href="#" style="width: 45px; height: 45px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--secondary-color)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)'"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" style="width: 45px; height: 45px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.backgroundColor='var(--secondary-color)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.backgroundColor='var(--primary-color)'; this.style.transform='translateY(0)'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>

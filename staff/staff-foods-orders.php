@@ -310,7 +310,7 @@ $totalRevenue = array_sum(array_map(function($o) { return $o['status'] !== 'canc
                     </td>
                     <td style="padding: 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 35px; height: 35px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
+                            <div style="width: 35px; height: 35px; min-width: 35px; min-height: 35px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; aspect-ratio: 1;">
                                 <?php echo strtoupper(substr($order['first_name'], 0, 1) . substr($order['last_name'], 0, 1)); ?>
                             </div>
                             <div>

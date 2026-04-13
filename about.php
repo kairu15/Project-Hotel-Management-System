@@ -1,6 +1,28 @@
 <?php
+require_once 'includes/config.php';
 require_once 'includes/header.php';
 $pageTitle = __('About Us');
+
+// Get database connection
+$db = getDB();
+
+// Get dynamic statistics
+// 1. Count total rooms (excluding maintenance status)
+$roomsCountStmt = $db->query("SELECT COUNT(*) as total_rooms FROM rooms WHERE status != 'maintenance'");
+$roomsCount = $roomsCountStmt->fetch()['total_rooms'];
+
+// 2. Calculate years of experience (since 2026)
+$establishedYear = 2026;
+$currentYear = date('Y');
+$yearsExperience = $currentYear - $establishedYear;
+
+// 3. Count team members (staff roles: receptionist, manager, admin)
+$teamStmt = $db->query("SELECT COUNT(*) as total_team FROM users WHERE role IN ('receptionist', 'manager', 'admin') AND status = 'active'");
+$teamCount = $teamStmt->fetch()['total_team'];
+
+// Get leadership team members for display
+$leadershipStmt = $db->query("SELECT * FROM team_members WHERE status = 'active' ORDER BY display_order ASC, full_name ASC");
+$leadershipTeam = $leadershipStmt->fetchAll();
 ?>
 
 <!-- Page Header -->
@@ -22,19 +44,19 @@ $pageTitle = __('About Us');
                     Bayawan Bai Hotel was founded with a vision to bring world-class hospitality to the beautiful coastal city of Bayawan in Negros Oriental. Named after the city's warm and welcoming spirit ("Bai" means friend in the local dialect), our hotel has become a landmark destination for travelers seeking both adventure and relaxation.
                 </p>
                 <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 20px;">
-                    Since our opening in 2009, we have been committed to showcasing the best of Filipino hospitality while providing modern comforts and amenities. Our location offers easy access to the region's natural wonders, including pristine beaches, mountain trails, and marine sanctuaries.
+                    Since our opening in 2026, we have been committed to showcasing the best of Filipino hospitality while providing modern comforts and amenities. Our location offers easy access to the region's natural wonders, including pristine beaches, mountain trails, and marine sanctuaries.
                 </p>
                 <div style="display: flex; gap: 40px; margin-top: 30px;">
                     <div>
-                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">15+</h3>
+                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;"><?php echo $yearsExperience; ?>+</h3>
                         <p style="font-size: 14px; color: #666;"><?php echo __('Years of Excellence'); ?></p>
                     </div>
                     <div>
-                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">50+</h3>
+                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;"><?php echo $roomsCount; ?>+</h3>
                         <p style="font-size: 14px; color: #666;"><?php echo __('Luxury Rooms'); ?></p>
                     </div>
                     <div>
-                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">100+</h3>
+                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;"><?php echo $teamCount; ?>+</h3>
                         <p style="font-size: 14px; color: #666;"><?php echo __('Team Members'); ?></p>
                     </div>
                 </div>
@@ -43,7 +65,7 @@ $pageTitle = __('About Us');
                 <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hotel Exterior" style="width: 100%; border-radius: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
                 <div style="position: absolute; bottom: -30px; left: -30px; background-color: var(--primary-color); color: white; padding: 30px; border-radius: 10px;">
                     <p style="font-size: 14px; margin-bottom: 10px;"><?php echo __('Established'); ?></p>
-                    <p style="font-size: 24px; font-weight: 700;">2009</p>
+                    <p style="font-size: 24px; font-weight: 700;">2026</p>
                 </div>
             </div>
         </div>
@@ -113,40 +135,29 @@ $pageTitle = __('About Us');
             <h2 style="font-size: 42px; margin-bottom: 20px;">Meet the Leadership</h2>
         </div>
         
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px;">
+        <?php if (count($leadershipTeam) > 0): ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+            <?php foreach ($leadershipTeam as $member): ?>
             <div style="text-align: center;">
-                <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 50px;">
+                <div style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 50px; overflow: hidden; background: <?php echo $member['image'] ? 'transparent' : 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))'; ?>;">
+                    <?php if ($member['image']): ?>
+                    <img src="assets/<?php echo htmlspecialchars($member['image']); ?>" alt="<?php echo htmlspecialchars($member['full_name']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php else: ?>
                     <i class="fas fa-user"></i>
+                    <?php endif; ?>
                 </div>
-                <h4 style="font-size: 20px; margin-bottom: 5px;">Maria Santos</h4>
-                <p style="color: var(--primary-color); font-size: 14px; margin-bottom: 10px;">General Manager</p>
-                <p style="font-size: 13px; color: #666; line-height: 1.6;">With 20 years of hospitality experience, Maria leads our team with passion and dedication.</p>
+                <h4 style="font-size: 20px; margin-bottom: 5px;"><?php echo htmlspecialchars($member['full_name']); ?></h4>
+                <p style="color: var(--primary-color); font-size: 14px; margin-bottom: 10px;"><?php echo htmlspecialchars($member['position']); ?></p>
+                <p style="font-size: 13px; color: #666; line-height: 1.6;"><?php echo htmlspecialchars($member['description']); ?></p>
             </div>
-            <div style="text-align: center;">
-                <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 50px;">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h4 style="font-size: 20px; margin-bottom: 5px;">Juan Dela Cruz</h4>
-                <p style="color: var(--primary-color); font-size: 14px; margin-bottom: 10px;">Operations Director</p>
-                <p style="font-size: 13px; color: #666; line-height: 1.6;">Juan ensures every aspect of our hotel operations runs smoothly and efficiently.</p>
-            </div>
-            <div style="text-align: center;">
-                <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 50px;">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h4 style="font-size: 20px; margin-bottom: 5px;">Elena Reyes</h4>
-                <p style="color: var(--primary-color); font-size: 14px; margin-bottom: 10px;">Executive Chef</p>
-                <p style="font-size: 13px; color: #666; line-height: 1.6;">Elena brings the flavors of Negros Oriental to life through her creative culinary expertise.</p>
-            </div>
-            <div style="text-align: center;">
-                <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 50px;">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h4 style="font-size: 20px; margin-bottom: 5px;">Carlos Mendoza</h4>
-                <p style="color: var(--primary-color); font-size: 14px; margin-bottom: 10px;">Guest Relations Manager</p>
-                <p style="font-size: 13px; color: #666; line-height: 1.6;">Carlos ensures every guest receives personalized attention and memorable experiences.</p>
-            </div>
+            <?php endforeach; ?>
         </div>
+        <?php else: ?>
+        <div style="text-align: center; padding: 40px;">
+            <i class="fas fa-users" style="font-size: 48px; color: var(--gray-light); margin-bottom: 20px;"></i>
+            <p style="color: #666;">Our team information is being updated. Please check back soon!</p>
+        </div>
+        <?php endif; ?>
     </div>
 </section>
 

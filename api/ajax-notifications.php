@@ -122,6 +122,31 @@ switch ($action) {
         ];
         break;
         
+    case 'check_message_reply':
+        $messageId = intval($_GET['message_id'] ?? 0);
+        if ($messageId > 0) {
+            // Check if there's a reply that the user hasn't seen yet
+            $checkStmt = $db->prepare("
+                SELECT cm.status, cm.replied_at, cm.reply_message,
+                       (SELECT COUNT(*) FROM notifications 
+                        WHERE user_id = ? AND related_id = ? AND related_type = 'contact_message' AND status = 'unread') as has_unread_notification
+                FROM contact_messages cm
+                JOIN users u ON cm.email = u.email
+                WHERE cm.message_id = ? AND u.user_id = ? AND cm.status = 'replied'
+            ");
+            $checkStmt->execute([$userId, $messageId, $messageId, $userId]);
+            $result = $checkStmt->fetch();
+            
+            $response = [
+                'success' => true,
+                'has_new_reply' => ($result && $result['has_unread_notification'] > 0),
+                'reply_timestamp' => $result['replied_at'] ?? null
+            ];
+        } else {
+            $response['error'] = 'Invalid message ID';
+        }
+        break;
+        
     default:
         $response['error'] = 'Invalid action';
 }

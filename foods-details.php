@@ -243,7 +243,7 @@ require_once 'includes/header.php';
                         <?php foreach ($recentReviews as $review): ?>
                         <div style="padding: 20px; border-bottom: 1px solid var(--gray-light);">
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
                                     <?php echo strtoupper(substr($review['first_name'], 0, 1)); ?>
                                 </div>
                                 <div>

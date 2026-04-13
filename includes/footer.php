@@ -18,9 +18,6 @@
                         <a href="#" style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--light-color); transition: all 0.3s; text-decoration: none;">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--light-color); transition: all 0.3s; text-decoration: none;">
-                            <i class="fab fa-twitter"></i>
-                        </a>
                     </div>
                 </div>
                 

@@ -11,6 +11,31 @@ $featuredRooms = $roomsStmt->fetchAll();
 // Get active promotions
 $promoStmt = $db->query("SELECT * FROM promotions WHERE is_active = 1 AND (end_date >= CURDATE() OR end_date IS NULL) ORDER BY created_at DESC LIMIT 3");
 $promotions = $promoStmt->fetchAll();
+
+// Get dynamic statistics
+// 1. Count total rooms (excluding maintenance status)
+$roomsCountStmt = $db->query("SELECT COUNT(*) as total_rooms FROM rooms WHERE status != 'maintenance'");
+$roomsCount = $roomsCountStmt->fetch()['total_rooms'];
+
+// 2. Calculate years of experience (since 2026 as development year)
+$establishedYear = 2026;
+$currentYear = date('Y');
+$yearsExperience = $currentYear - $establishedYear;
+
+// 3. Count unique happy guests (users who have completed bookings)
+$guestsStmt = $db->query("SELECT COUNT(DISTINCT user_id) as total_guests FROM bookings WHERE status IN ('checked_out', 'checked_in', 'confirmed')");
+$happyGuests = $guestsStmt->fetch()['total_guests'];
+
+// 4. Get featured testimonials (approved and featured reviews) - max 3 displayed
+$testimonialsStmt = $db->query("
+    SELECT r.*, u.first_name, u.last_name, u.city, u.country
+    FROM reviews r
+    JOIN users u ON r.user_id = u.user_id
+    WHERE r.is_approved = 1 AND r.is_featured = 1
+    ORDER BY r.created_at DESC
+    LIMIT 3
+");
+$testimonials = $testimonialsStmt->fetchAll();
 ?>
 
 <!-- Hero Slider Section -->
@@ -400,16 +425,16 @@ $promotions = $promoStmt->fetchAll();
                 </p>
                 <div style="display: flex; gap: 30px; margin-bottom: 30px;">
                     <div style="text-align: center;">
-                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">50+</h3>
-                        <p style="font-size: 14px; color: #666;">Luxury Rooms</p>
+                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;"><?php echo $roomsCount; ?>+</h3>
+                        <p style="font-size: 14px; color: #666;"><?php echo __('Luxury Rooms'); ?></p>
                     </div>
                     <div style="text-align: center;">
-                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">15+</h3>
-                        <p style="font-size: 14px; color: #666;">Years Experience</p>
+                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;"><?php echo $yearsExperience; ?>+</h3>
+                        <p style="font-size: 14px; color: #666;"><?php echo __('Years Experience'); ?></p>
                     </div>
                     <div style="text-align: center;">
-                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;">10k+</h3>
-                        <p style="font-size: 14px; color: #666;">Happy Guests</p>
+                        <h3 style="font-size: 36px; color: var(--primary-color); margin-bottom: 5px;"><?php echo number_format($happyGuests); ?>+</h3>
+                        <p style="font-size: 14px; color: #666;"><?php echo __('Happy Guests'); ?></p>
                     </div>
                 </div>
                 <a href="about.php" class="btn btn-outline"><?php echo __('Learn More About Us'); ?></a>
@@ -418,7 +443,7 @@ $promotions = $promoStmt->fetchAll();
                 <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hotel View" style="width: 100%; border-radius: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
                 <div style="position: absolute; bottom: -30px; left: -30px; background-color: var(--primary-color); color: white; padding: 30px; border-radius: 10px;">
                     <i class="fas fa-award" style="font-size: 40px; margin-bottom: 10px;"></i>
-                    <p style="font-size: 14px;">Award Winning<br>Hospitality 2024</p>
+                    <p style="font-size: 14px;">Award Winning<br>Hospitality 2026</p>
                 </div>
             </div>
         </div>
@@ -556,68 +581,56 @@ $promotions = $promoStmt->fetchAll();
             <p style="color: var(--primary-color); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;"><?php echo __('Testimonials'); ?></p>
             <h2 style="font-size: 42px; margin-bottom: 20px;"><?php echo __('What Our Guests Say'); ?></h2>
         </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+
+        <?php if (count($testimonials) > 0): ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+            <?php
+            $colors = ['var(--primary-color)', 'var(--secondary-color)', 'var(--dark-color)', 'var(--warning-color)', 'var(--success-color)', 'var(--info-color)'];
+            $colorIndex = 0;
+            foreach ($testimonials as $testimonial):
+                $initials = strtoupper(substr($testimonial['first_name'], 0, 1) . substr($testimonial['last_name'], 0, 1));
+                $color = $colors[$colorIndex % count($colors)];
+                $colorIndex++;
+            ?>
             <div style="background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
                 <div style="color: var(--warning-color); margin-bottom: 20px;">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
+                    <?php
+                    $rating = $testimonial['rating'] ?? 5;
+                    for ($i = 1; $i <= 5; $i++):
+                        if ($i <= $rating):
+                    ?>
+                        <i class="fas fa-star"></i>
+                    <?php elseif ($i - 0.5 <= $rating): ?>
+                        <i class="fas fa-star-half-alt"></i>
+                    <?php else: ?>
+                        <i class="far fa-star"></i>
+                    <?php endif; endfor; ?>
                 </div>
                 <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 25px; font-style: italic;">
-                    "An absolutely stunning hotel with incredible views of Bayawan Bay. The staff went above and beyond to make our anniversary special. The spa treatments were divine!"
+                    "<?php echo htmlspecialchars($testimonial['review_text']); ?>"
                 </p>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 60px; height: 60px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600;">MR</div>
+                    <div style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; background-color: <?php echo $color; ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;"><?php echo $initials; ?></div>
                     <div>
-                        <h4 style="font-size: 18px; margin-bottom: 3px;">Maria Rodriguez</h4>
-                        <p style="font-size: 14px; color: #999;">Manila, Philippines</p>
+                        <h4 style="font-size: 18px; margin-bottom: 3px;"><?php echo htmlspecialchars($testimonial['first_name'] . ' ' . $testimonial['last_name']); ?></h4>
+                        <p style="font-size: 14px; color: #999;">
+                            <?php
+                            $location = [];
+                            if (!empty($testimonial['city'])) $location[] = $testimonial['city'];
+                            if (!empty($testimonial['country'])) $location[] = $testimonial['country'];
+                            echo !empty($location) ? htmlspecialchars(implode(', ', $location)) : 'Philippines';
+                            ?>
+                        </p>
                     </div>
                 </div>
             </div>
-            
-            <div style="background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
-                <div style="color: var(--warning-color); margin-bottom: 20px;">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                </div>
-                <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 25px; font-style: italic;">
-                    "Perfect location for exploring Negros Oriental. We visited Danjugan Island and Mt. Talinis - both easily accessible from the hotel. The restaurant serves amazing local cuisine!"
-                </p>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 60px; height: 60px; background-color: var(--secondary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600;">JC</div>
-                    <div>
-                        <h4 style="font-size: 18px; margin-bottom: 3px;">John Chen</h4>
-                        <p style="font-size: 14px; color: #999;">Singapore</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
-                <div style="color: var(--warning-color); margin-bottom: 20px;">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star-half-alt"></i>
-                </div>
-                <p style="font-size: 16px; color: #666; line-height: 1.8; margin-bottom: 25px; font-style: italic;">
-                    "We hosted our company retreat here and everything was perfect. The conference facilities are excellent and the team-building activities arranged by the hotel were fantastic."
-                </p>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 60px; height: 60px; background-color: var(--dark-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600;">SL</div>
-                    <div>
-                        <h4 style="font-size: 18px; margin-bottom: 3px;">Sarah Lim</h4>
-                        <p style="font-size: 14px; color: #999;">Cebu City, Philippines</p>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
+        <?php else: ?>
+        <div style="text-align: center; padding: 40px; background-color: white; border-radius: 10px;">
+            <p style="font-size: 18px; color: #666;"><?php echo __('No testimonials available yet. Be the first to share your experience!'); ?></p>
+        </div>
+        <?php endif; ?>
     </div>
 </section>
 
