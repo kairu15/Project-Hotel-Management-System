@@ -2,6 +2,46 @@
 
 ## System Name: Hotel Management System (HMS)
 
+```mermaid
+flowchart TB
+    subgraph EXTERNAL["External Entities"]
+        GUEST["👤 GUEST\n(Customer)"]
+        STAFF["👔 STAFF\n(Reception/Manager)"]
+        ADMIN["⚙️ ADMIN\n(System Manager)"]
+        SOCIAL["🔐 SOCIAL PROVIDERS\n(Facebook, Google)"]
+        SUPPLIERS["📦 SUPPLIERS\n(Inventory Vendors)"]
+    end
+
+    subgraph SYSTEM["Hotel Management System\n(Process 0)"]
+        HMS["🏨 HOTEL MANAGEMENT\nSYSTEM"]
+    end
+
+    subgraph EXTERNAL_SYS["External Systems"]
+        PAYMENT["💳 PAYMENT GATEWAYS\n(GCash, PayPal, CC)"]
+        DATABASE["🗄️ HOTEL DATABASE\n(MySQL)"]
+        CHATBOT["🤖 CHATBOT SERVICE\n(Gemini AI)"]
+    end
+
+    GUEST <-->|"Booking Requests\nPayments\nReviews"| HMS
+    GUEST <-->|"OAuth Login"| SOCIAL
+    SOCIAL -->|"Auth Tokens"| HMS
+    
+    STAFF <-->|"Check-in/out\nWalk-in Bookings\nQR Scans"| HMS
+    ADMIN <-->|"User Management\nReports\nConfiguration"| HMS
+    
+    HMS <-->|"Payment Processing"| PAYMENT
+    HMS <-->|"Data Storage"| DATABASE
+    HMS <-->|"AI Queries"| CHATBOT
+    HMS <-->|"Inventory Orders"| SUPPLIERS
+```
+
+---
+
+## ASCII Art Alternative (Legacy)
+
+<details>
+<summary>View ASCII Version</summary>
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                                     │
@@ -32,6 +72,7 @@
 │                                                                                                     │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+</details>
 
 ---
 
