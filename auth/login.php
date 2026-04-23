@@ -23,10 +23,14 @@ if ($redirectAfterLogin) {
 
 $error = '';
 
+// Get remembered email if exists
+$rememberedEmail = $_COOKIE['remember_email'] ?? '';
+
 // Process login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = sanitizeInput($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
+    $remember = isset($_POST['remember']);
     
     if (empty($email) || empty($password)) {
         $error = 'Please enter both email and password';
@@ -43,6 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['first_name'] = $user['first_name'];
             $_SESSION['last_name'] = $user['last_name'];
             $_SESSION['role'] = $user['role'];
+            
+            // Handle Remember Me cookie
+            if ($remember) {
+                setcookie('remember_email', $email, time() + (30 * 24 * 60 * 60), '/'); // 30 days
+            } else {
+                setcookie('remember_email', '', time() - 3600, '/'); // Clear cookie
+            }
             
             // Update last login and set active status to 1 (online)
             $updateStmt = $db->prepare("UPDATE users SET last_login = NOW(), active_status = 1 WHERE user_id = ?");
@@ -446,7 +457,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label>Email Address</label>
                         <div class="input-group">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+                            <input type="email" name="email" class="form-control" placeholder="Enter your email" required value="<?php echo htmlspecialchars($rememberedEmail); ?>">
                         </div>
                     </div>
                     
