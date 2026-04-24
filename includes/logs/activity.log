@@ -226,3 +226,22 @@
 [2026-04-13 07:59:30] [User: 30] User login - User ID: 30
 [2026-04-18 15:32:44] [User: 1] User login - User ID: 1
 [2026-04-20 16:50:51] [User: 28] User login - User ID: 28
+[2026-04-23 14:52:06] [User: 1] User login - User ID: 1
+[2026-04-24 14:58:51] [User: 28] Payment processed - Booking ID: 67, Method: gcash, Status: paid
+[2026-04-24 15:52:46] [User: 1] User login - User ID: 1
+[2026-04-24 16:12:08] [User: 28] Payment processed - Booking ID: 68, Method: gcash, Status: paid
+[2026-04-24 16:32:48] [User: 2] 2 - service_request_updated
+[2026-04-24 16:32:54] [User: 2] 2 - service_request_updated
+[2026-04-24 16:32:57] [User: 2] 2 - service_request_updated
+[2026-04-24 16:48:30] [User: 2] 2 - service_request_updated
+[2026-04-24 16:48:41] [User: 2] 2 - service_request_updated
+[2026-04-24 16:48:43] [User: 2] 2 - service_request_updated
+[2026-04-24 16:51:22] [User: 2] 2 - service_request_updated
+[2026-04-24 16:51:28] [User: 2] 2 - service_request_updated
+[2026-04-24 16:51:29] [User: 2] 2 - service_request_updated
+[2026-04-24 16:52:49] [User: 2] 2 - service_request_updated
+[2026-04-24 16:53:25] [User: 2] 2 - service_request_updated
+[2026-04-24 16:53:27] [User: 2] 2 - service_request_updated
+[2026-04-24 16:54:16] [User: 2] 2 - service_request_updated
+[2026-04-24 16:54:22] [User: 2] 2 - service_request_updated
+[2026-04-24 16:54:24] [User: 2] 2 - service_request_updated

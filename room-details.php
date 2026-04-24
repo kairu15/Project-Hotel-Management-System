@@ -151,20 +151,20 @@ $roomImages = array_slice($roomImages, 0, 7);
             <div>
                 <!-- Image Gallery with Lightbox -->
                 <div style="background-color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; margin-bottom: 12px;">
                         <!-- Main Large Image -->
-                        <div style="border-radius: 10px; overflow: hidden; height: 400px; cursor: pointer;" onclick="openLightbox(0)">
+                        <div style="border-radius: 8px; overflow: hidden; height: 360px; cursor: pointer;" onclick="openLightbox(0)">
                             <img id="mainImage" src="<?php echo isset($roomImages[0]) ? htmlspecialchars(trim($roomImages[0])) : ''; ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                         </div>
                         <!-- Side Thumbnails (3 images) -->
-                        <div style="display: grid; grid-template-rows: repeat(3, 1fr); gap: 10px;">
+                        <div style="display: grid; grid-template-rows: repeat(3, 1fr); gap: 12px;">
                             <?php for ($i = 1; $i <= 3; $i++): ?>
                             <?php if (isset($roomImages[$i])): ?>
-                            <div style="border-radius: 10px; overflow: hidden; cursor: pointer; position: relative;" onclick="openLightbox(<?php echo $i; ?>)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="<?php echo htmlspecialchars(trim($roomImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="border-radius: 8px; overflow: hidden; cursor: pointer; position: relative; height: 112px;" onclick="openLightbox(<?php echo $i; ?>)">
+                                <img src="<?php echo htmlspecialchars(trim($roomImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                                 <?php if ($i === 3 && count($roomImages) > 4): ?>
-                                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
-                                    +<?php echo count($roomImages) - 4; ?> More
+                                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 600; cursor: pointer;" onclick="openLightbox(<?php echo $i; ?>)">
+                                    +<?php echo count($roomImages) - 4; ?> more
                                 </div>
                                 <?php endif; ?>
                             </div>
@@ -172,17 +172,17 @@ $roomImages = array_slice($roomImages, 0, 7);
                             <?php endfor; ?>
                         </div>
                     </div>
-                    <!-- Bottom Thumbnail Row (4 images) -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                    <!-- Bottom Thumbnail Row (up to 4 images) -->
+                    <?php if (count($roomImages) > 4): ?>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
                         <?php for ($i = 4; $i < min(8, count($roomImages)); $i++): ?>
-                        <div style="border-radius: 8px; overflow: hidden; height: 100px; cursor: pointer;" onclick="openLightbox(<?php echo $i; ?>)">
-                            <img src="<?php echo htmlspecialchars(trim($roomImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        </div>
+                        <div style="border-radius: 8px; overflow: hidden; height: 80px; cursor: pointer;" onclick="openLightbox(<?php echo $i; ?>)" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"><img src="<?php echo htmlspecialchars(trim($roomImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"></div>
                         <?php endfor; ?>
                     </div>
-                    <p style="text-align: center; color: #666; font-size: 13px; margin-top: 10px;">
+                    <?php endif; ?>
+                    <p style="text-align: center; color: #888; font-size: 12px; margin-top: 12px;">
                         <i class="fas fa-images" style="color: var(--primary-color); margin-right: 5px;"></i>
-                        Click any image to view in fullscreen gallery
+                        Click any image to view fullscreen gallery
                     </p>
                 </div>
                 
@@ -370,10 +370,34 @@ $roomImages = array_slice($roomImages, 0, 7);
         <div style="margin-top: 60px;">
             <h2 style="font-size: 32px; margin-bottom: 30px; text-align: center;">Similar Rooms</h2>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
-                <?php foreach ($similarRooms as $index => $similar): ?>
+                <?php foreach ($similarRooms as $index => $similar):
+                    // Get image for this similar room
+                    $similarImage = '';
+                    if (!empty($similar['image_primary'])) {
+                        $similarImage = $similar['image_primary'];
+                    } elseif (!empty($similar['images_gallery'])) {
+                        $galleryImages = array_filter(explode(',', $similar['images_gallery']));
+                        $similarImage = reset($galleryImages);
+                    }
+                    // Format the image path
+                    if ($similarImage) {
+                        $similarImage = trim($similarImage);
+                        if (strpos($similarImage, 'http') !== 0 && strpos($similarImage, 'assets/') !== 0) {
+                            $similarImage = 'assets/' . $similarImage;
+                        }
+                    } else {
+                        // Default image if no image is set
+                        $defaultImages = [
+                            'https://images.unsplash.com/photo-1631049307260-da0c0f11336a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                            'https://images.unsplash.com/photo-1566666208517-13f42e1e3c2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                            'https://images.unsplash.com/photo-1582719478250-c89cae141e86?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                        ];
+                        $similarImage = $defaultImages[$index % 3];
+                    }
+                ?>
                 <div style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
                     <div style="position: relative; height: 200px;">
-                        <img src="https://images.unsplash.com/photo-<?php echo ['1590490360182-c33d57733427','1582719478250-c89cae141e86','1566666208517-13f42e1e3c2c'][$index % 3] ?>?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="<?php echo htmlspecialchars($similarImage); ?>" style="width: 100%; height: 100%; object-fit: cover;">
                         <div style="position: absolute; top: 15px; right: 15px; background-color: var(--primary-color); color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: 600;">
                             <?php echo formatPrice($similar['base_price']); ?>/night
                         </div>

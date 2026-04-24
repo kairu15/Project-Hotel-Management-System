@@ -1625,6 +1625,11 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                             <i class="fas fa-utensils"></i> My Food Orders
                         </a>
                     </li>
+                    <li>
+                        <a href="my-service-requests.php" class="<?php echo in_array($currentPage, ['my-service-requests', 'request-service']) ? 'active' : ''; ?>">
+                            <i class="fas fa-concierge-bell"></i> My Service Requests
+                        </a>
+                    </li>
                     
                     <!-- Manage -->
                     <li class="nav-section">Manage</li>
@@ -1988,6 +1993,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                 { name: 'My Room Bookings', keywords: 'room bookings rooms hotels stays', url: 'my-bookings.php', icon: 'bed', section: 'Bookings' },
                 { name: 'My Event Bookings', keywords: 'event bookings events spaces', url: 'my-event-bookings.php', icon: 'calendar-week', section: 'Bookings' },
                 { name: 'My Food Orders', keywords: 'food orders meals dining restaurant', url: 'my-food-orders.php', icon: 'utensils', section: 'Orders' },
+                { name: 'My Service Requests', keywords: 'service requests laundry spa wellness dry cleaning massage', url: 'my-service-requests.php', icon: 'concierge-bell', section: 'Orders' },
                 { name: 'My Reviews', keywords: 'reviews testimonials feedback ratings', url: 'my-reviews.php', icon: 'star', section: 'Feedback' },
                 { name: 'Archive', keywords: 'archive archived history', url: 'archive.php', icon: 'archive', section: 'Manage' },
                 { name: 'Trash', keywords: 'trash deleted recycle bin', url: 'trash.php', icon: 'trash-alt', section: 'Manage' },

@@ -274,12 +274,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $db->commit();
-            
+
             // Send notification to guest about check-out
             require_once '../includes/notifications.php';
             notifyBookingUpdate($booking['user_id'], $bookingId, 'checked_out');
-            
-            $_SESSION['success'] = $booking['first_name'] . ' ' . $booking['last_name'] . ' checked out from Room ' . ($booking['room_number'] ?? 'N/A') . ' successfully';
+
+            // Send checkout receipt email to guest
+            require_once '../includes/email_notifications.php';
+
+            // Get staff name for the receipt
+            $staffName = 'Staff';
+            if (isset($_SESSION['first_name']) && isset($_SESSION['last_name'])) {
+                $staffName = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
+            }
+
+            // Prepare payments data for receipt
+            $receiptPayments = [];
+            foreach ($payments as $payment) {
+                $receiptPayments[] = [
+                    'date' => date('M d, Y', strtotime($payment['payment_date'])),
+                    'method' => ucfirst(str_replace('_', ' ', $payment['payment_method'])),
+                    'amount' => $payment['amount']
+                ];
+            }
+
+            // Add final payment if made
+            if ($finalPayment > 0) {
+                $receiptPayments[] = [
+                    'date' => date('M d, Y'),
+                    'method' => ucfirst(str_replace('_', ' ', $paymentMethod)),
+                    'amount' => $finalPayment
+                ];
+            }
+
+            // Prepare checkout data for receipt
+            $checkoutData = [
+                'booking_ref' => $booking['booking_ref'],
+                'guest_name' => $booking['first_name'] . ' ' . $booking['last_name'],
+                'room_type' => $booking['category_name'],
+                'room_number' => $booking['room_number'] ?? 'N/A',
+                'check_in' => $booking['check_in'],
+                'check_out' => $booking['check_out'],
+                'nights' => $booking['nights'],
+                'adults' => $booking['adults'],
+                'children' => $booking['children'],
+                'room_charges' => $booking['total_amount'],
+                'additional_charges' => [], // Can be populated if charges table exists
+                'total_charges' => $booking['total_amount'] + $totalCharges,
+                'payments' => $receiptPayments,
+                'total_paid' => $totalPaid + $finalPayment,
+                'balance_due' => max(0, ($booking['total_amount'] + $totalCharges) - ($totalPaid + $finalPayment)),
+                'checkout_date' => date('F d, Y h:i A'),
+                'staff_name' => $staffName
+            ];
+
+            // Send the receipt email
+            if (!empty($booking['email'])) {
+                try {
+                    sendCheckoutReceiptEmail($booking['email'], $checkoutData);
+                } catch (Exception $emailError) {
+                    error_log('Failed to send checkout receipt email: ' . $emailError->getMessage());
+                }
+            }
+
+            $_SESSION['success'] = $booking['first_name'] . ' ' . $booking['last_name'] . ' checked out from Room ' . ($booking['room_number'] ?? 'N/A') . ' successfully. Receipt sent to ' . $booking['email'];
             redirect('checkout.php');
             
         } catch (Exception $e) {

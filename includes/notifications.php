@@ -1404,3 +1404,82 @@ function notifyUserNewPromotion($userId, $promoId, $promoTitle, $promoDescriptio
         $notification
     );
 }
+
+/**
+ * Notify staff about new guest service request
+ * 
+ * @param int $requestId Service request ID
+ * @param string $serviceName Name of the service requested
+ * @param string $roomNumber Room number for the service
+ * @return int Number of staff notified
+ */
+function notifyStaffNewServiceRequest($requestId, $serviceName, $roomNumber = '') {
+    $location = $roomNumber ? " (Room {$roomNumber})" : '';
+    
+    return createRoleNotifications(
+        ['admin', 'manager', 'receptionist'],
+        'guest_service',
+        "New Service Request: {$serviceName}",
+        "A guest has requested {$serviceName}{$location}. Please review and confirm the request.",
+        [
+            'related_id' => $requestId,
+            'related_type' => 'guest_service_request',
+            'priority' => 'medium',
+            'action_url' => '/bayawanhotel/staff/staff-service-requests.php'
+        ]
+    );
+}
+
+/**
+ * Notify user about service request status update
+ * 
+ * @param int $userId User ID to notify
+ * @param int $requestId Service request ID
+ * @param string $status New status (pending, confirmed, in_progress, completed, cancelled, declined)
+ * @param string $serviceName Name of the service
+ * @param string $roomNumber Room number for the service
+ * @return bool|int Notification ID
+ */
+function notifyUserServiceRequestStatus($userId, $requestId, $status, $serviceName = '', $roomNumber = '') {
+    $titles = [
+        'pending' => 'Service Request Received',
+        'confirmed' => 'Service Request Confirmed!',
+        'in_progress' => 'Your Service is in Progress',
+        'completed' => 'Service Completed',
+        'cancelled' => 'Service Request Cancelled',
+        'declined' => 'Service Request Declined'
+    ];
+    
+    $messages = [
+        'pending' => "Your request for {$serviceName} has been received and is pending confirmation.",
+        'confirmed' => "Great news! Your {$serviceName} request has been confirmed. Our staff will attend to you shortly.",
+        'in_progress' => "Your {$serviceName} is currently being provided. Please be patient.",
+        'completed' => "Your {$serviceName} has been completed. Thank you for using our services!",
+        'cancelled' => "Your {$serviceName} request has been cancelled as requested.",
+        'declined' => "We regret to inform you that your {$serviceName} request could not be accommodated at this time. Please contact reception for alternatives."
+    ];
+    
+    $roomText = $roomNumber ? " Room {$roomNumber}." : '';
+    $title = $titles[$status] ?? 'Service Request Update';
+    $message = ($messages[$status] ?? 'Your service request status has been updated.') . $roomText;
+    
+    $priorities = [
+        'pending' => 'low',
+        'confirmed' => 'medium',
+        'in_progress' => 'medium',
+        'completed' => 'medium',
+        'cancelled' => 'low',
+        'declined' => 'high'
+    ];
+    
+    return createNotification($userId, 'guest_service',
+        $title,
+        $message,
+        [
+            'related_id' => $requestId,
+            'related_type' => 'guest_service_request',
+            'priority' => $priorities[$status] ?? 'medium',
+            'action_url' => '/bayawanhotel/user/my-service-requests.php'
+        ]
+    );
+}

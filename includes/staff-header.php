@@ -62,6 +62,14 @@ $foodOrderCounts = $db->query("SELECT
     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
 FROM food_orders")->fetch();
 
+// Guest Service Requests Counter
+$serviceRequestCounts = $db->query("SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+    SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+FROM guest_service_requests")->fetch();
+
 // QR Scanner - New Inquiries (last 24 hours)
 $newInquiriesCount = $db->query("SELECT COUNT(*) FROM event_bookings WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) AND status = 'pending' AND inquiry_name IS NOT NULL")->fetchColumn();
 
@@ -1405,6 +1413,27 @@ function renderBadgeLabel($count, $label) {
                         </a>
                     </li>
 
+                    <!-- GUEST SERVICES SECTION -->
+                    <li class="nav-section" style="padding-top: 15px; margin-top: 5px;">Guest Services</li>
+                    <li>
+                        <a href="staff-service-requests.php" class="<?php echo $currentPage === 'staff-service-requests' ? 'active' : ''; ?>">
+                            <i class="fas fa-concierge-bell"></i> Service Requests
+                            <?php echo renderBadge($serviceRequestCounts['total']); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-service-requests.php?status=pending" class="submenu-item <?php echo $currentPage === 'staff-service-requests-pending' ? 'active' : ''; ?>">
+                            <i class="fas fa-clock"></i> Pending Requests
+                            <?php echo renderBadge($serviceRequestCounts['pending'], 'alert'); ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="staff-service-requests.php?status=in_progress" class="submenu-item <?php echo $currentPage === 'staff-service-requests-progress' ? 'active' : ''; ?>">
+                            <i class="fas fa-spinner"></i> In Progress
+                            <?php echo renderBadge($serviceRequestCounts['in_progress'], 'online'); ?>
+                        </a>
+                    </li>
+
                     <!-- INVENTORY & MAINTENANCE SUB-SECTION -->
                     <li class="nav-section" style="padding-top: 15px; margin-top: 5px;">Inventory & Maintenance</li>
                     <?php if ($canAccessInventory): ?>
@@ -1782,6 +1811,8 @@ function renderBadgeLabel($count, $label) {
                 { name: 'All Orders', keywords: 'orders food meals all list', url: 'staff-foods-orders.php', icon: 'list-alt', section: 'Food & Orders' },
                 { name: 'Pending Orders', keywords: 'orders pending waiting food', url: 'staff-foods-orders.php?status=pending', icon: 'clock', section: 'Food & Orders' },
                 { name: 'Completed Orders', keywords: 'orders completed done finished', url: 'staff-foods-orders.php?status=completed', icon: 'check-circle', section: 'Food & Orders' },
+                { name: 'Service Requests', keywords: 'services laundry spa wellness requests guest', url: 'staff-service-requests.php', icon: 'concierge-bell', section: 'Guest Services' },
+                { name: 'Pending Services', keywords: 'services pending waiting', url: 'staff-service-requests.php?status=pending', icon: 'clock', section: 'Guest Services' },
                 { name: 'General Operations', keywords: 'operations settings config', url: 'staff-operations.php', icon: 'cogs', section: 'Operations' },
                 { name: 'Active Staff', keywords: 'staff online team members', url: 'staff-active.php', icon: 'users', section: 'Operations' },
                 { name: 'Staff Tasks', keywords: 'tasks todo work schedule', url: 'staff-tasks.php', icon: 'tasks', section: 'Operations' },

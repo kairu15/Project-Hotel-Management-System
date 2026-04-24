@@ -73,11 +73,14 @@ $typeFilter = $_GET['type'] ?? '';
 
 // Build query
 $sql = "
-    SELECT bc.*, b.booking_id, b.check_in, b.check_out, u.first_name, u.last_name, u.email, creator.first_name as creator_name
+    SELECT bc.*, b.booking_id, b.check_in, b.check_out, u.first_name, u.last_name, u.email, creator.first_name as creator_name,
+           gsr.request_id, gsr.request_ref, gsr.service_id, s.service_name
     FROM booking_charges bc
     JOIN bookings b ON bc.booking_id = b.booking_id
     JOIN users u ON b.user_id = u.user_id
     LEFT JOIN users creator ON bc.created_by = creator.user_id
+    LEFT JOIN guest_service_requests gsr ON bc.charge_id = gsr.charge_id
+    LEFT JOIN additional_services s ON gsr.service_id = s.service_id
     WHERE 1=1
 ";
 $params = [];
@@ -118,6 +121,14 @@ $chargeTypes = ['minibar', 'room_service', 'laundry', 'damage', 'late_checkout',
 // Status counts
 $statusCounts = $db->query("SELECT status, COUNT(*) as count, SUM(amount) as total FROM booking_charges GROUP BY status")->fetchAll(PDO::FETCH_ASSOC);
 
+// Service charges count (charges from guest_service_requests)
+$serviceChargesCount = $db->query("
+    SELECT COUNT(*) as count, SUM(bc.amount) as total
+    FROM booking_charges bc
+    JOIN guest_service_requests gsr ON bc.charge_id = gsr.charge_id
+    WHERE bc.status = 'active'
+")->fetch();
+
 require_once '../includes/staff-header.php';
 ?>
 
@@ -129,7 +140,7 @@ require_once '../includes/staff-header.php';
         </div>
 
         <!-- Stats Cards -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
             <?php
             $totalActive = 0;
             $totalAmount = 0;
@@ -139,6 +150,8 @@ require_once '../includes/staff-header.php';
                     $totalAmount = $stat['total'];
                 }
             }
+            $serviceCount = $serviceChargesCount['count'] ?? 0;
+            $serviceTotal = $serviceChargesCount['total'] ?? 0;
             ?>
             <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--warning-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -156,6 +169,15 @@ require_once '../includes/staff-header.php';
                         <p style="color: #666; margin: 5px 0 0;">Total Outstanding</p>
                     </div>
                     <i class="fas fa-money-bill" style="font-size: 32px; color: var(--primary-color);"></i>
+                </div>
+            </div>
+            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #9b59b6;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 28px; margin: 0;"><?php echo $serviceCount; ?></h3>
+                        <p style="color: #666; margin: 5px 0 0;">Service Charges</p>
+                    </div>
+                    <i class="fas fa-concierge-bell" style="font-size: 32px; color: #9b59b6;"></i>
                 </div>
             </div>
             <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--success-color);">
@@ -247,7 +269,16 @@ require_once '../includes/staff-header.php';
                                 <span style="text-transform: capitalize;"><?php echo str_replace('_', ' ', $charge['charge_type']); ?></span>
                             </td>
                             <td style="padding: 15px 20px;">
-                                <div style="max-width: 200px;"><?php echo htmlspecialchars($charge['description']); ?></div>
+                                <div style="max-width: 250px;">
+                                    <?php echo htmlspecialchars($charge['description']); ?>
+                                    <?php if ($charge['request_id']): ?>
+                                    <div style="margin-top: 5px;">
+                                        <a href="staff-service-requests.php" style="font-size: 11px; color: var(--primary-color); text-decoration: none;">
+                                            <i class="fas fa-concierge-bell"></i> Service Request #<?php echo htmlspecialchars($charge['request_ref']); ?>
+                                        </a>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td style="padding: 15px 20px; font-weight: 600; color: var(--primary-color);">
                                 <?php echo formatPrice($charge['amount']); ?>

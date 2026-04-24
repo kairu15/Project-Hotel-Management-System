@@ -50,13 +50,13 @@ foreach ($categories as $cat) {
     <div class="container">
         <!-- Filter Tabs -->
         <div style="text-align: center; margin-bottom: 40px;">
-            <div style="display: inline-flex; gap: 10px; background-color: white; padding: 8px; border-radius: 30px; flex-wrap: wrap; justify-content: center;">
-                <a href="?category=all" style="padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; <?php echo $activeCategory === 'all' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;'; ?>">All Photos (<?php echo $categoryCounts['all']; ?>)</a>
-                <a href="?category=rooms" style="padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; <?php echo $activeCategory === 'rooms' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;'; ?>">Rooms (<?php echo $categoryCounts['rooms']; ?>)</a>
-                <a href="?category=amenities" style="padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; <?php echo $activeCategory === 'amenities' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;'; ?>">Amenities (<?php echo $categoryCounts['amenities']; ?>)</a>
-                <a href="?category=dining" style="padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; <?php echo $activeCategory === 'dining' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;'; ?>">Dining (<?php echo $categoryCounts['dining']; ?>)</a>
-                <a href="?category=events" style="padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; <?php echo $activeCategory === 'events' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;'; ?>">Events (<?php echo $categoryCounts['events']; ?>)</a>
-                <a href="?category=attractions" style="padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; <?php echo $activeCategory === 'attractions' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;'; ?>">Attractions (<?php echo $categoryCounts['attractions']; ?>)</a>
+            <div style="display: inline-flex; gap: 8px; background-color: white; padding: 6px; border-radius: 30px; flex-wrap: wrap; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <a href="?category=all" style="padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.3s; <?php echo $activeCategory === 'all' ? 'background-color: var(--primary-color); color: white;' : 'color: #666; hover: background-color: var(--gray-light);' ?>">All (<?php echo $categoryCounts['all']; ?>)</a>
+                <a href="?category=rooms" style="padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.3s; <?php echo $activeCategory === 'rooms' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;' ?>">Rooms (<?php echo $categoryCounts['rooms']; ?>)</a>
+                <a href="?category=amenities" style="padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.3s; <?php echo $activeCategory === 'amenities' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;' ?>">Amenities (<?php echo $categoryCounts['amenities']; ?>)</a>
+                <a href="?category=dining" style="padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.3s; <?php echo $activeCategory === 'dining' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;' ?>">Dining (<?php echo $categoryCounts['dining']; ?>)</a>
+                <a href="?category=events" style="padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.3s; <?php echo $activeCategory === 'events' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;' ?>">Events (<?php echo $categoryCounts['events']; ?>)</a>
+                <a href="?category=attractions" style="padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.3s; <?php echo $activeCategory === 'attractions' ? 'background-color: var(--primary-color); color: white;' : 'color: #666;' ?>">Attractions (<?php echo $categoryCounts['attractions']; ?>)</a>
             </div>
         </div>
         
@@ -69,40 +69,30 @@ foreach ($categories as $cat) {
         </div>
         <?php else: ?>
         <!-- Gallery Grid - Dynamic -->
-        <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-            <?php foreach ($images as $index => $image): 
+        <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+            <?php foreach ($images as $index => $image):
                 // Build full image path
                 $imgPath = $image['image_path'] ?? '';
                 if ($imgPath && strpos($imgPath, 'http') !== 0 && strpos($imgPath, 'assets/') !== 0) {
                     $imgPath = 'assets/' . $imgPath;
                 }
-                // Determine if this should be a featured (larger) item
-                $isFeatured = $image['is_featured'] || ($index === 0 && $activeCategory === 'all');
-                $gridClass = $isFeatured ? 'grid-column: span 2; grid-row: span 2;' : '';
-                $height = $isFeatured ? '500px' : '240px';
             ?>
-            <div class="gallery-item" data-category="<?php echo htmlspecialchars($image['category']); ?>" style="<?php echo $gridClass; ?> position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; height: <?php echo $height; ?>;" onclick="openLightbox('<?php echo htmlspecialchars($imgPath); ?>', '<?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?>')">
+            <div class="gallery-item" data-index="<?php echo $index; ?>" data-src="<?php echo htmlspecialchars($imgPath); ?>" data-caption="<?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?>" data-category="<?php echo htmlspecialchars($image['category']); ?>" style="position: relative; border-radius: 8px; overflow: hidden; cursor: pointer; height: 260px;" onclick="openLightbox(<?php echo $index; ?>)">
                 <?php if ($imgPath): ?>
-                <img src="<?php echo htmlspecialchars($imgPath); ?>" alt="<?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <img src="<?php echo htmlspecialchars($imgPath); ?>" alt="<?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 <?php else: ?>
                 <div style="width: 100%; height: 100%; background-color: var(--gray-light); display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-image" style="font-size: 48px; color: #ccc;"></i>
+                    <i class="fas fa-image" style="font-size: 40px; color: #ccc;"></i>
                 </div>
                 <?php endif; ?>
-                <?php if ($image['is_featured']): ?>
-                <div style="position: absolute; top: 15px; left: 15px; background-color: var(--warning-color); color: var(--dark-color); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 2;">
-                    <i class="fas fa-star"></i> Featured
-                </div>
-                <?php endif; ?>
-                <div style="position: absolute; top: 15px; right: 15px; background-color: var(--primary-color); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 2; text-transform: capitalize;">
+                <div style="position: absolute; top: 12px; right: 12px; background-color: var(--primary-color); color: white; padding: 4px 12px; border-radius: 15px; font-size: 11px; font-weight: 500; z-index: 2; text-transform: capitalize;">
                     <?php echo htmlspecialchars($image['category']); ?>
                 </div>
-                <div style="position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,0,0,0.7)); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; opacity: 0; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
-                    <h4 style="color: white; font-size: <?php echo $isFeatured ? '20px' : '16px'; ?>; margin-bottom: 5px;"><?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?></h4>
+                <div style="position: absolute; inset: 0; background: linear-gradient(transparent 60%, rgba(0,0,0,0.8)); display: flex; flex-direction: column; justify-content: flex-end; padding: 16px; opacity: 0; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                    <h4 style="color: white; font-size: 16px; margin-bottom: 4px; font-weight: 500;"><?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?></h4>
                     <?php if ($image['description']): ?>
-                    <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"><?php echo htmlspecialchars($image['description']); ?></p>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 12px; margin: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"><?php echo htmlspecialchars($image['description']); ?></p>
                     <?php endif; ?>
-                    <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 10px;"><i class="fas fa-search-plus"></i> Click to view</p>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -113,19 +103,53 @@ foreach ($categories as $cat) {
 
 <!-- Lightbox -->
 <div id="lightbox" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center;">
-    <button onclick="closeLightbox()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 30px; cursor: pointer;">
+    <button onclick="closeLightbox()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10; padding: 10px;">
         <i class="fas fa-times"></i>
     </button>
-    <img id="lightboxImage" src="" style="max-width: 90%; max-height: 90%; object-fit: contain;">
-    <p id="lightboxCaption" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 18px;"></p>
+    <button onclick="prevImage()" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10; padding: 15px;">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button onclick="nextImage()" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10; padding: 15px;">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+    <img id="lightboxImage" src="" style="max-width: 85%; max-height: 85%; object-fit: contain;">
+    <p id="lightboxCaption" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 16px; text-align: center;"></p>
 </div>
 
 <script>
-function openLightbox(src, caption) {
-    document.getElementById('lightboxImage').src = src;
-    document.getElementById('lightboxCaption').textContent = caption;
+let currentImageIndex = 0;
+let galleryImages = [];
+
+// Build gallery images array
+document.querySelectorAll('.gallery-item').forEach((item, index) => {
+    galleryImages.push({
+        src: item.getAttribute('data-src'),
+        caption: item.getAttribute('data-caption')
+    });
+});
+
+function openLightbox(index) {
+    currentImageIndex = index;
+    updateLightbox();
     document.getElementById('lightbox').style.display = 'flex';
     document.body.style.overflow = 'hidden';
+}
+
+function updateLightbox() {
+    if (galleryImages[currentImageIndex]) {
+        document.getElementById('lightboxImage').src = galleryImages[currentImageIndex].src;
+        document.getElementById('lightboxCaption').textContent = (currentImageIndex + 1) + ' / ' + galleryImages.length + ' - ' + galleryImages[currentImageIndex].caption;
+    }
+}
+
+function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+    updateLightbox();
+}
+
+function prevImage() {
+    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+    updateLightbox();
 }
 
 function closeLightbox() {
@@ -133,10 +157,12 @@ function closeLightbox() {
     document.body.style.overflow = 'auto';
 }
 
-// Close on escape key
+// Keyboard navigation
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeLightbox();
+    if (document.getElementById('lightbox').style.display === 'flex') {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
     }
 });
 

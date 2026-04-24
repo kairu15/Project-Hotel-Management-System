@@ -1148,6 +1148,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 $badgeCounts['rooms'] = $db->query("SELECT COUNT(*) FROM rooms")->fetchColumn() ?: 0;
                 $badgeCounts['room_categories'] = $db->query("SELECT COUNT(*) FROM room_categories WHERE status = 'active'")->fetchColumn() ?: 0;
                 $badgeCounts['amenities'] = $db->query("SELECT COUNT(*) FROM amenities WHERE is_available = 1")->fetchColumn() ?: 0;
+                $badgeCounts['additional_services'] = $db->query("SELECT COUNT(*) FROM additional_services WHERE is_available = 1")->fetchColumn() ?: 0;
                 $badgeCounts['virtual_tours'] = $db->query("SELECT COUNT(*) FROM room_virtual_tours WHERE is_active = 1")->fetchColumn() ?: 0;
 
                 // Maintenance
@@ -1272,6 +1273,10 @@ unset($_SESSION['success'], $_SESSION['error']);
                     <li><a href="admin-amenities.php" class="<?php echo $currentPage === 'admin-amenities' ? 'active' : ''; ?>">
                         <i class="fas fa-spa"></i> Amenities
                         <?php if ($badgeCounts['amenities'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['amenities']; ?></span><?php endif; ?>
+                    </a></li>
+                    <li><a href="admin-additional-services.php" class="<?php echo $currentPage === 'admin-additional-services' ? 'active' : ''; ?>">
+                        <i class="fas fa-concierge-bell"></i> Additional Services
+                        <?php if ($badgeCounts['additional_services'] > 0): ?><span class="menu-badge"><?php echo $badgeCounts['additional_services']; ?></span><?php endif; ?>
                     </a></li>
                     <li><a href="admin-virtual-tours.php" class="<?php echo $currentPage === 'admin-virtual-tours' ? 'active' : ''; ?>">
                         <i class="fas fa-vr-cardboard"></i> Virtual Tours
@@ -1710,6 +1715,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 { name: 'Rooms', keywords: 'rooms accommodation', url: 'admin-rooms.php', icon: 'bed', section: 'Rooms & Amenities' },
                 { name: 'Room Categories', keywords: 'room categories types', url: 'admin-room-categories.php', icon: 'layer-group', section: 'Rooms & Amenities' },
                 { name: 'Amenities', keywords: 'amenities facilities features', url: 'admin-amenities.php', icon: 'spa', section: 'Rooms & Amenities' },
+                { name: 'Additional Services', keywords: 'services laundry spa wellness dry cleaning', url: 'admin-additional-services.php', icon: 'concierge-bell', section: 'Rooms & Amenities' },
                 { name: 'Virtual Tours', keywords: 'virtual tours vr rooms', url: 'admin-virtual-tours.php', icon: 'vr-cardboard', section: 'Rooms & Amenities' },
                 { name: 'Maintenance Requests', keywords: 'maintenance repair fix requests', url: 'admin-maintenance.php', icon: 'tools', section: 'Maintenance' },
                 { name: 'Event Spaces', keywords: 'event spaces venues halls', url: 'admin-event-spaces.php', icon: 'building', section: 'Events & Dining' },

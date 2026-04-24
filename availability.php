@@ -123,10 +123,28 @@ $allCategories = $db->query("SELECT * FROM room_categories WHERE status = 'activ
                                 $totalPrice = $category['base_price'] * $nights;
                                 $amenities = explode(', ', $category['amenities']);
                     ?>
+                    <?php
+                    // Get room image
+                    $roomImage = '';
+                    if (!empty($category['image_primary'])) {
+                        $roomImage = $category['image_primary'];
+                    } elseif (!empty($category['images_gallery'])) {
+                        $galleryImages = array_filter(explode(',', $category['images_gallery']));
+                        $roomImage = reset($galleryImages);
+                    }
+                    if ($roomImage) {
+                        $roomImage = trim($roomImage);
+                        if (strpos($roomImage, 'http') !== 0 && strpos($roomImage, 'assets/') !== 0) {
+                            $roomImage = 'assets/' . $roomImage;
+                        }
+                    } else {
+                        $roomImage = 'https://images.unsplash.com/photo-1631049307260-da0c0f11336a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    }
+                    ?>
                     <div style="background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: grid; grid-template-columns: 350px 1fr;">
                         <!-- Image -->
                         <div style="position: relative; height: 100%; min-height: 300px;">
-                            <img src="https://images.unsplash.com/photo-1631049307260-da0c0f11336a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                            <img src="<?php echo htmlspecialchars($roomImage); ?>" 
                                 style="width: 100%; height: 100%; object-fit: cover;">
                             <div style="position: absolute; top: 20px; left: 20px; background-color: var(--success-color); color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: 600;">
                                 <?php echo $category['available_count']; ?> room<?php echo $category['available_count'] > 1 ? 's' : ''; ?> available

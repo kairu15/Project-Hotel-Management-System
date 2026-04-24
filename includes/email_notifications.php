@@ -755,7 +755,7 @@ function getFoodOrderConfirmationTemplate($data, $qrCID = null) {
  */
 function getFoodOrderConfirmationPlainText($data) {
     $orderType = ucfirst(str_replace('_', ' ', $data['order_type'] ?? 'dine_in'));
-    
+
     return '
 FOOD ORDER CONFIRMATION - BAYAWAN BAI HOTEL
 
@@ -783,4 +783,360 @@ Phone: +63 (32) 123-4567 ext. 2
 
 © ' . date('Y') . ' Bayawan Bai Hotel. All rights reserved.
 ';
+}
+
+/**
+ * Send Checkout Receipt Email
+ *
+ * @param string $to Recipient email address
+ * @param array $checkoutData Checkout details including:
+ *   - booking_ref: Booking reference number
+ *   - guest_name: Guest full name
+ *   - room_type: Room type name
+ *   - room_number: Room number
+ *   - check_in: Check-in date
+ *   - check_out: Check-out date
+ *   - nights: Number of nights
+ *   - adults: Number of adults
+ *   - children: Number of children
+ *   - room_charges: Room charges amount
+ *   - additional_charges: Array of additional charges (description, amount)
+ *   - total_charges: Total charges amount
+ *   - payments: Array of payments (date, method, amount)
+ *   - total_paid: Total amount paid
+ *   - balance_due: Balance due (if any)
+ *   - checkout_date: Date and time of checkout
+ *   - staff_name: Staff member who processed checkout
+ * @return bool Success status
+ */
+function sendCheckoutReceiptEmail($to, $checkoutData) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = SMTP_USERNAME;
+        $mail->Password   = SMTP_PASSWORD;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = SMTP_PORT;
+
+        // Recipients
+        $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+        $mail->addAddress($to);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Checkout Receipt - ' . ($checkoutData['booking_ref'] ?? 'Booking');
+        $mail->Body    = getCheckoutReceiptTemplate($checkoutData);
+        $mail->AltBody = getCheckoutReceiptPlainText($checkoutData);
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log('Checkout receipt email failed: ' . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+/**
+ * Get HTML email template for checkout receipt
+ */
+function getCheckoutReceiptTemplate($data) {
+    $bookingRef = htmlspecialchars($data['booking_ref'] ?? 'N/A');
+    $guestName = htmlspecialchars($data['guest_name'] ?? 'Valued Guest');
+    $roomType = htmlspecialchars($data['room_type'] ?? 'N/A');
+    $roomNumber = htmlspecialchars($data['room_number'] ?? 'N/A');
+    $checkIn = htmlspecialchars($data['check_in'] ?? 'N/A');
+    $checkOut = htmlspecialchars($data['check_out'] ?? 'N/A');
+    $nights = htmlspecialchars($data['nights'] ?? '0');
+    $adults = htmlspecialchars($data['adults'] ?? '0');
+    $children = htmlspecialchars($data['children'] ?? '0');
+    $roomCharges = number_format($data['room_charges'] ?? 0, 2);
+    $totalCharges = number_format($data['total_charges'] ?? 0, 2);
+    $totalPaid = number_format($data['total_paid'] ?? 0, 2);
+    $balanceDue = number_format($data['balance_due'] ?? 0, 2);
+    $checkoutDate = htmlspecialchars($data['checkout_date'] ?? date('F d, Y h:i A'));
+    $staffName = htmlspecialchars($data['staff_name'] ?? 'Staff');
+
+    $additionalCharges = $data['additional_charges'] ?? [];
+    $payments = $data['payments'] ?? [];
+
+    // Build additional charges HTML
+    $chargesHtml = '';
+    foreach ($additionalCharges as $charge) {
+        $chargeDesc = htmlspecialchars($charge['description'] ?? '');
+        $chargeAmount = number_format($charge['amount'] ?? 0, 2);
+        $chargesHtml .= '
+                    <div class="detail-row">
+                        <span class="detail-label">' . $chargeDesc . '</span>
+                        <span class="detail-value">₱' . $chargeAmount . '</span>
+                    </div>';
+    }
+
+    // Build payments HTML
+    $paymentsHtml = '';
+    foreach ($payments as $payment) {
+        $paymentDate = htmlspecialchars($payment['date'] ?? '');
+        $paymentMethod = htmlspecialchars($payment['method'] ?? '');
+        $paymentAmount = number_format($payment['amount'] ?? 0, 2);
+        $paymentsHtml .= '
+                    <div class="detail-row">
+                        <span class="detail-label">Payment (' . $paymentDate . ') - ' . $paymentMethod . '</span>
+                        <span class="detail-value" style="color: #28a745;">-₱' . $paymentAmount . '</span>
+                    </div>';
+    }
+
+    $balanceColor = ($data['balance_due'] ?? 0) > 0 ? '#dc3545' : '#28a745';
+    $balanceText = ($data['balance_due'] ?? 0) > 0 ? 'Balance Due' : 'Fully Paid';
+
+    return '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Checkout Receipt - Bayawan Bai Hotel</title>
+        <style>
+            body { font-family: Georgia, "Times New Roman", serif; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; }
+            .container { max-width: 650px; margin: 30px auto; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e9ecef; }
+            .header { background: linear-gradient(135deg, #367D8A 0%, #285F6B 100%); padding: 40px 30px; text-align: center; position: relative; }
+            .logo { font-size: 32px; font-weight: 700; color: #ffffff; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); letter-spacing: 1px; }
+            .logo span { color: #ffffff; font-style: italic; }
+            .tagline { color: rgba(255,255,255,0.9); font-size: 14px; font-style: italic; margin: 0; }
+            .receipt-title { background-color: #e9ecef; padding: 15px; text-align: center; border-bottom: 2px solid #367D8A; }
+            .receipt-title h2 { margin: 0; color: #367D8A; font-size: 24px; }
+            .content { padding: 40px; }
+            .greeting { font-size: 18px; margin-bottom: 25px; color: #495057; }
+            .booking-ref-box { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #367D8A; border-radius: 15px; padding: 25px; margin: 25px 0; text-align: center; }
+            .ref-label { font-size: 14px; color: #6c757d; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+            .ref-number { font-size: 24px; font-weight: 700; color: #367D8A; letter-spacing: 2px; font-family: "Courier New", monospace; }
+            .details-section { background: white; border-radius: 10px; padding: 25px; margin: 25px 0; border: 1px solid #e9ecef; }
+            .section-title { font-size: 18px; color: #367D8A; margin-bottom: 20px; font-weight: 600; border-bottom: 2px solid #367D8A; padding-bottom: 10px; }
+            .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e9ecef; }
+            .detail-row:last-child { border-bottom: none; }
+            .detail-label { font-weight: 600; color: #6c757d; }
+            .detail-value { color: #333; font-weight: 500; }
+            .charges-section { background: white; border-radius: 10px; padding: 25px; margin: 25px 0; border: 1px solid #e9ecef; }
+            .payment-section { background: white; border-radius: 10px; padding: 25px; margin: 25px 0; border: 1px solid #e9ecef; }
+            .total-box { background: linear-gradient(135deg, #367D8A 0%, #285F6B 100%); color: white; padding: 25px; border-radius: 10px; margin: 25px 0; }
+            .total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: 700; }
+            .balance-box { background: linear-gradient(135deg, ' . (($data['balance_due'] ?? 0) > 0 ? '#dc3545' : '#28a745') . ' 0%, ' . (($data['balance_due'] ?? 0) > 0 ? '#c82333' : '#218838') . ' 100%); color: white; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center; }
+            .balance-row { font-size: 18px; font-weight: 700; }
+            .checkout-info { background-color: #e7f3ff; border-left: 4px solid #367D8A; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0; }
+            .checkout-info h4 { color: #367D8A; margin-bottom: 10px; }
+            .checkout-info p { margin: 5px 0; color: #495057; font-size: 14px; }
+            .thank-you { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 10px; padding: 30px; margin: 25px 0; text-align: center; }
+            .thank-you h3 { color: #155724; margin-bottom: 10px; font-size: 22px; }
+            .thank-you p { color: #155724; margin: 0; font-size: 14px; }
+            .footer { background-color: #2c3e50; color: #ecf0f1; padding: 30px; text-align: center; border-top: 3px solid #367D8A; }
+            .footer-content { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .footer-left { text-align: left; }
+            .footer-right { text-align: right; }
+            .footer h5 { color: #367D8A; margin-bottom: 10px; font-size: 16px; }
+            .footer p { margin: 5px 0; font-size: 13px; opacity: 0.9; }
+            .copyright { font-size: 11px; opacity: 0.7; margin-top: 20px; }
+            @media (max-width: 600px) {
+                .container { margin: 10px; border-radius: 10px; }
+                .content { padding: 25px 20px; }
+                .footer-content { flex-direction: column; text-align: center; }
+                .footer-left, .footer-right { text-align: center; margin-bottom: 15px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo">Bayawan <span>Bai</span> Hotel</div>
+                <p class="tagline">Experience Luxury and Comfort</p>
+            </div>
+
+            <div class="receipt-title">
+                <h2>OFFICIAL CHECKOUT RECEIPT</h2>
+            </div>
+
+            <div class="content">
+                <p class="greeting">Dear ' . $guestName . ',</p>
+
+                <p style="font-size: 16px; line-height: 1.7; color: #495057;">
+                    Thank you for choosing Bayawan Bai Hotel. We hope you enjoyed your stay. Below is your official checkout receipt.
+                </p>
+
+                <div class="booking-ref-box">
+                    <div class="ref-label">Booking Reference</div>
+                    <div class="ref-number">' . $bookingRef . '</div>
+                </div>
+
+                <div class="details-section">
+                    <h3 class="section-title">Stay Details</h3>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Guest Name</span>
+                        <span class="detail-value">' . $guestName . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Room Type</span>
+                        <span class="detail-value">' . $roomType . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Room Number</span>
+                        <span class="detail-value">' . $roomNumber . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Check-in Date</span>
+                        <span class="detail-value">' . date('F d, Y', strtotime($checkIn)) . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Check-out Date</span>
+                        <span class="detail-value">' . date('F d, Y', strtotime($checkOut)) . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Number of Nights</span>
+                        <span class="detail-value">' . $nights . ' night' . ($nights > 1 ? 's' : '') . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Guests</span>
+                        <span class="detail-value">' . $adults . ' Adults, ' . $children . ' Children</span>
+                    </div>
+                </div>
+
+                <div class="charges-section">
+                    <h3 class="section-title">Charges Summary</h3>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Room Charges (' . $nights . ' nights)</span>
+                        <span class="detail-value">₱' . $roomCharges . '</span>
+                    </div>' . $chargesHtml . '
+                    <div class="detail-row" style="border-top: 2px solid #e9ecef; margin-top: 10px; padding-top: 15px;">
+                        <span class="detail-label" style="font-size: 16px;"><strong>Total Charges</strong></span>
+                        <span class="detail-value" style="font-size: 16px;"><strong>₱' . $totalCharges . '</strong></span>
+                    </div>
+                </div>
+
+                <div class="payment-section">
+                    <h3 class="section-title">Payment History</h3>' . $paymentsHtml . '
+                    <div class="detail-row" style="border-top: 2px solid #e9ecef; margin-top: 10px; padding-top: 15px;">
+                        <span class="detail-label" style="font-size: 16px;"><strong>Total Paid</strong></span>
+                        <span class="detail-value" style="font-size: 16px; color: #28a745;"><strong>₱' . $totalPaid . '</strong></span>
+                    </div>
+                </div>
+
+                <div class="balance-box">
+                    <div class="balance-row">
+                        <span>' . $balanceText . '</span>
+                        <span>₱' . $balanceDue . '</span>
+                    </div>
+                </div>
+
+                <div class="checkout-info">
+                    <h4>Checkout Information</h4>
+                    <p><strong>Checkout Date:</strong> ' . $checkoutDate . '</p>
+                    <p><strong>Processed by:</strong> ' . $staffName . '</p>
+                </div>
+
+                <div class="thank-you">
+                    <h3>Thank You for Your Stay!</h3>
+                    <p>We appreciate your business and look forward to welcoming you back soon.</p>
+                </div>
+
+                <p style="font-size: 14px; color: #6c757d; margin-top: 30px;">
+                    If you have any questions about this receipt or need a copy for expense purposes, please contact us at <a href="mailto:' . SMTP_FROM_EMAIL . '" style="color: #367D8A;">' . SMTP_FROM_EMAIL . '</a> or call us at +63 (32) 123-4567.
+                </p>
+            </div>
+
+            <div class="footer">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <h5>Contact Information</h5>
+                        <p>Bayawan City, Negros Oriental</p>
+                        <p>+63 (32) 123-4567</p>
+                        <p>' . SMTP_FROM_EMAIL . '</p>
+                    </div>
+                    <div class="footer-right">
+                        <h5>Business Hours</h5>
+                        <p>Monday - Friday: 8:00 AM - 8:00 PM</p>
+                        <p>Saturday - Sunday: 9:00 AM - 6:00 PM</p>
+                        <p>24/7 Front Desk Available</p>
+                    </div>
+                </div>
+                <p class="copyright">
+                    © ' . date('Y') . ' Bayawan Bai Hotel. All rights reserved.<br>
+                    This is an automated receipt. Please do not reply.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>';
+}
+
+/**
+ * Get plain text version of checkout receipt email
+ */
+function getCheckoutReceiptPlainText($data) {
+    $guestName = $data['guest_name'] ?? 'Valued Guest';
+    $bookingRef = $data['booking_ref'] ?? 'N/A';
+
+    $text = '
+CHECKOUT RECEIPT - BAYAWAN BAI HOTEL
+
+Dear ' . $guestName . ',
+
+Thank you for choosing Bayawan Bai Hotel. We hope you enjoyed your stay.
+
+BOOKING REFERENCE: ' . $bookingRef . '
+
+STAY DETAILS:
+- Guest Name: ' . $guestName . '
+- Room Type: ' . ($data['room_type'] ?? 'N/A') . '
+- Room Number: ' . ($data['room_number'] ?? 'N/A') . '
+- Check-in Date: ' . date('F d, Y', strtotime($data['check_in'] ?? 'today')) . '
+- Check-out Date: ' . date('F d, Y', strtotime($data['check_out'] ?? 'today')) . '
+- Nights: ' . ($data['nights'] ?? '0') . '
+- Guests: ' . ($data['adults'] ?? '0') . ' Adults, ' . ($data['children'] ?? '0') . ' Children
+
+CHARGES SUMMARY:
+- Room Charges: ₱' . number_format($data['room_charges'] ?? 0, 2) . '
+';
+
+    // Add additional charges
+    if (!empty($data['additional_charges'])) {
+        foreach ($data['additional_charges'] as $charge) {
+            $text .= '- ' . ($charge['description'] ?? 'Charge') . ': ₱' . number_format($charge['amount'] ?? 0, 2) . '\n';
+        }
+    }
+
+    $text .= '- Total Charges: ₱' . number_format($data['total_charges'] ?? 0, 2) . '
+
+PAYMENT HISTORY:
+';
+
+    // Add payments
+    if (!empty($data['payments'])) {
+        foreach ($data['payments'] as $payment) {
+            $text .= '- Payment (' . ($payment['date'] ?? 'N/A') . ') - ' . ($payment['method'] ?? 'Unknown') . ': ₱' . number_format($payment['amount'] ?? 0, 2) . '\n';
+        }
+    }
+
+    $balanceDue = $data['balance_due'] ?? 0;
+    $text .= '- Total Paid: ₱' . number_format($data['total_paid'] ?? 0, 2) . '
+';
+    $text .= '- Balance: ₱' . number_format($balanceDue, 2) . ' (' . ($balanceDue > 0 ? 'Due' : 'Fully Paid') . ')
+
+';
+
+    $text .= 'CHECKOUT INFORMATION:
+- Checkout Date: ' . ($data['checkout_date'] ?? date('F d, Y h:i A')) . '
+- Processed by: ' . ($data['staff_name'] ?? 'Staff') . '
+
+Thank you for your stay! We look forward to welcoming you back.
+
+For questions about this receipt, contact us at:
+Email: ' . SMTP_FROM_EMAIL . '
+Phone: +63 (32) 123-4567
+
+© ' . date('Y') . ' Bayawan Bai Hotel. All rights reserved.
+';
+
+    return $text;
 }

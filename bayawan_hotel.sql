@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 12, 2026 at 02:24 AM
+-- Generation Time: Apr 24, 2026 at 05:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,6 +40,41 @@ CREATE TABLE `activity_logs` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `additional_services`
+--
+
+CREATE TABLE `additional_services` (
+  `service_id` int(11) NOT NULL,
+  `service_name` varchar(100) NOT NULL,
+  `category` enum('laundry','spa','wellness','other') NOT NULL,
+  `subcategory` varchar(50) DEFAULT NULL COMMENT 'e.g., Spa & Wellness, Laundry Services',
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `duration_minutes` int(11) DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `is_available` tinyint(1) DEFAULT 1,
+  `requires_booking` tinyint(1) DEFAULT 0 COMMENT 'Whether the service requires advance scheduling',
+  `sort_order` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `additional_services`
+--
+
+INSERT INTO `additional_services` (`service_id`, `service_name`, `category`, `subcategory`, `description`, `price`, `duration_minutes`, `image`, `is_available`, `requires_booking`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, 'Regular Laundry Service', 'laundry', 'Laundry Services', 'Standard laundry service with 24-hour turnaround. Includes washing, drying, and folding of guest garments.', 300.00, NULL, NULL, 1, 0, 1, '2026-04-24 14:58:03', '2026-04-24 14:58:03'),
+(2, 'Express Laundry Service', 'laundry', 'Laundry Services', 'Priority laundry service with 6-hour express turnaround. Perfect for urgent laundry needs.', 500.00, NULL, NULL, 1, 0, 2, '2026-04-24 14:58:03', '2026-04-24 14:58:03'),
+(3, 'Dry Cleaning', 'laundry', 'Laundry Services', 'Professional dry cleaning for delicate fabrics, formal wear, and special garments.', 700.00, NULL, NULL, 1, 0, 3, '2026-04-24 14:58:03', '2026-04-24 14:58:03'),
+(4, 'Facial Treatment', 'spa', 'Spa & Wellness', 'Rejuvenating facial treatment with natural ingredients to refresh and revitalize your skin.', 1200.00, 40, NULL, 1, 1, 10, '2026-04-24 14:58:03', '2026-04-24 14:58:03'),
+(5, 'Hot Stone Therapy', 'spa', 'Spa & Wellness', 'Therapeutic massage using heated basalt stones for deep muscle relaxation and stress relief.', 2000.00, 90, NULL, 1, 1, 11, '2026-04-24 14:58:03', '2026-04-24 14:58:03'),
+(6, 'Swedish Massage', 'spa', 'Spa & Wellness', 'Classic relaxing full-body massage using long, flowing strokes to relieve tension and improve circulation.', 1500.00, 60, NULL, 1, 1, 12, '2026-04-24 14:58:03', '2026-04-24 14:58:03'),
+(7, 'Yoga Session', 'wellness', 'Wellness Activities', 'Guided yoga session by the pool or beach area. Suitable for all skill levels. Includes mat and props.', 500.00, 60, NULL, 1, 1, 20, '2026-04-24 14:58:03', '2026-04-24 14:58:03');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `amenities`
 --
 
@@ -60,12 +95,12 @@ CREATE TABLE `amenities` (
 --
 
 INSERT INTO `amenities` (`amenity_id`, `amenity_name`, `category`, `description`, `price`, `duration_minutes`, `image`, `is_available`, `operating_hours`) VALUES
-(1, 'Swedish Massage', 'spa', 'Relaxing full-body massage to relieve stress and tension', 1500.00, 60, NULL, 1, '9:00 AM - 9:00 PM'),
-(2, 'Hot Stone Therapy', 'spa', 'Therapeutic massage using heated stones for deep relaxation', 2000.00, 90, NULL, 1, '9:00 AM - 9:00 PM'),
-(3, 'Facial Treatment', 'spa', 'Rejuvenating facial with natural ingredients', 1200.00, 40, 'images/amenities/1774690506_exercise1.png', 1, '10:00 AM - 8:00 PM'),
-(4, 'Infinity Pool Access', 'pool', 'Access to our stunning infinity pool with bay views', 0.00, NULL, NULL, 1, '6:00 AM - 10:00 PM'),
-(5, 'Fitness Center', 'gym', 'State-of-the-art gym equipment and personal training', 0.00, NULL, NULL, 1, '24 Hours'),
-(6, 'Yoga Session', 'wellness', 'Guided yoga session by the pool or beach', 500.00, 60, NULL, 1, '6:00 AM - 7:00 AM Daily');
+(1, 'Swedish Massage', 'spa', 'Relaxing full-body massage to relieve stress and tension', 1500.00, 60, 'images/amenities/1776955407_swedish-massage.jpg', 1, '9:00 AM - 9:00 PM'),
+(2, 'Hot Stone Therapy', 'spa', 'Therapeutic massage using heated stones for deep relaxation', 2000.00, 90, 'images/amenities/1776955244_download.jpg', 1, '9:00 AM - 9:00 PM'),
+(3, 'Facial Treatment', 'spa', 'Rejuvenating facial with natural ingredients', 1200.00, 40, 'images/amenities/1776955396_Luxury Spa Experience Massage.jpg', 1, '10:00 AM - 8:00 PM'),
+(4, 'Infinity Pool Access', 'pool', 'Access to our stunning infinity pool with bay views', 0.00, 0, 'images/amenities/1776955555_Marriott Melbourne Docklands.jpg', 1, '6:00 AM - 10:00 PM'),
+(5, 'Fitness Center', 'gym', 'State-of-the-art gym equipment and personal training', 0.00, 0, 'images/amenities/1776955416_The best hotel gyms in the world - The Points Guy.jpg', 1, '24 Hours'),
+(6, 'Yoga Session', 'wellness', 'Guided yoga session by the pool or beach', 500.00, 60, 'images/amenities/1776955565_yuga.jpg', 1, '6:00 AM - 7:00 AM Daily');
 
 -- --------------------------------------------------------
 
@@ -113,9 +148,12 @@ INSERT INTO `bookings` (`booking_id`, `booking_ref`, `user_id`, `room_id`, `cate
 (60, 'BBH202604101D87B3', 28, 11, 4, '2026-04-10', '2026-04-11', 2, 0, 1, 4500.00, 4500.00, 'pending', 'paid', 'gcash', '', 'website', '2026-04-10 13:15:13', '2026-04-10 13:15:13', NULL, NULL, 0, 0),
 (61, 'BBH202604114A1F9A', 28, 12, 4, '2026-04-11', '2026-04-12', 2, 0, 1, 4500.00, 4500.00, 'pending', 'paid', 'gcash', '', 'website', '2026-04-11 09:07:48', '2026-04-11 09:07:48', NULL, NULL, 0, 0),
 (62, 'BBH20260411C1F03F', 28, 5, 2, '2026-04-11', '2026-04-12', 2, 0, 1, 3500.00, 3500.00, 'pending', 'paid', 'gcash', '', 'website', '2026-04-11 09:24:12', '2026-04-11 09:24:12', NULL, NULL, 0, 0),
-(63, 'BBH202604114368AD', 28, 6, 2, '2026-04-11', '2026-04-13', 2, 0, 2, 3500.00, 7000.00, 'checked_in', 'paid', 'gcash', '', 'website', '2026-04-11 09:37:08', '2026-04-11 11:07:17', '2026-04-11 11:07:17', NULL, 0, 0),
+(63, 'BBH202604114368AD', 28, 6, 2, '2026-04-11', '2026-04-13', 2, 0, 2, 3500.00, 7000.00, 'checked_out', 'paid', 'gcash', '', 'website', '2026-04-11 09:37:08', '2026-04-24 14:11:07', '2026-04-11 11:07:17', '2026-04-24 14:11:07', 0, 0),
 (64, 'BBH202604114B22C9', 28, 3, 1, '2026-04-11', '2026-04-13', 2, 0, 2, 2500.00, 5000.00, 'checked_out', 'paid', 'gcash', '', 'website', '2026-04-11 09:43:00', '2026-04-11 13:28:02', '2026-04-11 09:54:14', '2026-04-11 10:49:56', 0, 0),
-(65, 'BBH20260411FE8E9E', 29, 10, 3, '2026-04-11', '2026-04-24', 1, 0, 13, 7500.00, 97500.00, 'pending', 'partial', '', 'Dapat gaming room dapat. Dili lag wifi dapat bugnaw kaayo', 'website', '2026-04-11 13:45:51', '2026-04-11 13:45:51', NULL, NULL, 0, 0);
+(65, 'BBH20260411FE8E9E', 29, 10, 3, '2026-04-11', '2026-04-24', 1, 0, 13, 7500.00, 97500.00, 'pending', 'partial', '', 'Dapat gaming room dapat. Dili lag wifi dapat bugnaw kaayo', 'website', '2026-04-11 13:45:51', '2026-04-11 13:45:51', NULL, NULL, 0, 0),
+(66, 'BBH20260412A83F7B', 28, 7, 2, '2026-04-13', '2026-04-14', 2, 0, 1, 3500.00, 3500.00, 'checked_out', 'paid', 'gcash', '', 'website', '2026-04-12 00:25:46', '2026-04-13 02:22:43', NULL, NULL, 0, 0),
+(67, 'BBH2026042465556D', 28, 7, 2, '2026-04-24', '2026-04-26', 2, 0, 2, 3500.00, 7000.00, 'checked_out', 'paid', 'gcash', '', 'website', '2026-04-24 12:58:46', '2026-04-24 13:02:45', '2026-04-24 13:02:22', '2026-04-24 13:02:45', 0, 0),
+(68, 'BBH20260424396A4D', 28, 8, 2, '2026-04-24', '2026-04-25', 2, 0, 1, 3500.00, 3500.00, 'checked_out', 'paid', 'gcash', '', 'website', '2026-04-24 14:12:03', '2026-04-24 15:00:52', '2026-04-24 14:12:58', '2026-04-24 15:00:52', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -252,20 +290,62 @@ CREATE TABLE `chat_messages` (
 --
 
 INSERT INTO `chat_messages` (`message_id`, `session_id`, `user_id`, `message_type`, `message`, `intent`, `metadata`, `is_read`, `created_at`) VALUES
-(63, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-03-30 01:23:27'),
-(64, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m your virtual hotel assistant, and I\'m happy to help you today.\n\nHow may I assist you? Are you looking for information about our rooms, amenities, dining, or anything else?', 'gemini_ai', NULL, 1, '2026-03-30 01:23:30'),
-(65, 5, 28, 'user', 'what is bayawan bai hotel', NULL, NULL, 0, '2026-03-30 01:23:40'),
-(66, 5, NULL, 'bot', 'Welcome to Bayawan Bai Hotel!\n\nWe are a modern and welcoming hotel dedicated to providing a comfortable and memorable stay for our guests in Bayawan. We offer a range of well-appointed accommodations, excellent dining options, versatile event spaces, and various amenities designed to ensure a pleasant experience whether you\'re traveling for business or leisure.\n\nHow may I assist you today?', 'gemini_ai', NULL, 1, '2026-03-30 01:23:44'),
-(67, 5, 28, 'user', 'what are available rooms', NULL, NULL, 0, '2026-03-30 01:24:05'),
-(68, 5, NULL, 'bot', 'Hello! I\'d be happy to help you with our available rooms at Bayawan Bai Hotel.\n\nWe offer several comfortable options designed to suit your needs:\n\n*   **Standard Rooms:** Perfect for solo travelers or couples, featuring essential amenities.\n*   **Deluxe Rooms:** More spacious with enhanced features for added comfort.\n*   **Family Suites:** Ideal for groups or families, offering multiple beds and living space.\n\nRates vary depending on the season and specific dates. To get the most accurate availability and pricing for your intended stay, please let us know your desired check-in and check-out dates, along with the number of guests.\n\nYou can also visit our official website or contact our front desk directly for real-time availability and to make a reservation. We look forward to assisting you!', 'gemini_ai', NULL, 1, '2026-03-30 01:24:08'),
-(69, 5, 28, 'user', 'what is the official website', NULL, NULL, 0, '2026-03-30 01:24:39'),
-(70, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel.\n\nOur official website is currently under development to bring you an even better online experience.\n\nIn the meantime, you can find more information and make reservations by contacting us directly at:\n*   **Phone:** [Insert Hotel Phone Number Here, e.g., (035) 430-1234]\n*   **Email:** [Insert Hotel Email Address Here, e.g., info@bayawanbaihotel.com]\n*   You can also find us on popular booking platforms like Booking.com or Agoda.\n\nIs there anything specific I can help you with today?', 'gemini_ai', NULL, 1, '2026-03-30 01:24:42'),
-(71, 5, 28, 'user', 'kay thanks', NULL, NULL, 0, '2026-03-30 01:25:01'),
-(72, 5, NULL, 'bot', 'You\'re most welcome! I\'m here to assist you with anything you need regarding Bayawan Bai Hotel. Please feel free to ask about our rooms, amenities, dining, events, or anything else that comes to mind. How may I help you today?', 'gemini_ai', NULL, 1, '2026-03-30 01:25:05'),
-(73, 5, 28, 'user', 'Hi', NULL, NULL, 0, '2026-03-30 03:37:33'),
-(74, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m your virtual hotel assistant.\n\nHow may I help you today? I can provide information on our rooms, amenities, dining, events, local attractions, and more. Feel free to ask!', 'gemini_ai', NULL, 1, '2026-03-30 03:37:35'),
-(75, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-04-01 12:50:34'),
-(76, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m your virtual hotel assistant, and I\'m happy to help you today.\n\nHow can I assist you? Are you looking for information about our rooms, amenities, dining, or perhaps local attractions? Feel free to ask!', 'gemini_ai', NULL, 1, '2026-04-01 12:50:37');
+(0, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-04-13 04:08:34'),
+(0, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m your virtual assistant here to help.\n\nHow may I assist you today? Are you looking for information about our rooms, amenities, dining, or perhaps local attractions? Feel free to ask!', 'gemini_ai', NULL, 1, '2026-04-13 04:08:37'),
+(0, 5, 28, 'user', 'what are the roomes', NULL, NULL, 0, '2026-04-13 04:08:42'),
+(0, 5, NULL, 'bot', 'Hello there! I\'d be delighted to tell you about the rooms at Bayawan Bai Hotel.\n\nWe offer a range of comfortable accommodations designed to suit different needs. Our primary room types include:\n\n*   **Standard Rooms:** Perfect for solo travelers or couples, offering essential comforts.\n*   **Deluxe Rooms:** More spacious, often with additional amenities, ideal for a more relaxed stay.\n*   **Family Rooms/Suites:** Designed for larger groups or families, providing ample space and multiple beds.\n\nAll our rooms are well-appointed with modern amenities to ensure a pleasant stay. Rates vary depending on the room type and time of year. For specific availability and the best rates for your desired dates, I recommend checking our website or contacting our front desk directly.', 'gemini_ai', NULL, 1, '2026-04-13 04:08:47'),
+(0, 5, 28, 'user', 'okay thankss', NULL, NULL, 0, '2026-04-13 04:10:22'),
+(0, 5, NULL, 'bot', 'You\'re very welcome! I\'m here to assist you with any questions you might have about Bayawan Bai Hotel.\n\nPlease feel free to ask if you need information on room types, amenities, dining, local attractions, or anything else. I\'m happy to help!', 'gemini_ai', NULL, 1, '2026-04-13 04:10:24'),
+(0, 5, 28, 'user', 'who is the developer', NULL, NULL, 0, '2026-04-13 04:10:30'),
+(0, 5, NULL, 'bot', 'Thank you for your question! As a hotel assistant, my knowledge is focused on helping guests with hotel services, amenities, and their stay. Information regarding the developer of Bayawan Bai Hotel is outside my scope.\n\nFor such inquiries, I recommend contacting our hotel management directly. They would be happy to assist you with more detailed information.', 'gemini_ai', NULL, 1, '2026-04-13 04:10:33'),
+(0, 5, 28, 'user', 'robots', NULL, NULL, 0, '2026-04-13 06:20:11'),
+(0, 5, NULL, 'bot', 'Hmm, I\'m having trouble processing that. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information', 'fallback', NULL, 1, '2026-04-13 06:20:13'),
+(0, 5, 28, 'user', 'hello what are the events', NULL, NULL, 0, '2026-04-13 06:20:34'),
+(0, 5, NULL, 'bot', 'I didn\'t quite catch that. Try asking about our rooms, dining options, amenities, or how to make a booking!', 'fallback', NULL, 1, '2026-04-13 06:20:37'),
+(0, 5, 28, 'user', 'rooms', NULL, NULL, 0, '2026-04-13 06:20:42'),
+(0, 5, NULL, 'bot', 'I\'m not sure I understand. Could you rephrase that? I can help with bookings, room information, dining, amenities, and general hotel inquiries.', 'fallback', NULL, 1, '2026-04-13 06:20:44'),
+(0, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-04-13 06:20:57'),
+(0, 5, NULL, 'bot', 'Hello there! Welcome to Bayawan Bai Hotel. I\'m your virtual assistant, ready to help you with anything you need.\n\nHow may I assist you today? Are you looking for information about our rooms, amenities, dining, or perhaps something else?', 'gemini_ai', NULL, 1, '2026-04-13 06:20:58'),
+(0, 5, 28, 'user', 'what are the rooms', NULL, NULL, 0, '2026-04-13 06:21:07'),
+(0, 5, NULL, 'bot', 'I didn\'t quite catch that. Try asking about our rooms, dining options, amenities, or how to make a booking!', 'fallback', NULL, 1, '2026-04-13 06:21:09'),
+(0, 5, 28, 'user', 'Hotel amenities', NULL, NULL, 0, '2026-04-13 06:21:24'),
+(0, 5, NULL, 'bot', 'Hello there! I\'d be happy to tell you about the amenities available at Bayawan Bai Hotel.\n\nWe offer a range of facilities to make your stay comfortable and enjoyable, including:\n\n*   **Complimentary Wi-Fi** throughout the hotel\n*   Our **on-site restaurant**, serving delicious local and international cuisine\n*   A refreshing **swimming pool** for guests to relax and unwind\n*   **Function rooms and event spaces** perfect for meetings, conferences, or special occasions\n*   **Secure parking** for guests\n*   **24-hour front desk service** for any assistance you may need\n\nIf you have any specific amenities in mind, feel free to ask!', 'gemini_ai', NULL, 1, '2026-04-13 06:21:26'),
+(0, 5, 28, 'user', 'Restaurant hours', NULL, NULL, 0, '2026-04-13 06:21:30'),
+(0, 5, NULL, 'bot', 'Hmm, I\'m having trouble processing that. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information', 'fallback', NULL, 1, '2026-04-13 06:21:31'),
+(0, 5, 28, 'user', 'Room bookings and reservations', NULL, NULL, 0, '2026-04-13 06:22:44'),
+(0, 5, NULL, 'bot', 'Hmm, I\'m having trouble processing that. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information', 'fallback', NULL, 1, '2026-04-13 06:22:48'),
+(0, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-04-13 06:25:25'),
+(0, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m happy to assist you today. How can I help make your stay or visit more enjoyable?', 'gemini_ai', NULL, 1, '2026-04-13 06:25:27'),
+(0, 5, 28, 'user', 'what are the rooms', NULL, NULL, 0, '2026-04-13 06:25:35'),
+(0, 5, NULL, 'bot', 'Hmm, I\'m having trouble processing that. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information', 'fallback', NULL, 1, '2026-04-13 06:25:37'),
+(0, 5, 28, 'user', 'I want to book a room', NULL, NULL, 0, '2026-04-13 06:25:43'),
+(0, 5, NULL, 'bot', 'Certainly! I can help you with that.\n\nTo assist you best, could you please provide the following details?\n*   **Check-in date:**\n*   **Check-out date:**\n*   **Number of adults:**\n*   **Number of children (if any):**\n*   **Any preferred room type** (e.g., Standard, Deluxe, Suite)?\n\nOnce I have this information, I can check availability and rates for you!', 'gemini_ai', NULL, 1, '2026-04-13 06:25:45'),
+(0, 5, 28, 'user', 'okay thanks', NULL, NULL, 0, '2026-04-13 06:30:59'),
+(0, 5, NULL, 'bot', 'You\'re most welcome!\n\nIs there anything I can help you with regarding Bayawan Bai Hotel today? I\'m here to assist with room information, amenities, dining, events, or anything else you might need!', 'gemini_ai', NULL, 1, '2026-04-13 06:31:01'),
+(0, 5, 28, 'user', 'what are the rooms', NULL, NULL, 0, '2026-04-13 06:31:40'),
+(0, 5, NULL, 'bot', 'Welcome to Bayawan Bai Hotel! I\'d be delighted to tell you about our comfortable accommodations.\n\nWe offer a range of room types designed to suit different needs:\n\n*   **Standard Rooms:** Perfect for solo travelers or couples, featuring a comfortable queen-sized bed.\n*   **Deluxe Rooms:** More spacious, often with a choice of a king-sized bed or two double beds, ideal for small families or those desiring extra comfort.\n*   **Family Suites:** Our largest option, offering separate living and sleeping areas, perfect for families or groups.\n\nAll our rooms come with essential amenities to ensure a pleasant stay, including air conditioning, a private bathroom, flat-screen TV, and complimentary Wi-Fi.\n\nRates and availability vary based on the season and specific dates. For the most current pricing and to check availability for your desired stay, I recommend visiting our website or contacting our reservations team directly.', 'gemini_ai', NULL, 1, '2026-04-13 06:31:44'),
+(0, 5, 28, 'user', 'I want to book a room', NULL, NULL, 0, '2026-04-13 13:21:19'),
+(0, 5, NULL, 'bot', 'Wonderful! I can certainly help you with that.\n\nTo assist you further, could you please tell me:\n1.  **Your desired check-in and check-out dates?**\n2.  **How many guests will be staying (adults and children)?**\n3.  **Do you have a preferred room type in mind (e.g., Standard, Deluxe, Suite)?**\n\nOnce I have this information, I can check availability and rates for you. Alternatively, you can also book directly through our website or by calling our front desk at [Hotel Phone Number] for immediate assistance.', 'gemini_ai', NULL, 1, '2026-04-13 13:21:22'),
+(0, 5, 28, 'user', 'Restaurant hours', NULL, NULL, 0, '2026-04-13 13:21:26'),
+(0, 5, NULL, 'bot', 'Hello! Our restaurant at Bayawan Bai Hotel is delighted to serve you delicious meals throughout the day.\n\nOur operating hours are:\n*   **Breakfast:** 6:00 AM - 10:00 AM\n*   **Lunch & Dinner:** 11:00 AM - 10:00 PM (Last order at 9:30 PM)\n\nWe look forward to welcoming you!', 'gemini_ai', NULL, 1, '2026-04-13 13:21:28'),
+(0, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-04-14 04:56:40'),
+(0, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m your virtual assistant, ready to help with any questions you might have.\n\nHow can I assist you today? Are you looking for information about our rooms, amenities, dining, or perhaps local attractions?', 'gemini_ai', NULL, 1, '2026-04-14 04:56:43'),
+(0, 5, 28, 'user', 'what are available rooms', NULL, NULL, 0, '2026-04-14 04:56:56'),
+(0, 5, NULL, 'bot', 'Hello! I\'d be happy to help you with the available rooms at Bayawan Bai Hotel.\n\nWe offer a variety of comfortable accommodations to suit your needs:\n\n*   **Standard Rooms:** Perfect for solo travelers or couples, starting at PHP 2,500 per night.\n*   **Deluxe Rooms:** More spacious with enhanced amenities, starting at PHP 3,500 per night.\n*   **Family Suites:** Ideal for groups or families, offering multiple beds and a living area, starting at PHP 5,000 per night.\n\nAvailability can vary, especially during peak seasons. For the most accurate availability and to book your stay, please visit our website or contact our front desk directly with your preferred dates. We look forward to welcoming you!', 'gemini_ai', NULL, 1, '2026-04-14 04:56:59'),
+(0, 5, 28, 'user', 'give code', NULL, NULL, 0, '2026-04-14 04:57:13'),
+(0, 5, NULL, 'bot', 'Hello there!\n\nI\'d be happy to help you with a code, but could you please tell me what kind of code you\'re looking for? For example, are you referring to a booking confirmation code, a promotional code, or something else?\n\nOnce I have a bit more detail, I can assist you right away!', 'gemini_ai', NULL, 1, '2026-04-14 04:57:18'),
+(0, 5, 28, 'user', 'simple c++ oce', NULL, NULL, 0, '2026-04-14 04:57:35'),
+(0, 5, NULL, 'bot', 'Hello there! It seems like your message might have been a bit garbled, or perhaps you\'re asking about something outside my area of expertise as a hotel assistant for Bayawan Bai Hotel.\n\nI\'d be delighted to help you with anything related to our hotel, such as:\n*   **Room types, rates, and availability**\n*   **Hotel amenities and facilities**\n*   **Restaurant and dining services**\n*   **Event spaces and hosting**\n*   **Booking and check-in procedures**\n*   **Hotel policies and guidelines**\n*   **Local attractions and information**\n\nPlease let me know how I can assist you with your stay at Bayawan Bai Hotel!', 'gemini_ai', NULL, 1, '2026-04-14 04:57:40'),
+(0, 5, 28, 'user', '1+1', NULL, NULL, 0, '2026-04-14 04:57:51'),
+(0, 5, NULL, 'bot', 'That\'s a fun one! 1+1 equals 2.\n\nAs your helpful Bayawan Bai Hotel assistant, I\'m here to answer any questions you might have about our rooms, amenities, dining, or local attractions. How can I assist you with your stay today?', 'gemini_ai', NULL, 1, '2026-04-14 04:57:54'),
+(0, 5, 28, 'user', 'hi', NULL, NULL, 0, '2026-04-23 06:53:15'),
+(0, 5, NULL, 'bot', 'Hello there! Welcome to Bayawan Bai Hotel. I\'m your virtual assistant, and I\'m happy to help you today.\n\nHow may I assist you with your stay or any inquiries you might have? Feel free to ask about our rooms, amenities, dining, events, or anything else!', 'gemini_ai', NULL, 1, '2026-04-23 06:53:18'),
+(0, 5, 28, 'user', 'room', NULL, NULL, 0, '2026-04-23 06:53:23'),
+(0, 5, NULL, 'bot', 'Welcome to Bayawan Bai Hotel! I\'d be happy to assist you with information about our rooms.\n\nTo help me best, could you please tell me what you\'re interested in? For example, are you looking for:\n*   **Room types** and their features?\n*   **Rates** and **availability** for specific dates?\n*   Information on how to **book a room**?\n*   Details about **in-room amenities**?\n\nOnce I have a better understanding, I can provide you with the most relevant information.', 'gemini_ai', NULL, 1, '2026-04-23 06:53:27'),
+(0, 5, 28, 'user', 'hyyy', NULL, NULL, 0, '2026-04-23 06:54:34'),
+(0, 5, NULL, 'bot', 'Hello! Welcome to Bayawan Bai Hotel. I\'m your virtual assistant, ready to help you with any questions you might have.\n\nHow can I assist you today? Are you looking for information about our rooms, amenities, dining, or perhaps something else?', 'gemini_ai', NULL, 1, '2026-04-23 06:54:35'),
+(0, 5, 28, 'user', 'ajkgdjsbvafjawd', NULL, NULL, 0, '2026-04-23 06:54:44'),
+(0, 5, NULL, 'bot', 'Welcome to Bayawan Bai Hotel!\n\nIt looks like your message might have been a typo. I\'m here to help with any questions you have about our room types, amenities, dining, events, booking, or even local attractions.\n\nPlease let me know how I can assist you today!', 'gemini_ai', NULL, 1, '2026-04-23 06:54:47');
 
 -- --------------------------------------------------------
 
@@ -290,9 +370,42 @@ CREATE TABLE `chat_sessions` (
 INSERT INTO `chat_sessions` (`session_id`, `user_id`, `session_token`, `status`, `created_at`, `updated_at`, `last_message_at`) VALUES
 (2, 24, '2cbfe58e39538a8d52c6222cd911dfd56173571fa0c95036b5f7e345fbd7509f', 'active', '2026-03-26 05:22:47', '2026-03-26 05:22:47', NULL),
 (3, 1, '56d93ceba9bfce1b0343d8b68d631a095dd46af00584839d61cce151b802dd0b', 'active', '2026-03-27 05:28:25', '2026-03-27 05:28:25', NULL),
-(5, 28, '51463cbeeec412d385cb5808a69adf9e729802d1cb8e33afe728e7545638e754', 'active', '2026-03-30 01:04:48', '2026-04-01 12:50:37', '2026-04-01 12:50:37'),
+(5, 28, '51463cbeeec412d385cb5808a69adf9e729802d1cb8e33afe728e7545638e754', 'active', '2026-03-30 01:04:48', '2026-04-23 06:54:47', '2026-04-23 06:54:47'),
 (6, 2, '733a1f9ade774c2ac77f588c5497610bead58d88c9ecc811755c0bb8046f70b5', 'active', '2026-03-31 14:27:31', '2026-03-31 14:27:31', NULL),
-(7, 29, 'e30bf86659941f80f12e46de43279abd8bd967375fa14e0175ccda50452abed3', 'active', '2026-04-11 13:42:48', '2026-04-11 13:42:48', NULL);
+(7, 29, 'e30bf86659941f80f12e46de43279abd8bd967375fa14e0175ccda50452abed3', 'active', '2026-04-11 13:42:48', '2026-04-11 13:42:48', NULL),
+(8, 30, '178335f22c2bf3e2de8df58c87530ba7b522fd925dab76f3047e86e944b7f331', 'active', '2026-04-13 05:59:32', '2026-04-13 05:59:32', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `contact_messages`
+--
+
+CREATE TABLE `contact_messages` (
+  `message_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `subject` varchar(50) NOT NULL,
+  `message` text NOT NULL,
+  `status` enum('new','read','in_progress','replied','resolved','archived') DEFAULT 'new',
+  `priority` enum('low','medium','high','urgent') DEFAULT 'medium',
+  `assigned_to` int(11) DEFAULT NULL,
+  `admin_notes` text DEFAULT NULL,
+  `replied_at` timestamp NULL DEFAULT NULL,
+  `replied_by` int(11) DEFAULT NULL,
+  `reply_message` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `contact_messages`
+--
+
+INSERT INTO `contact_messages` (`message_id`, `user_id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `priority`, `assigned_to`, `admin_notes`, `replied_at`, `replied_by`, `reply_message`, `created_at`, `updated_at`) VALUES
+(1, 28, 'Kylle Acibron', 'kylleacibron@gmail.com', '09455470173', 'reservation', 'hi', 'resolved', 'medium', 2, 'bbbb[2026-04-13 07:06:08] Kylle Acibron:\nbbbbb\n\n', '2026-04-13 04:37:18', 1, 'hello', '2026-04-13 04:37:07', '2026-04-13 05:19:18');
 
 -- --------------------------------------------------------
 
@@ -390,11 +503,11 @@ CREATE TABLE `event_spaces` (
 --
 
 INSERT INTO `event_spaces` (`space_id`, `space_name`, `description`, `capacity`, `area_sqm`, `features`, `price_per_day`, `image_primary`, `images`, `status`) VALUES
-(1, 'Grand Ballroom', 'Elegant ballroom perfect for weddings, conferences, and galas', 300, 500, 'Stage, Sound System, Projector, Dance Floor, Bridal Suite', 50000.00, 'images/events/1/1774623588_69c69b64829a4_Screenshot 2026-03-15 212742.png', 'images/events/1/1774619555_69c68ba300722_Screenshot 2026-03-15 205234.png,images/events/1/1774619555_69c68ba300a3d_Screenshot 2026-03-15 205404.png,images/events/1/1774619555_69c68ba3010b3_Screenshot 2026-03-15 210237.png,images/events/1/1774619555_69c68ba3015f8_Screenshot 2026-03-15 210640.png,images/events/1/1774619555_69c68ba3018c4_Screenshot 2026-03-15 211038.png', 'available'),
-(2, 'Conference Room A', 'Professional meeting space with modern AV equipment', 50, 80, 'Projector, Whiteboard, Video Conferencing, Coffee Station', 8000.00, NULL, NULL, 'available'),
-(3, 'Conference Room B', 'Intimate meeting room for small groups', 20, 40, 'TV Screen, Whiteboard, Coffee Station', 4000.00, NULL, NULL, 'available'),
-(4, 'Garden Pavilion', 'Outdoor venue with stunning bay views for romantic events', 150, 300, 'Tent Options, Garden Setting, Sound System, Catering Area', 35000.00, NULL, NULL, 'available'),
-(5, 'Rooftop Terrace', 'Exclusive rooftop space with panoramic views', 80, 150, 'City & Bay Views, Bar Area, Lounge Seating', 25000.00, NULL, NULL, 'available');
+(1, 'Grand Ballroom', 'Elegant ballroom perfect for weddings, conferences, and galas', 300, 500, 'Stage, Sound System, Projector, Dance Floor, Bridal Suite', 50000.00, 'images/events/1/1776953952_69ea2a60c7c33_Songül Aydınlatma - Songül Aydınlatma.jpg', 'images/events/1/1776953952_69ea2a60c87f7_download (1).jpg,images/events/1/1776953952_69ea2a60c8c0b_Legian Beach Hotel Bali _.jpg,images/events/1/1776953952_69ea2a60c8edc_Songül Aydınlatma - Songül Aydınlatma.jpg', 'available'),
+(2, 'Conference Room A', 'Professional meeting space with modern AV equipment', 50, 80, 'Projector, Whiteboard, Video Conferencing, Coffee Station', 8000.00, 'images/events/2/1776954491_69ea2c7b2ab93_Meetings - Fairmont Century Plaza Hotel.jpg', 'images/events/2/1776954491_69ea2c7b2af75_download (2).jpg,images/events/2/1776954491_69ea2c7b2b13c_download.jpg,images/events/2/1776954491_69ea2c7b2b731_Event & Meeting Spaces _ Renaissance Palm Springs Hotel.jpg,images/events/2/1776954491_69ea2c7b2baf5_Meetings - Fairmont Century Plaza Hotel.jpg', 'available'),
+(3, 'Conference Room B', 'Intimate meeting room for small groups', 20, 40, 'TV Screen, Whiteboard, Coffee Station', 4000.00, 'images/events/3/1776954917_69ea2e25a9922_download (3).jpg', 'images/events/3/1776954917_69ea2e25aa36c_Board Room.jpg,images/events/3/1776954917_69ea2e25aa602_download (2).jpg,images/events/3/1776954917_69ea2e25aa940_download (3).jpg,images/events/3/1776954917_69ea2e25aab61_Luxury.jpg', 'available'),
+(4, 'Garden Pavilion', 'Outdoor venue with stunning bay views for romantic events', 150, 300, 'Tent Options, Garden Setting, Sound System, Catering Area', 35000.00, 'images/events/4/1776953992_69ea2a884e1d5_download.jpg', 'images/events/4/1776953992_69ea2a884e531_Cabanas in Bali.jpg,images/events/4/1776953992_69ea2a884e724_download.jpg,images/events/4/1776953992_69ea2a884ec47_download1.jpg,images/events/4/1777042073_69eb829905788_13e.jpg,images/events/4/1777042073_69eb829905f15_download.jpg,images/events/4/1777042073_69eb8299062b2_ff.jpg,images/events/4/1777042073_69eb8299065fd_Luxury Bali Outdoor Cabana with Tropical Vibes.jpg,images/events/4/1777042074_69eb829aad6e2_13e.jpg,images/events/4/1777042074_69eb829aadc1e_download.jpg,images/events/4/1777042074_69eb829aae047_ff.jpg,images/events/4/1777042074_69eb829aae481_Luxury Bali Outdoor Cabana with Tropical Vibes.jpg', 'available'),
+(5, 'Rooftop Terrace', 'Exclusive rooftop space with panoramic views', 80, 150, 'City & Bay Views, Bar Area, Lounge Seating', 25000.00, 'images/events/5/1776954450_69ea2c52d3bc7_rooftop restaurant.jpg', 'images/events/5/1776954450_69ea2c52d491e_2.jpg,images/events/5/1776954450_69ea2c52d4d37_download (1).jpg,images/events/5/1776954450_69ea2c52d539d_rooftop restaurant.jpg,images/events/5/1776954450_69ea2c52d5624_Биофильный стиль в интерьере_ гармония с природой в каждом углу 🪴.jpg', 'available');
 
 -- --------------------------------------------------------
 
@@ -596,19 +709,57 @@ CREATE TABLE `gallery` (
 --
 
 INSERT INTO `gallery` (`image_id`, `title`, `description`, `image_path`, `category`, `is_featured`, `sort_order`, `uploaded_at`) VALUES
-(1, 'Hotel Exterior', 'Stunning view of Bayawan Bai Hotel facade', 'images/gallery/1774623926_Screenshot 2026-03-15 213930.png', 'hotel', 0, 1, '2026-03-17 08:51:18'),
-(2, 'Grand Lobby', 'Welcoming lobby with modern Filipino design', 'images/gallery/1774625239_Screenshot 2026-03-16 164757.png', 'hotel', 0, 2, '2026-03-17 08:51:18'),
-(3, 'Standard Room', 'Comfortable standard room with city view', 'images/gallery/standard-room.jpg', 'rooms', 1, 1, '2026-03-17 08:51:18'),
-(4, 'Deluxe Room', 'Spacious deluxe room with bay view', 'images/gallery/deluxe-room.jpg', 'rooms', 1, 2, '2026-03-17 08:51:18'),
-(5, 'Suite Living Area', 'Elegant living space in our suites', 'images/gallery/suite-living.jpg', 'rooms', 0, 3, '2026-03-17 08:51:18'),
-(6, 'Suite Bedroom', 'Luxurious bedroom with ocean view', 'images/gallery/suite-bedroom.jpg', 'rooms', 0, 4, '2026-03-17 08:51:18'),
-(7, 'Infinity Pool', 'Relax by our stunning infinity pool', 'images/gallery/pool.jpg', 'amenities', 1, 1, '2026-03-17 08:51:18'),
-(8, 'Spa Treatment Room', 'Tranquil spa environment for relaxation', 'images/gallery/spa.jpg', 'amenities', 0, 2, '2026-03-17 08:51:18'),
-(9, 'Restaurant', 'Fine dining at our in-house restaurant', 'images/gallery/restaurant.jpg', 'dining', 1, 1, '2026-03-17 08:51:18'),
-(10, 'Breakfast Buffet', 'Delicious morning spread', 'images/gallery/breakfast.jpg', 'dining', 0, 2, '2026-03-17 08:51:18'),
-(11, 'Danjugan Island', 'Explore the beautiful Danjugan Island nearby', 'images/gallery/danjugan.jpg', 'attractions', 1, 1, '2026-03-17 08:51:18'),
-(12, 'Bayawan Bay Beach', 'Pristine beach just minutes away', 'images/gallery/bayawan-bay.jpg', 'attractions', 1, 2, '2026-03-17 08:51:18'),
-(13, 'Mt. Talinis', 'Majestic mountain views from the region', 'images/gallery/mt-talinis.jpg', 'attractions', 0, 3, '2026-03-17 08:51:18');
+(1, 'Hotel Exterior', 'Stunning view of Bayawan Bai Hotel facade', 'images/gallery/1776957600_download.jpg', 'hotel', 0, 1, '2026-03-17 08:51:18'),
+(2, 'Grand Lobby', 'Welcoming lobby with modern Filipino design', 'images/gallery/1776957475_Luxury isn\'t a luxury anymore, it\'s a necessity ,_Transform your reception area into a stunning first impression_ __Call us today for a quote!.jpg', 'hotel', 0, 2, '2026-03-17 08:51:18'),
+(3, 'Standard Room', 'Comfortable standard room with city view', 'images/gallery/1776520803_download.jpg', 'rooms', 1, 1, '2026-03-17 08:51:18'),
+(4, 'Deluxe Room', 'Spacious deluxe room with bay view', 'images/gallery/1776957311_City View from Room.jpg', 'rooms', 1, 2, '2026-03-17 08:51:18'),
+(5, 'Suite Living Area', 'Elegant living space in our suites', 'images/gallery/1776957368_download (28).jpg', 'rooms', 0, 3, '2026-03-17 08:51:18'),
+(6, 'Suite Bedroom', 'Luxurious bedroom with ocean view', 'images/gallery/1776957379_luxurious and modern bedroom interior design.jpg', 'rooms', 0, 4, '2026-03-17 08:51:18'),
+(7, 'Infinity Pool', 'Relax by our stunning infinity pool', 'images/gallery/1776957616_Marriott Melbourne Docklands.jpg', 'amenities', 1, 1, '2026-03-17 08:51:18'),
+(8, 'Spa Treatment Room', 'Tranquil spa environment for relaxation', 'images/gallery/1776957492_Luxury Spa Experience Massage.jpg', 'amenities', 0, 2, '2026-03-17 08:51:18'),
+(9, 'Restaurant', 'Fine dining at our in-house restaurant', 'images/gallery/1776957731_Romantic Dinner in Miami.jpg', 'dining', 1, 1, '2026-03-17 08:51:18'),
+(10, 'Breakfast Buffet', 'Delicious morning spread', 'images/gallery/1776957397_download.jpg', 'dining', 0, 2, '2026-03-17 08:51:18'),
+(11, 'Danjugan Island', 'Explore the beautiful Danjugan Island nearby', 'images/gallery/1777040210_Danjugan Island.jpg', 'attractions', 1, 1, '2026-03-17 08:51:18'),
+(12, 'Bayawan Bay Beach', 'Pristine beach just minutes away', 'images/gallery/1777041323_download (2).jpg', 'attractions', 1, 2, '2026-03-17 08:51:18'),
+(13, 'Mt. Talinis', 'Majestic mountain views from the region', 'images/gallery/1777040738_download (1).jpg', 'attractions', 1, 3, '2026-03-17 08:51:18');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `guest_service_requests`
+--
+
+CREATE TABLE `guest_service_requests` (
+  `request_id` int(11) NOT NULL,
+  `request_ref` varchar(50) DEFAULT NULL COMMENT 'Unique reference (SRVYYYYMMDDXXXXXX)',
+  `user_id` int(11) NOT NULL,
+  `booking_id` int(11) DEFAULT NULL COMMENT 'Associated booking if applicable',
+  `room_number` varchar(20) DEFAULT NULL,
+  `service_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `unit_price` decimal(10,2) NOT NULL,
+  `total_price` decimal(10,2) NOT NULL,
+  `special_instructions` text DEFAULT NULL,
+  `preferred_date` date DEFAULT NULL COMMENT 'For scheduled services like spa',
+  `preferred_time` time DEFAULT NULL,
+  `status` enum('pending','confirmed','in_progress','completed','cancelled','declined') DEFAULT 'pending',
+  `payment_status` enum('pending','added_to_bill','paid','waived','cancelled') DEFAULT 'pending',
+  `charge_id` int(11) DEFAULT NULL COMMENT 'Reference to booking_charges when added to bill',
+  `requested_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `processed_by` int(11) DEFAULT NULL COMMENT 'Staff member who processed the request',
+  `notes` text DEFAULT NULL COMMENT 'Internal staff notes',
+  `is_deleted` tinyint(1) DEFAULT 0 COMMENT 'Soft delete flag',
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `guest_service_requests`
+--
+
+INSERT INTO `guest_service_requests` (`request_id`, `request_ref`, `user_id`, `booking_id`, `room_number`, `service_id`, `quantity`, `unit_price`, `total_price`, `special_instructions`, `preferred_date`, `preferred_time`, `status`, `payment_status`, `charge_id`, `requested_at`, `confirmed_at`, `completed_at`, `processed_by`, `notes`, `is_deleted`, `deleted_at`) VALUES
+(1, 'SRV20260424EA58E7', 28, 68, '204', 1, 1, 300.00, 300.00, '', NULL, NULL, 'cancelled', 'cancelled', NULL, '2026-04-24 14:59:16', NULL, NULL, NULL, NULL, 1, '2026-04-24 15:10:36');
 
 -- --------------------------------------------------------
 
@@ -755,16 +906,16 @@ CREATE TABLE `menu_items` (
 --
 
 INSERT INTO `menu_items` (`item_id`, `cat_id`, `item_name`, `description`, `price`, `image`, `is_special`, `is_available`, `dietary_info`) VALUES
-(1, 1, 'Filipino Breakfast', 'Garlic rice, tocino/longganisa, fried egg, atchara, and brewed coffee', 450.00, NULL, 1, 1, NULL),
-(2, 1, 'Continental Breakfast', 'Fresh fruits, pastries, yogurt, and choice of juice or coffee', 380.00, NULL, 0, 1, NULL),
-(3, 1, 'American Breakfast', 'Eggs any style, bacon/sausage, hash browns, toast, and coffee', 520.00, 'images/menu/1774620340_Screenshot 2026-03-15 210237.png', 1, 1, ''),
-(4, 2, 'Grilled Blue Marlin', 'Fresh catch from Bayawan Bay with garlic butter sauce, served with rice and vegetables', 680.00, NULL, 1, 1, NULL),
-(5, 2, 'Chicken Inasal', 'Authentic Negros-style grilled chicken with annatto oil and calamansi', 450.00, NULL, 1, 1, NULL),
-(6, 2, 'Beef Steak Tagalog', 'Tender beef slices in soy-calamansi marinade with caramelized onions', 580.00, NULL, 0, 1, NULL),
-(7, 3, 'Halo-Halo Special', 'Traditional Filipino dessert with ube, leche flan, and assorted sweet beans', 280.00, NULL, 1, 1, NULL),
-(8, 3, 'Mango Float', 'Layers of graham crackers, cream, and fresh mangoes', 250.00, NULL, 1, 1, NULL),
-(9, 4, 'Bayawan Bay Breeze', 'Refreshing tropical cocktail with rum, pineapple, and coconut', 320.00, NULL, 1, 1, NULL),
-(10, 4, 'Fresh Buko Juice', 'Young coconut water served in the shell', 180.00, NULL, 0, 1, NULL);
+(1, 1, 'Filipino Breakfast', 'Garlic rice, tocino/longganisa, fried egg, atchara, and brewed coffee', 450.00, 'images/menu/1776950577_download (1).jpg', 1, 1, ''),
+(2, 1, 'Continental Breakfast', 'Fresh fruits, pastries, yogurt, and choice of juice or coffee', 380.00, 'images/menu/1776950347_download.jpg', 0, 1, ''),
+(3, 1, 'American Breakfast', 'Eggs any style, bacon/sausage, hash browns, toast, and coffee', 520.00, 'images/menu/1776950261_download (30).jpg', 1, 1, ''),
+(4, 2, 'Grilled Blue Marlin', 'Fresh catch from Bayawan Bay with garlic butter sauce, served with rice and vegetables', 680.00, 'images/menu/1776952091_Grilled Blue Marlin Steak and Wild Rice Salad.jpg', 1, 1, ''),
+(5, 2, 'Chicken Inasal', 'Authentic Negros-style grilled chicken with annatto oil and calamansi', 450.00, 'images/menu/1776951452_Filipino Chicken Inasal_Grilled.jpg', 1, 1, ''),
+(6, 2, 'Beef Steak Tagalog', 'Tender beef slices in soy-calamansi marinade with caramelized onions', 580.00, 'images/menu/1776951502_steak.jpg', 0, 1, ''),
+(7, 3, 'Halo-Halo Special', 'Traditional Filipino dessert with ube, leche flan, and assorted sweet beans', 280.00, 'images/menu/1776952115_Filipino Halo-Halo.jpg', 1, 1, ''),
+(8, 3, 'Mango Float', 'Layers of graham crackers, cream, and fresh mangoes', 250.00, 'images/menu/1776952346_Filipino Mango Float.jpg', 1, 1, ''),
+(9, 4, 'Bayawan Bay Breeze', 'Refreshing tropical cocktail with rum, pineapple, and coconut', 320.00, 'images/menu/1776952328_ocktale.jpg', 1, 1, ''),
+(10, 4, 'Fresh Buko Juice', 'Young coconut water served in the shell', 180.00, 'images/menu/1776952467_boku.jpg', 0, 1, '');
 
 -- --------------------------------------------------------
 
@@ -972,7 +1123,7 @@ INSERT INTO `notifications` (`notification_id`, `user_id`, `type`, `title`, `mes
 (486, 1, 'event', 'Event Schedule Updated', 'Event \'conference\' on Apr 10, 2026 has been updated. Please review the changes.', 11, 'event', 'unread', 'medium', '/bayawanhotel/staff/staff-event-bookings.php', '2026-04-11 10:09:17', NULL),
 (487, 2, 'event', 'Event Schedule Updated', 'Event \'conference\' on Apr 10, 2026 has been updated. Please review the changes.', 11, 'event', 'unread', 'medium', '/bayawanhotel/staff/staff-event-bookings.php', '2026-04-11 10:09:17', NULL),
 (488, 3, 'event', 'Event Schedule Updated', 'Event \'conference\' on Apr 10, 2026 has been updated. Please review the changes.', 11, 'event', 'unread', 'medium', '/bayawanhotel/staff/staff-event-bookings.php', '2026-04-11 10:09:17', NULL),
-(489, 28, 'booking', 'Checked Out - Thank You!', 'Thank you for staying with us. We hope to see you again soon!', 64, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-11 10:49:56', NULL),
+(489, 28, 'booking', 'Checked Out - Thank You!', 'Thank you for staying with us. We hope to see you again soon!', 64, 'booking', 'read', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-11 10:49:56', '2026-04-21 11:24:20'),
 (490, 28, 'booking', 'Booking Confirmed', 'Your booking has been confirmed. We look forward to welcoming you!', 63, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-11 11:05:54', NULL),
 (491, 1, 'booking', 'Booking Confirmed', 'Booking for Kylle Acibron has been confirmed. Check-in: Apr 11, 2026', 63, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-11 11:05:54', NULL),
 (492, 3, 'booking', 'Booking Confirmed', 'Booking for Kylle Acibron has been confirmed. Check-in: Apr 11, 2026', 63, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-11 11:05:54', NULL),
@@ -985,7 +1136,105 @@ INSERT INTO `notifications` (`notification_id`, `user_id`, `type`, `title`, `mes
 (499, 1, 'payment', 'Payment Received', 'Payment of ₱1,000.00 via pay_at_hotel received from John Lloyd Chu.', 65, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-11 13:46:11', NULL),
 (500, 3, 'payment', 'Payment Received', 'Payment of ₱1,000.00 via pay_at_hotel received from John Lloyd Chu.', 65, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-11 13:46:12', NULL),
 (501, 1, 'booking', 'New Booking Created', 'New booking from John Lloyd Chu. Check-in: Apr 11, 2026', 65, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-11 13:46:12', NULL),
-(502, 3, 'booking', 'New Booking Created', 'New booking from John Lloyd Chu. Check-in: Apr 11, 2026', 65, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-11 13:46:12', NULL);
+(502, 3, 'booking', 'New Booking Created', 'New booking from John Lloyd Chu. Check-in: Apr 11, 2026', 65, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-11 13:46:12', NULL),
+(503, 28, 'booking', 'Booking Received', 'Your booking request has been received and is pending confirmation.', 66, 'booking', 'read', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-12 00:25:55', '2026-04-21 11:24:14'),
+(504, 28, 'payment', 'Payment Pending', 'Your payment of ₱3,500.00 is being processed.', 66, 'payment', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-12 00:25:55', NULL),
+(505, 1, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 66, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-12 00:25:55', NULL),
+(506, 2, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 66, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-12 00:25:55', NULL),
+(507, 3, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 66, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-12 00:25:55', NULL),
+(508, 1, 'payment', 'Payment Pending', 'Payment of ₱0.00 from Kylle Acibron is pending processing.', 66, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-12 00:25:55', NULL),
+(509, 3, 'payment', 'Payment Pending', 'Payment of ₱0.00 from Kylle Acibron is pending processing.', 66, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-12 00:25:55', NULL),
+(510, 1, 'booking', 'New Booking Created', 'New booking from Kylle Acibron. Check-in: Apr 12, 2026', 66, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-12 00:25:55', NULL),
+(511, 3, 'booking', 'New Booking Created', 'New booking from Kylle Acibron. Check-in: Apr 12, 2026', 66, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-12 00:25:56', NULL),
+(512, 1, 'system', 'New Review Submitted', 'Kylle Acibron has submitted a new review for approval.', NULL, NULL, 'unread', 'medium', 'admin/admin-reviews.php', '2026-04-13 03:14:02', NULL),
+(513, 3, 'system', 'New Review Submitted', 'Kylle Acibron has submitted a new review for approval.', NULL, NULL, 'unread', 'medium', 'admin/admin-reviews.php', '2026-04-13 03:14:02', NULL),
+(514, 1, 'system', 'New Review Submitted', 'Kylle Acibron has submitted a new review for approval.', NULL, NULL, 'unread', 'medium', 'admin/admin-reviews.php', '2026-04-13 03:35:56', NULL),
+(515, 3, 'system', 'New Review Submitted', 'Kylle Acibron has submitted a new review for approval.', NULL, NULL, 'unread', 'medium', 'admin/admin-reviews.php', '2026-04-13 03:35:56', NULL),
+(516, 1, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding general', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=2', '2026-04-13 03:58:34', NULL),
+(517, 3, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding general', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=2', '2026-04-13 03:58:34', NULL),
+(518, 1, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding reservation', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=3', '2026-04-13 04:15:58', NULL),
+(519, 3, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding reservation', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=3', '2026-04-13 04:15:58', NULL),
+(520, 28, 'system', 'Reply to Your Message: reservation', 'An admin has replied to your message. Click to view the response.', 3, 'contact_message', 'unread', 'medium', '/bayawanhotel/user/my-messages.php?view=3', '2026-04-13 04:16:19', NULL),
+(521, 1, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding reservation', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=1', '2026-04-13 04:19:37', NULL),
+(522, 3, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding reservation', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=1', '2026-04-13 04:19:37', NULL),
+(523, 28, 'system', 'Reply to Your Message: reservation', 'An admin has replied to your message. Click to view the response.', 1, 'contact_message', 'read', 'medium', '/bayawanhotel/user/my-messages.php?view=1', '2026-04-13 04:19:49', '2026-04-21 11:24:40'),
+(524, 1, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding general', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=2', '2026-04-13 04:22:35', NULL),
+(525, 3, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding general', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=2', '2026-04-13 04:22:35', NULL),
+(526, 28, 'system', 'Reply to Your Message: general', 'An admin has replied to your message. Click to view the response.', 2, 'contact_message', 'read', 'medium', '/bayawanhotel/user/my-messages.php?view=2', '2026-04-13 04:22:43', '2026-04-13 05:12:28'),
+(527, 1, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding reservation', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=1', '2026-04-13 04:37:07', NULL),
+(528, 3, 'system', 'New Contact Message', 'New message from Kylle Acibron regarding reservation', NULL, NULL, 'unread', 'medium', '/bayawanhotel/admin/admin-contact-messages.php?view=1', '2026-04-13 04:37:07', NULL),
+(529, 28, 'system', 'Reply to Your Message: reservation', 'An admin has replied to your message. Click to view the response.', 1, 'contact_message', 'read', 'medium', '/bayawanhotel/user/my-messages.php?view=1', '2026-04-13 04:37:18', '2026-04-21 11:24:40'),
+(530, 2, 'system', 'New Message Assigned', 'A contact message has been assigned to you for handling.', 1, 'contact_message', 'read', 'medium', '/bayawanhotel/staff/staff-contact-messages.php?view=1', '2026-04-13 04:44:42', '2026-04-13 05:12:53'),
+(531, 2, 'system', 'New Message Assigned', 'A contact message has been assigned to you for handling.', 1, 'contact_message', 'read', 'medium', '/bayawanhotel/staff/staff-contact-messages.php?view=1', '2026-04-13 04:53:45', '2026-04-13 05:12:53'),
+(532, 28, 'booking', 'Booking Received', 'Your booking request has been received and is pending confirmation.', 67, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 12:58:51', NULL),
+(533, 28, 'payment', 'Payment Successful', 'Your payment of ₱7,000.00 has been received. Thank you!', 67, 'payment', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 12:58:51', NULL),
+(534, 1, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 67, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-24 12:58:51', NULL),
+(535, 2, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 67, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-24 12:58:51', NULL),
+(536, 3, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 67, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-24 12:58:51', NULL),
+(537, 1, 'payment', 'Payment Received', 'Payment of ₱7,000.00 via gcash received from Kylle Acibron.', 67, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-24 12:58:51', NULL),
+(538, 3, 'payment', 'Payment Received', 'Payment of ₱7,000.00 via gcash received from Kylle Acibron.', 67, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-24 12:58:51', NULL),
+(539, 1, 'booking', 'New Booking Created', 'New booking from Kylle Acibron. Check-in: Apr 24, 2026', 67, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 12:58:51', NULL),
+(540, 3, 'booking', 'New Booking Created', 'New booking from Kylle Acibron. Check-in: Apr 24, 2026', 67, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 12:58:51', NULL),
+(541, 28, 'booking', 'Booking Confirmed', 'Your booking has been confirmed. We look forward to welcoming you!', 67, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 13:01:58', NULL),
+(542, 1, 'booking', 'Booking Confirmed', 'Booking for Kylle Acibron has been confirmed. Check-in: Apr 24, 2026', 67, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 13:01:58', NULL),
+(543, 3, 'booking', 'Booking Confirmed', 'Booking for Kylle Acibron has been confirmed. Check-in: Apr 24, 2026', 67, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 13:01:58', NULL),
+(544, 28, 'booking', 'Checked In Successfully', 'You have successfully checked in. Enjoy your stay!', 67, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 13:02:22', NULL),
+(545, 28, 'booking', 'Checked Out - Thank You!', 'Thank you for staying with us. We hope to see you again soon!', 67, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 13:02:45', NULL),
+(546, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 101). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 13:54:56', NULL),
+(547, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 101). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 13:54:56', NULL),
+(548, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 101). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 13:54:56', NULL),
+(549, 28, 'booking', 'Checked Out - Thank You!', 'Thank you for staying with us. We hope to see you again soon!', 63, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 14:11:07', NULL),
+(550, 28, 'booking', 'Booking Received', 'Your booking request has been received and is pending confirmation.', 68, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 14:12:08', NULL),
+(551, 28, 'payment', 'Payment Successful', 'Your payment of ₱3,500.00 has been received. Thank you!', 68, 'payment', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 14:12:08', NULL),
+(552, 1, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 68, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-24 14:12:08', NULL),
+(553, 2, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 68, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-24 14:12:08', NULL),
+(554, 3, 'booking', 'New Booking Received', 'New booking from Kylle Acibron', 68, 'booking', 'unread', 'medium', '/bayawanhotel/staff/confirm-booking.php', '2026-04-24 14:12:08', NULL),
+(555, 1, 'payment', 'Payment Received', 'Payment of ₱3,500.00 via gcash received from Kylle Acibron.', 68, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-24 14:12:08', NULL),
+(556, 3, 'payment', 'Payment Received', 'Payment of ₱3,500.00 via gcash received from Kylle Acibron.', 68, 'payment', 'unread', 'medium', '/bayawanhotel/admin/admin-payments.php', '2026-04-24 14:12:08', NULL),
+(557, 1, 'booking', 'New Booking Created', 'New booking from Kylle Acibron. Check-in: Apr 24, 2026', 68, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 14:12:08', NULL),
+(558, 3, 'booking', 'New Booking Created', 'New booking from Kylle Acibron. Check-in: Apr 24, 2026', 68, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 14:12:08', NULL),
+(559, 28, 'booking', 'Booking Confirmed', 'Your booking has been confirmed. We look forward to welcoming you!', 68, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 14:12:52', NULL),
+(560, 1, 'booking', 'Booking Confirmed', 'Booking for Kylle Acibron has been confirmed. Check-in: Apr 24, 2026', 68, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 14:12:52', NULL),
+(561, 3, 'booking', 'Booking Confirmed', 'Booking for Kylle Acibron has been confirmed. Check-in: Apr 24, 2026', 68, 'booking', 'unread', 'medium', '/bayawanhotel/admin/admin-bookings.php', '2026-04-24 14:12:52', NULL),
+(562, 28, 'booking', 'Checked In Successfully', 'You have successfully checked in. Enjoy your stay!', 68, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 14:12:58', NULL),
+(563, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 101). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:32:02', NULL);
+INSERT INTO `notifications` (`notification_id`, `user_id`, `type`, `title`, `message`, `related_id`, `related_type`, `status`, `priority`, `action_url`, `created_at`, `read_at`) VALUES
+(564, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 101). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:32:02', NULL),
+(565, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 101). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:32:02', NULL),
+(566, 28, '', 'Service Request Confirmed!', 'Great news! Your Regular Laundry Service request has been confirmed. Our staff will attend to you shortly. Room 101.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:32:48', NULL),
+(567, 28, '', 'Your Service is in Progress', 'Your Regular Laundry Service is currently being provided. Please be patient. Room 101.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:32:54', NULL),
+(568, 28, '', 'Service Completed', 'Your Regular Laundry Service has been completed. Thank you for using our services! Room 101.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:32:57', NULL),
+(569, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 2, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:48:17', NULL),
+(570, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 2, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:48:17', NULL),
+(571, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 2, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:48:17', NULL),
+(572, 28, '', 'Service Request Confirmed!', 'Great news! Your Regular Laundry Service request has been confirmed. Our staff will attend to you shortly. Room 204.', 2, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:48:30', NULL),
+(573, 28, '', 'Your Service is in Progress', 'Your Regular Laundry Service is currently being provided. Please be patient. Room 204.', 2, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:48:41', NULL),
+(574, 28, '', 'Service Completed', 'Your Regular Laundry Service has been completed. Thank you for using our services! Room 204.', 2, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:48:43', NULL),
+(575, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 3, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:51:12', NULL),
+(576, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 3, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:51:12', NULL),
+(577, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 3, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:51:12', NULL),
+(578, 28, '', 'Service Request Confirmed!', 'Great news! Your Regular Laundry Service request has been confirmed. Our staff will attend to you shortly. Room 204.', 3, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:51:22', NULL),
+(579, 28, '', 'Your Service is in Progress', 'Your Regular Laundry Service is currently being provided. Please be patient. Room 204.', 3, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:51:28', NULL),
+(580, 28, '', 'Service Completed', 'Your Regular Laundry Service has been completed. Thank you for using our services! Room 204.', 3, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:51:29', NULL),
+(581, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 4, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:52:42', NULL),
+(582, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 4, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:52:42', NULL),
+(583, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 4, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:52:42', NULL),
+(584, 28, '', 'Service Request Confirmed!', 'Great news! Your Regular Laundry Service request has been confirmed. Our staff will attend to you shortly. Room 204.', 4, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:52:49', NULL),
+(585, 28, '', 'Your Service is in Progress', 'Your Regular Laundry Service is currently being provided. Please be patient. Room 204.', 4, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:53:25', NULL),
+(586, 28, '', 'Service Completed', 'Your Regular Laundry Service has been completed. Thank you for using our services! Room 204.', 4, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:53:27', NULL),
+(587, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 5, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:53:50', NULL),
+(588, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 5, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:53:50', NULL),
+(589, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 5, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:53:50', NULL),
+(590, 28, '', 'Service Request Confirmed!', 'Great news! Your Regular Laundry Service request has been confirmed. Our staff will attend to you shortly. Room 204.', 5, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:54:16', NULL),
+(591, 28, '', 'Your Service is in Progress', 'Your Regular Laundry Service is currently being provided. Please be patient. Room 204.', 5, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:54:22', NULL),
+(592, 28, '', 'Service Completed', 'Your Regular Laundry Service has been completed. Thank you for using our services! Room 204.', 5, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/user/my-service-requests.php', '2026-04-24 14:54:24', NULL),
+(593, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 6, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:54:56', NULL),
+(594, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 6, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:54:56', NULL),
+(595, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 6, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:54:56', NULL),
+(596, 1, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:59:16', NULL),
+(597, 2, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:59:16', NULL),
+(598, 3, '', 'New Service Request: Regular Laundry Service', 'A guest has requested Regular Laundry Service (Room 204). Please review and confirm the request.', 1, 'guest_service_request', 'unread', 'medium', '/bayawanhotel/staff/staff-service-requests.php', '2026-04-24 14:59:16', NULL),
+(599, 28, 'booking', 'Checked Out - Thank You!', 'Thank you for staying with us. We hope to see you again soon!', 68, 'booking', 'unread', 'medium', '/bayawanhotel/user/my-bookings.php', '2026-04-24 15:00:52', NULL);
 
 -- --------------------------------------------------------
 
@@ -1078,7 +1327,10 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `event_booking_id`, `user_id
 (61, 62, NULL, 28, 3500.00, 'gcash', 'GCASH-C1F02A', 'completed', '2026-04-11 09:24:12', 'GCash payment from Kylle Acibron (09455470173)'),
 (62, 63, NULL, 28, 7000.00, 'gcash', 'GCASH-436645', 'completed', '2026-04-11 09:37:08', 'GCash payment from Kylle Acibron (09455470173)'),
 (63, 64, NULL, 28, 5000.00, 'gcash', 'GCASH-4B22B3', 'completed', '2026-04-11 09:43:00', 'GCash payment from Kylle Acibron (09455470173)'),
-(64, 65, NULL, 29, 1000.00, '', 'HOTEL-FE8E7E', 'completed', '2026-04-11 13:45:51', 'Pay at Hotel - John Lloyd Chu (09661351116) | Arrival: 12:00 | Notes: Dapat naa pagkaon');
+(64, 65, NULL, 29, 1000.00, '', 'HOTEL-FE8E7E', 'completed', '2026-04-11 13:45:51', 'Pay at Hotel - John Lloyd Chu (09661351116) | Arrival: 12:00 | Notes: Dapat naa pagkaon'),
+(65, 66, NULL, 28, 0.00, 'gcash', NULL, 'completed', '2026-04-12 00:25:46', 'GCash payment failed from Kylle Acibron ()'),
+(66, 67, NULL, 28, 7000.00, 'gcash', 'GCASH-65554F', 'completed', '2026-04-24 12:58:46', 'GCash payment from Kylle Acibron (09455470173)'),
+(67, 68, NULL, 28, 3500.00, 'gcash', 'GCASH-396A2A', 'completed', '2026-04-24 14:12:03', 'GCash payment from Kylle Acibron (09455470173)');
 
 -- --------------------------------------------------------
 
@@ -1143,7 +1395,8 @@ INSERT INTO `ratings` (`rating_id`, `user_id`, `service_type`, `booking_id`, `ev
 (15, 28, 'room', 64, NULL, NULL, 5, '', 1, '2026-04-11 10:50:04', '2026-04-11 10:50:04'),
 (16, 28, 'event', NULL, 11, NULL, 5, '', 1, '2026-04-11 10:50:10', '2026-04-11 10:50:10'),
 (17, 28, 'room', 55, NULL, NULL, 5, '', 1, '2026-04-11 10:50:19', '2026-04-11 10:50:19'),
-(18, 28, 'room', 54, NULL, NULL, 5, '', 1, '2026-04-11 10:50:24', '2026-04-11 10:50:24');
+(18, 28, 'room', 54, NULL, NULL, 5, '', 1, '2026-04-11 10:50:24', '2026-04-11 10:50:24'),
+(19, 28, 'room', 66, NULL, NULL, 5, 'very good', 1, '2026-04-13 02:22:57', '2026-04-13 02:22:57');
 
 -- --------------------------------------------------------
 
@@ -1181,7 +1434,10 @@ INSERT INTO `rating_eligibility` (`eligibility_id`, `user_id`, `service_type`, `
 (17, 28, 'event', NULL, 12, NULL, 'completed', NULL, '2026-04-09 15:13:57', '2026-04-09 15:13:59', '2026-04-09 15:13:57'),
 (18, 28, 'room', 59, NULL, NULL, 'completed', NULL, '2026-04-09 16:29:20', '2026-04-09 16:29:23', '2026-04-09 16:29:20'),
 (19, 28, 'room', 64, NULL, NULL, 'completed', NULL, '2026-04-11 10:50:02', '2026-04-11 10:50:04', '2026-04-11 10:50:02'),
-(20, 28, 'event', NULL, 11, NULL, 'completed', NULL, '2026-04-11 10:50:08', '2026-04-11 10:50:10', '2026-04-11 10:50:08');
+(20, 28, 'event', NULL, 11, NULL, 'completed', NULL, '2026-04-11 10:50:08', '2026-04-11 10:50:10', '2026-04-11 10:50:08'),
+(21, 28, 'room', 66, NULL, NULL, 'completed', NULL, '2026-04-13 02:22:49', '2026-04-13 02:22:57', '2026-04-13 02:22:49'),
+(22, 28, 'room', 67, NULL, NULL, 'shown', NULL, '2026-04-24 13:48:16', NULL, '2026-04-24 13:48:16'),
+(23, 28, 'room', 63, NULL, NULL, 'shown', NULL, '2026-04-24 14:13:14', NULL, '2026-04-24 14:13:14');
 
 -- --------------------------------------------------------
 
@@ -1197,8 +1453,19 @@ CREATE TABLE `reviews` (
   `review_text` text DEFAULT NULL,
   `category` enum('room','dining','service','amenities','overall') DEFAULT 'overall',
   `is_approved` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_featured` tinyint(1) DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`review_id`, `user_id`, `booking_id`, `rating`, `review_text`, `category`, `is_approved`, `created_at`, `is_featured`, `updated_at`) VALUES
+(1, 28, NULL, 5, 'Great Room', 'room', 1, '2026-04-13 02:48:24', 1, '2026-04-13 03:07:26'),
+(4, 28, NULL, 5, 'The food was absolutely delicious and exceeded my expectations. Every dish was well-prepared, flavorful, and served fresh. The presentation was also impressive, which made the dining experience even more enjoyable.', 'dining', 1, '2026-04-13 03:14:02', 1, '2026-04-13 03:14:25'),
+(5, 28, NULL, 5, 'The amenities and facilities were excellent and well-maintained. Everything was clean, modern, and designed to provide maximum comfort and convenience for guests. From the relaxing common areas to the well-equipped rooms, every detail was thoughtfully prepared.', 'amenities', 1, '2026-04-13 03:35:56', 1, '2026-04-13 03:36:10');
 
 -- --------------------------------------------------------
 
@@ -1227,9 +1494,9 @@ INSERT INTO `rooms` (`room_id`, `room_number`, `category_id`, `floor`, `status`,
 (3, '103', 1, 1, 'cleaning', 'clean', NULL, '2026-03-17 08:51:18'),
 (4, '104', 1, 1, 'available', 'clean', NULL, '2026-03-17 08:51:18'),
 (5, '201', 2, 2, 'reserved', 'clean', NULL, '2026-03-17 08:51:18'),
-(6, '202', 2, 2, 'occupied', 'clean', NULL, '2026-03-17 08:51:18'),
-(7, '203', 2, 2, 'available', 'clean', NULL, '2026-03-17 08:51:18'),
-(8, '204', 2, 2, 'available', 'clean', NULL, '2026-03-17 08:51:18'),
+(6, '202', 2, 2, 'cleaning', 'clean', NULL, '2026-03-17 08:51:18'),
+(7, '203', 2, 2, 'cleaning', 'clean', NULL, '2026-03-17 08:51:18'),
+(8, '204', 2, 2, 'cleaning', 'clean', NULL, '2026-03-17 08:51:18'),
 (9, '301', 3, 3, 'cleaning', 'clean', NULL, '2026-03-17 08:51:18'),
 (10, '302', 3, 3, 'available', 'clean', NULL, '2026-03-17 08:51:18'),
 (11, '303', 4, 3, 'reserved', 'clean', NULL, '2026-03-17 08:51:18'),
@@ -1261,10 +1528,10 @@ CREATE TABLE `room_categories` (
 --
 
 INSERT INTO `room_categories` (`category_id`, `category_name`, `description`, `base_price`, `max_occupancy`, `bed_type`, `room_size_sqm`, `amenities`, `image_primary`, `images_gallery`, `status`, `created_at`) VALUES
-(1, 'Standard Room', 'Comfortable room with essential amenities perfect for budget-conscious travelers. Features city views and modern furnishings.', 2500.00, 2, 'Queen Bed', 25, 'WiFi, TV, Air Conditioning, Mini Refrigerator, Private Bathroom', 'images/rooms/1774620165_69c68e05399d1_Screenshot 2026-03-16 183348.png', 'images/rooms/1/1774619256_69c68a784a0e0_Screenshot 2026-03-15 205234.png,images/rooms/1/1774619256_69c68a784a82b_Screenshot 2026-03-15 205404.png,images/rooms/1/1774619256_69c68a784abc5_Screenshot 2026-03-15 210237.png,images/rooms/1/1774619256_69c68a784b0e2_Screenshot 2026-03-15 210640.png,images/rooms/1/1774619256_69c68a784b3cc_Screenshot 2026-03-15 211038.png,images/rooms/1/1774619386_69c68afa1dae4_Screenshot 2026-03-15 205234.png,images/rooms/1/1774619386_69c68afa1dcf8_Screenshot 2026-03-15 205404.png', 'active', '2026-03-17 08:51:18'),
-(2, 'Deluxe Room', 'Spacious room with premium amenities and bay views. Includes work desk and sitting area.', 3500.00, 3, 'King Bed', 32, 'WiFi, Smart TV, Air Conditioning, Mini Bar, Coffee Maker, Safe, Bay View', NULL, NULL, 'active', '2026-03-17 08:51:18'),
-(3, 'Suite', 'Luxurious suite with separate living area, bedroom with Jacuzzi, and panoramic ocean views.', 7500.00, 4, 'King Bed + Sofa Bed', 55, 'WiFi, Smart TV, Air Conditioning, Mini Bar, Coffee Machine, Safe, Jacuzzi, Ocean View, Living Room, Dining Area', NULL, NULL, 'active', '2026-03-17 08:51:18'),
-(4, 'Family Room', 'Spacious room designed for families with two queen beds and kid-friendly amenities.', 4500.00, 4, '2 Queen Beds', 40, 'WiFi, TV, Air Conditioning, Mini Refrigerator, Kids Amenities, Connecting Room Option', NULL, NULL, 'active', '2026-03-17 08:51:18');
+(1, 'Standard Room', 'Comfortable room with essential amenities perfect for budget-conscious travelers. Features city views and modern furnishings.', 2500.00, 2, 'Queen Bed', 25, 'WiFi, TV, Air Conditioning, Mini Refrigerator, Private Bathroom', 'images/rooms/1776521534_69e3913ec1d4b_download (2).jpg', 'images/rooms/1/1776521268_69e39034f197d_download (25).jpg,images/rooms/1/1776521293_69e3904dc864b_🧖🏻_♀️🛍️✨.jpg,images/rooms/1/1776521293_69e3904dca5cc_download (2).jpg,images/rooms/1/1776521293_69e3904dca8d1_download (1).jpg,images/rooms/1/1776521293_69e3904dcab98_download.jpg,images/rooms/1/1776949021_69ea171d14c6b_download (27).jpg', 'active', '2026-03-17 08:51:18'),
+(2, 'Deluxe Room', 'Spacious room with premium amenities and bay views. Includes work desk and sitting area.', 3500.00, 3, 'King Bed', 32, 'WiFi, Smart TV, Air Conditioning, Mini Bar, Coffee Maker, Safe, Bay View', 'images/rooms/1776957967_69ea3a0fb3aad_The Miami Beach EDITION _ Deluxe City View.jpg', 'images/rooms/2/1776949333_69ea18557f37c_City View from Room.jpg,images/rooms/2/1776949333_69ea18557f71c_download (26).jpg,images/rooms/2/1776949333_69ea18557f9d8_luxury and elegence hotal.jpg,images/rooms/2/1776949333_69ea18557fcdc_Luxury room.jpg,images/rooms/2/1776949333_69ea18557ff78_The Miami Beach EDITION _ Deluxe City View.jpg', 'active', '2026-03-17 08:51:18'),
+(3, 'Suite', 'Luxurious suite with separate living area, bedroom with Jacuzzi, and panoramic ocean views.', 7500.00, 4, 'King Bed + Sofa Bed', 55, 'WiFi, Smart TV, Air Conditioning, Mini Bar, Coffee Machine, Safe, Jacuzzi, Ocean View, Living Room, Dining Area', 'images/rooms/1776949637_69ea1985a8293_download (26).jpg', 'images/rooms/3/1776949637_69ea1985a956f_21 Well-Known Hotel Room Design Ideas.jpg,images/rooms/3/1776949637_69ea1985a9722_download (26).jpg,images/rooms/3/1776949637_69ea1985a9ad4_download (27).jpg,images/rooms/3/1776949637_69ea1985a9f7c_Modern Twin Bedroom with Illuminated Wardrobe and Warm Lighting.jpg', 'active', '2026-03-17 08:51:18'),
+(4, 'Family Room', 'Spacious room designed for families with two queen beds and kid-friendly amenities.', 4500.00, 4, '2 Queen Beds', 40, 'WiFi, TV, Air Conditioning, Mini Refrigerator, Kids Amenities, Connecting Room Option', 'images/rooms/1776523515_69e398fb04e08_download (1).jpg', 'images/rooms/4/1776523515_69e398fb053f0_download (3).jpg,images/rooms/4/1776523515_69e398fb05585_download (2).jpg,images/rooms/4/1776523515_69e398fb056e7_download (1).jpg,images/rooms/4/1776523515_69e398fb05a75_The Newbury Boston.jpg,images/rooms/4/1776523515_69e398fb0644f_download.jpg,images/rooms/4/1776523515_69e398fb0660f_apartamentos aesthetic.jpg', 'active', '2026-03-17 08:51:18');
 
 -- --------------------------------------------------------
 
@@ -1291,10 +1558,10 @@ CREATE TABLE `room_virtual_tours` (
 --
 
 INSERT INTO `room_virtual_tours` (`tour_id`, `category_id`, `panorama_image`, `thumbnail_image`, `title`, `description`, `hotspot_config`, `is_active`, `display_order`, `created_at`, `updated_at`) VALUES
-(1, 1, 'uploads/virtual_tours/1774611431_panorama_diagram.jpg', 'uploads/virtual_tours/1774611431_thumb_diagram.jpg', 'Standard Room - 360° View', 'Experience our comfortable Standard Room with a full 360-degree panoramic view. Perfect for budget-conscious travelers.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-03-27 11:37:11'),
-(2, 2, 'uploads/virtual_tours/deluxe_room_360.jpg', 'uploads/virtual_tours/deluxe_room_thumb.jpg', 'Deluxe Room - 360° View', 'Explore our spacious Deluxe Room with premium amenities and stunning bay views from every angle.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-03-27 11:34:30'),
-(3, 3, 'uploads/virtual_tours/suite_room_360.jpg', 'uploads/virtual_tours/suite_room_thumb.jpg', 'Suite - 360° View', 'Take a virtual tour of our luxurious Suite featuring a separate living area, bedroom, and panoramic ocean views.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-03-27 11:34:30'),
-(4, 4, 'uploads/virtual_tours/family_room_360.jpg', 'uploads/virtual_tours/family_room_thumb.jpg', 'Family Room - 360° View', 'Discover our Family Room designed for comfort with ample space for the whole family.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-03-27 11:34:30');
+(1, 1, 'uploads/virtual_tours/1776955862_panorama_pano.jpg', 'uploads/virtual_tours/1776955888_thumb_pano.jpg', 'Standard Room - 360° View', 'Experience our comfortable Standard Room with a full 360-degree panoramic view. Perfect for budget-conscious travelers.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-04-23 14:51:28'),
+(2, 2, 'uploads/virtual_tours/1776956074_panorama_Raga Boutique Hotel Belgaum.jpg', 'uploads/virtual_tours/1776956043_thumb_Raga Boutique Hotel Belgaum.jpg', 'Deluxe Room - 360° View', 'Explore our spacious Deluxe Room with premium amenities and stunning bay views from every angle.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-04-23 14:54:34'),
+(3, 3, 'uploads/virtual_tours/1776957067_panorama_LIBRARY Panaroma.jpg', 'uploads/virtual_tours/1776956778_thumb_LIBRARY Panaroma.jpg', 'Suite - 360° View', 'Take a virtual tour of our luxurious Suite featuring a separate living area, bedroom, and panoramic ocean views.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-04-23 15:11:07'),
+(4, 4, 'uploads/virtual_tours/1776956938_panorama_360 view I.jpg', 'uploads/virtual_tours/1776956762_thumb_download.jpg', 'Family Room - 360° View', 'Discover our Family Room designed for comfort with ample space for the whole family.', NULL, 1, 1, '2026-03-27 11:34:30', '2026-04-23 15:08:58');
 
 -- --------------------------------------------------------
 
@@ -1374,9 +1641,10 @@ CREATE TABLE `staff_permission_settings` (
 --
 
 INSERT INTO `staff_permission_settings` (`setting_id`, `setting_name`, `setting_value`, `created_at`, `updated_at`) VALUES
-(13, 'allow_all_staff_inventory', 'true', '2026-03-19 16:35:11', '2026-03-28 00:06:25'),
-(14, 'allow_all_staff_maintenance', 'true', '2026-03-19 16:35:11', '2026-03-28 00:06:25'),
-(15, 'allow_all_staff_booking_charges', 'true', '2026-03-19 16:35:11', '2026-03-28 00:06:25');
+(13, 'allow_all_staff_inventory', 'true', '2026-03-19 16:35:11', '2026-04-13 04:49:24'),
+(14, 'allow_all_staff_maintenance', 'true', '2026-03-19 16:35:11', '2026-04-13 04:49:24'),
+(15, 'allow_all_staff_booking_charges', 'true', '2026-03-19 16:35:11', '2026-04-13 04:49:24'),
+(46, 'allow_all_staff_contact_messages', 'true', '2026-04-13 04:42:36', '2026-04-13 04:49:24');
 
 -- --------------------------------------------------------
 
@@ -1394,6 +1662,31 @@ CREATE TABLE `staff_schedules` (
   `status` enum('scheduled','completed','absent','leave') DEFAULT 'scheduled',
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `team_members`
+--
+
+CREATE TABLE `team_members` (
+  `member_id` int(11) NOT NULL,
+  `full_name` varchar(100) NOT NULL,
+  `position` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `display_order` int(11) DEFAULT 0,
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `team_members`
+--
+
+INSERT INTO `team_members` (`member_id`, `full_name`, `position`, `description`, `image`, `display_order`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Jhon Lloyd Chu', 'Chef', 'Chef', '', 1, 'active', '2026-04-13 03:47:52', '2026-04-13 03:48:12');
 
 -- --------------------------------------------------------
 
@@ -1430,13 +1723,14 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `email`, `password`, `first_name`, `last_name`, `phone`, `address`, `city`, `country`, `profile_picture`, `role`, `status`, `email_verified`, `loyalty_points`, `member_since`, `created_at`, `updated_at`, `last_login`, `active_status`, `google_id`, `facebook_id`) VALUES
-(1, 'bayawanbaiminihotel@gmail.com', 'admin123', 'Admin', 'User', '+63 912 345 6789', '', '', '', 'assets/uploads/profile_pictures/admin_1_1774849069.jpg', 'admin', 'active', 0, 0, '2026-03-17', '2026-03-17 08:51:18', '2026-04-11 13:21:06', '2026-04-11 13:21:06', 1, '109361663575422923194', NULL),
-(2, '09265040593k@gmail.com', 'staff123', 'Kylle', 'Acibron', '+63 923 456 7890', '', '', '', 'assets/uploads/profile_pictures/staff_2_1774849035.jpg', 'receptionist', 'active', 0, 0, '2026-03-17', '2026-03-17 08:51:18', '2026-04-11 13:21:32', '2026-04-11 13:21:32', 1, '100630696929272279982', NULL),
+(1, 'bayawanbaiminihotel@gmail.com', 'admin123', 'Admin', 'User', '+63 912 345 6789', '', '', '', 'assets/uploads/profile_pictures/admin_1_1774849069.jpg', 'admin', 'active', 0, 0, '2026-03-17', '2026-03-17 08:51:18', '2026-04-24 13:52:46', '2026-04-24 13:52:46', 1, '109361663575422923194', NULL),
+(2, '09265040593k@gmail.com', 'staff123', 'Kylle', 'Acibron', '+63 923 456 7890', '', '', '', 'assets/uploads/profile_pictures/staff_2_1774849035.jpg', 'receptionist', 'active', 0, 0, '2026-03-17', '2026-03-17 08:51:18', '2026-04-24 12:57:39', '2026-04-24 12:57:39', 1, '100630696929272279982', NULL),
 (3, 'manager@bayawanbaihotel.com', 'manager123', 'Juan', 'Dela Cruz', '+63 934 567 8901', NULL, NULL, NULL, NULL, 'manager', 'active', 0, 0, '2026-03-17', '2026-03-17 08:51:18', '2026-03-17 09:02:56', '2026-03-17 09:02:56', 0, NULL, NULL),
 (23, 'gemdacibron@gmail.com', 'Gemnicole_09', 'Gem Nicole', 'Acibron', '', NULL, NULL, NULL, NULL, 'guest', 'active', 0, 0, '2026-03-18', '2026-03-18 13:46:06', '2026-03-18 13:46:30', '2026-03-18 13:46:30', 0, NULL, NULL),
 (24, 'angelitofeliciano143@gmail.com', 'Toto122704', 'Angelito', 'Feliciano', '09368300598', NULL, NULL, NULL, NULL, 'guest', 'active', 0, 0, '2026-03-22', '2026-03-22 13:23:34', '2026-03-26 05:22:46', '2026-03-26 05:22:46', 0, NULL, NULL),
-(28, 'kylleacibron@gmail.com', 'Kylle1234-', 'Kylle', 'Acibron', '09455470173', 'Claro M. Recto Street, Purok 4 Barangay Tinago, Bayawan City', 'Visayas, Negros Oriental, Bayawan City, Tinago (Pob.)', 'Philippines', 'assets/uploads/profile_pictures/user_28_1774851413.jpeg', 'guest', 'active', 0, 60, '2026-03-30', '2026-03-30 01:04:23', '2026-04-11 14:12:51', '2026-04-11 14:12:51', 1, '109268813112420568853', NULL),
-(29, 'ljchu147@gmail.com', 'Bayawan213456', 'John Lloyd', 'Chu', '09661351116', NULL, NULL, NULL, NULL, 'guest', 'active', 0, 0, '2026-04-11', '2026-04-11 13:42:21', '2026-04-11 13:48:12', '2026-04-11 13:48:12', 1, NULL, NULL);
+(28, 'kylleacibron@gmail.com', 'Kylle1234-', 'Kylle', 'Acibron', '09455470173', 'Claro M. Recto Street, Purok 4 Barangay Tinago, Bayawan City', 'Visayas, Negros Oriental, Bayawan City, Tinago (Pob.)', 'Philippines', 'assets/uploads/profile_pictures/user_28_1774851413.jpeg', 'guest', 'active', 0, 65, '2026-03-30', '2026-03-30 01:04:23', '2026-04-24 12:09:24', '2026-04-24 12:09:24', 1, '109268813112420568853', NULL),
+(29, 'ljchu147@gmail.com', 'Bayawan213456', 'John Lloyd', 'Chu', '09661351116', NULL, NULL, NULL, NULL, 'guest', 'active', 0, 0, '2026-04-11', '2026-04-11 13:42:21', '2026-04-11 13:48:12', '2026-04-11 13:48:12', 1, NULL, NULL),
+(30, 'panaliganreyann3@gmail.com', 'REY@144PAN', 'Rey Ann', 'Panaligan', '', NULL, NULL, NULL, NULL, 'guest', 'active', 0, 0, '2026-04-13', '2026-04-13 05:59:08', '2026-04-13 05:59:30', '2026-04-13 05:59:30', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1452,6 +1746,21 @@ CREATE TABLE `user_sessions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `expires_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_sessions`
+--
+
+INSERT INTO `user_sessions` (`session_id`, `user_id`, `ip_address`, `user_agent`, `created_at`, `expires_at`) VALUES
+('120a1lddc2nu5neo8s0tr70rvv', 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-24 13:52:46', '2026-04-25 07:52:46'),
+('5fir67gakauvjb29u32p3bi3du', 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-14 04:44:10', '2026-04-14 22:44:10'),
+('9dolkol9q1uf48mb9tcnt7j9ts', 30, '::1', 'Mozilla/5.0 (Linux; Android 14; Infinix X6711 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/146.0.7680.177 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/555.0.0.56.66;]', '2026-04-13 05:59:30', '2026-04-13 23:59:30'),
+('ba8lmod9e56ru9lhjal324g9i2', 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-24 12:57:39', '2026-04-25 06:57:39'),
+('bdfic48mpakb6nbvtsn6ns3195', 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-24 12:57:15', '2026-04-25 06:57:15'),
+('jl65n5i7a32ivml2qlcdovlfu9', 28, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 06:53:09', '2026-04-24 00:53:09'),
+('mrp9n1569h8a7kcteocikg0kb0', 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-16 11:13:20', '2026-04-17 05:13:20'),
+('sjpv6odg59ngpros4ic0d40c1e', 28, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-24 12:09:24', '2026-04-25 06:09:24'),
+('vcamk1m7l02q9ee2taf4sg62ct', 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-13 05:23:45', '2026-04-13 23:23:45');
 
 -- --------------------------------------------------------
 
@@ -1494,6 +1803,15 @@ INSERT INTO `virtual_tour_hotspots` (`hotspot_id`, `tour_id`, `hotspot_type`, `p
 ALTER TABLE `activity_logs`
   ADD PRIMARY KEY (`log_id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `additional_services`
+--
+ALTER TABLE `additional_services`
+  ADD PRIMARY KEY (`service_id`),
+  ADD KEY `idx_category` (`category`),
+  ADD KEY `idx_available` (`is_available`),
+  ADD KEY `idx_sort_order` (`sort_order`);
 
 --
 -- Indexes for table `amenities`
@@ -1547,16 +1865,6 @@ ALTER TABLE `chatbot_knowledge`
   ADD KEY `idx_priority` (`priority`);
 
 --
--- Indexes for table `chat_messages`
---
-ALTER TABLE `chat_messages`
-  ADD PRIMARY KEY (`message_id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `idx_session_id` (`session_id`),
-  ADD KEY `idx_message_type` (`message_type`),
-  ADD KEY `idx_created_at` (`created_at`);
-
---
 -- Indexes for table `chat_sessions`
 --
 ALTER TABLE `chat_sessions`
@@ -1565,6 +1873,19 @@ ALTER TABLE `chat_sessions`
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_last_message` (`last_message_at`);
+
+--
+-- Indexes for table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  ADD PRIMARY KEY (`message_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_priority` (`priority`),
+  ADD KEY `idx_assigned_to` (`assigned_to`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_subject` (`subject`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `replied_by` (`replied_by`);
 
 --
 -- Indexes for table `events`
@@ -1634,6 +1955,21 @@ ALTER TABLE `food_orders`
 --
 ALTER TABLE `gallery`
   ADD PRIMARY KEY (`image_id`);
+
+--
+-- Indexes for table `guest_service_requests`
+--
+ALTER TABLE `guest_service_requests`
+  ADD PRIMARY KEY (`request_id`),
+  ADD UNIQUE KEY `request_ref` (`request_ref`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_booking_id` (`booking_id`),
+  ADD KEY `idx_service_id` (`service_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_payment_status` (`payment_status`),
+  ADD KEY `idx_requested_at` (`requested_at`),
+  ADD KEY `guest_service_requests_ibfk_4` (`processed_by`),
+  ADD KEY `guest_service_requests_ibfk_5` (`charge_id`);
 
 --
 -- Indexes for table `homepage_slider`
@@ -1802,6 +2138,12 @@ ALTER TABLE `staff_schedules`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `team_members`
+--
+ALTER TABLE `team_members`
+  ADD PRIMARY KEY (`member_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -1836,6 +2178,12 @@ ALTER TABLE `activity_logs`
   MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `additional_services`
+--
+ALTER TABLE `additional_services`
+  MODIFY `service_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `amenities`
 --
 ALTER TABLE `amenities`
@@ -1845,13 +2193,13 @@ ALTER TABLE `amenities`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT for table `booking_charges`
 --
 ALTER TABLE `booking_charges`
-  MODIFY `charge_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `charge_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `booking_logs`
@@ -1872,16 +2220,16 @@ ALTER TABLE `chatbot_knowledge`
   MODIFY `knowledge_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
--- AUTO_INCREMENT for table `chat_messages`
---
-ALTER TABLE `chat_messages`
-  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
-
---
 -- AUTO_INCREMENT for table `chat_sessions`
 --
 ALTER TABLE `chat_sessions`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `events`
@@ -1938,6 +2286,12 @@ ALTER TABLE `gallery`
   MODIFY `image_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
+-- AUTO_INCREMENT for table `guest_service_requests`
+--
+ALTER TABLE `guest_service_requests`
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `homepage_slider`
 --
 ALTER TABLE `homepage_slider`
@@ -1983,7 +2337,7 @@ ALTER TABLE `newsletter_subscribers`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=503;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=600;
 
 --
 -- AUTO_INCREMENT for table `notification_logs`
@@ -2001,7 +2355,7 @@ ALTER TABLE `notification_settings`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT for table `promotions`
@@ -2013,19 +2367,19 @@ ALTER TABLE `promotions`
 -- AUTO_INCREMENT for table `ratings`
 --
 ALTER TABLE `ratings`
-  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `rating_eligibility`
 --
 ALTER TABLE `rating_eligibility`
-  MODIFY `eligibility_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `eligibility_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `rooms`
@@ -2055,13 +2409,13 @@ ALTER TABLE `settings`
 -- AUTO_INCREMENT for table `staff_permissions`
 --
 ALTER TABLE `staff_permissions`
-  MODIFY `permission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `permission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `staff_permission_settings`
 --
 ALTER TABLE `staff_permission_settings`
-  MODIFY `setting_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `setting_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `staff_schedules`
@@ -2070,10 +2424,16 @@ ALTER TABLE `staff_schedules`
   MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `team_members`
+--
+ALTER TABLE `team_members`
+  MODIFY `member_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `virtual_tour_hotspots`
@@ -2120,17 +2480,18 @@ ALTER TABLE `chatbot_context`
   ADD CONSTRAINT `chatbot_context_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `chat_messages`
---
-ALTER TABLE `chat_messages`
-  ADD CONSTRAINT `chat_messages_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `chat_sessions` (`session_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `chat_messages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
-
---
 -- Constraints for table `chat_sessions`
 --
 ALTER TABLE `chat_sessions`
   ADD CONSTRAINT `chat_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  ADD CONSTRAINT `contact_messages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `contact_messages_ibfk_2` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `contact_messages_ibfk_3` FOREIGN KEY (`replied_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `events`
@@ -2171,6 +2532,16 @@ ALTER TABLE `food_orders`
   ADD CONSTRAINT `food_orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `food_orders_ibfk_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`),
   ADD CONSTRAINT `food_orders_ibfk_3` FOREIGN KEY (`food_id`) REFERENCES `menu_items` (`item_id`);
+
+--
+-- Constraints for table `guest_service_requests`
+--
+ALTER TABLE `guest_service_requests`
+  ADD CONSTRAINT `guest_service_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `guest_service_requests_ibfk_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `guest_service_requests_ibfk_3` FOREIGN KEY (`service_id`) REFERENCES `additional_services` (`service_id`),
+  ADD CONSTRAINT `guest_service_requests_ibfk_4` FOREIGN KEY (`processed_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `guest_service_requests_ibfk_5` FOREIGN KEY (`charge_id`) REFERENCES `booking_charges` (`charge_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `inventory_items`

@@ -1784,4 +1784,97 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     FOREIGN KEY (replied_by) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
+-- ============================================================
+-- ADDITIONAL SERVICES MODULE
+-- ============================================================
+
+-- ============================================================
+-- Additional Services Module for Bayawan Hotel
+-- ============================================================
+
+-- Table: additional_services
+-- Stores the catalog of available additional services
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `additional_services` (
+  `service_id` int(11) NOT NULL AUTO_INCREMENT,
+  `service_name` varchar(100) NOT NULL,
+  `category` enum('laundry','spa','wellness','other') NOT NULL,
+  `subcategory` varchar(50) DEFAULT NULL COMMENT 'e.g., Spa & Wellness, Laundry Services',
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `duration_minutes` int(11) DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `is_available` tinyint(1) DEFAULT 1,
+  `requires_booking` tinyint(1) DEFAULT 0 COMMENT 'Whether the service requires advance scheduling',
+  `sort_order` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`service_id`),
+  KEY `idx_category` (`category`),
+  KEY `idx_available` (`is_available`),
+  KEY `idx_sort_order` (`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: guest_service_requests
+-- Tracks services requested by guests and added to their accounts
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `guest_service_requests` (
+  `request_id` int(11) NOT NULL AUTO_INCREMENT,
+  `request_ref` varchar(50) DEFAULT NULL COMMENT 'Unique reference (SRVYYYYMMDDXXXXXX)',
+  `user_id` int(11) NOT NULL,
+  `booking_id` int(11) DEFAULT NULL COMMENT 'Associated booking if applicable',
+  `room_number` varchar(20) DEFAULT NULL,
+  `service_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `unit_price` decimal(10,2) NOT NULL,
+  `total_price` decimal(10,2) NOT NULL,
+  `special_instructions` text DEFAULT NULL,
+  `preferred_date` date DEFAULT NULL COMMENT 'For scheduled services like spa',
+  `preferred_time` time DEFAULT NULL,
+  `status` enum('pending','confirmed','in_progress','completed','cancelled','declined') DEFAULT 'pending',
+  `payment_status` enum('pending','added_to_bill','paid','waived','cancelled') DEFAULT 'pending',
+  `charge_id` int(11) DEFAULT NULL COMMENT 'Reference to booking_charges when added to bill',
+  `requested_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `processed_by` int(11) DEFAULT NULL COMMENT 'Staff member who processed the request',
+  `notes` text DEFAULT NULL COMMENT 'Internal staff notes',
+  `is_deleted` tinyint(1) DEFAULT 0 COMMENT 'Soft delete flag',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`request_id`),
+  UNIQUE KEY `request_ref` (`request_ref`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_booking_id` (`booking_id`),
+  KEY `idx_service_id` (`service_id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_payment_status` (`payment_status`),
+  KEY `idx_requested_at` (`requested_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Foreign Key Constraints
+-- ============================================================
+ALTER TABLE `guest_service_requests`
+  ADD CONSTRAINT `guest_service_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `guest_service_requests_ibfk_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `guest_service_requests_ibfk_3` FOREIGN KEY (`service_id`) REFERENCES `additional_services` (`service_id`),
+  ADD CONSTRAINT `guest_service_requests_ibfk_4` FOREIGN KEY (`processed_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `guest_service_requests_ibfk_5` FOREIGN KEY (`charge_id`) REFERENCES `booking_charges` (`charge_id`) ON DELETE SET NULL;
+
+-- Insert Default Services: Laundry and Dry Cleaning
+-- ============================================================
+INSERT INTO `additional_services` (`service_name`, `category`, `subcategory`, `description`, `price`, `duration_minutes`, `is_available`, `requires_booking`, `sort_order`) VALUES
+('Regular Laundry Service', 'laundry', 'Laundry Services', 'Standard laundry service with 24-hour turnaround. Includes washing, drying, and folding of guest garments.', 300.00, NULL, 1, 0, 1),
+('Express Laundry Service', 'laundry', 'Laundry Services', 'Priority laundry service with 6-hour express turnaround. Perfect for urgent laundry needs.', 500.00, NULL, 1, 0, 2),
+('Dry Cleaning', 'laundry', 'Laundry Services', 'Professional dry cleaning for delicate fabrics, formal wear, and special garments.', 700.00, NULL, 1, 0, 3);
+
+-- Insert Default Services: Spa and Wellness
+-- ============================================================
+INSERT INTO `additional_services` (`service_name`, `category`, `subcategory`, `description`, `price`, `duration_minutes`, `is_available`, `requires_booking`, `sort_order`) VALUES
+('Facial Treatment', 'spa', 'Spa & Wellness', 'Rejuvenating facial treatment with natural ingredients to refresh and revitalize your skin.', 1200.00, 40, 1, 1, 10),
+('Hot Stone Therapy', 'spa', 'Spa & Wellness', 'Therapeutic massage using heated basalt stones for deep muscle relaxation and stress relief.', 2000.00, 90, 1, 1, 11),
+('Swedish Massage', 'spa', 'Spa & Wellness', 'Classic relaxing full-body massage using long, flowing strokes to relieve tension and improve circulation.', 1500.00, 60, 1, 1, 12),
+('Yoga Session', 'wellness', 'Wellness Activities', 'Guided yoga session by the pool or beach area. Suitable for all skill levels. Includes mat and props.', 500.00, 60, 1, 1, 20);
+
+SELECT 'Additional Services Module added successfully!' AS message;
+
 SELECT 'All database migration files combined successfully!' AS message;
