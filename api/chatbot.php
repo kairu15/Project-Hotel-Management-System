@@ -128,43 +128,41 @@ function generateBotResponse($db, $message, $userId) {
         return $contextResponse;
     }
     
-    // Use Gemini AI for general queries
+    // Use Groq AI for general queries
     try {
-        $geminiResponse = callGeminiAPI($message);
-        if ($geminiResponse) {
+        $groqResponse = callGroqAPI($message);
+        if ($groqResponse) {
             return [
-                'message' => $geminiResponse,
-                'intent' => 'gemini_ai'
+                'message' => $groqResponse,
+                'intent' => 'groq_ai'
             ];
         }
     } catch (Exception $e) {
-        error_log("Gemini API Error: " . $e->getMessage());
-        // Fall back if API fails
+        $errorMsg = $e->getMessage();
+        error_log("Groq API Error: " . $errorMsg);
+        
+        // Return error details for debugging (remove in production)
+        return [
+            'message' => "[Debug Mode] I couldn't process your question due to: " . $errorMsg . "\n\nPlease check your Groq API key in config.php or try asking about your bookings, orders, or loyalty points which don't require AI.",
+            'intent' => 'api_error'
+        ];
     }
     
-    // Fallback responses if AI fails
-    $fallbacks = [
-        "I'm not sure I understand. Could you rephrase that? I can help with bookings, room information, dining, amenities, and general hotel inquiries.",
-        "I didn't quite catch that. Try asking about our rooms, dining options, amenities, or how to make a booking!",
-        "Hmm, I'm having trouble processing that. I can assist you with:\n• Room bookings and reservations\n• Room types and amenities\n• Dining options\n• Event spaces\n• Hotel policies\n• Contact information",
-        "I'm currently unavailable. Please contact our front desk at +63 (XX) XXXX-XXXX for immediate assistance!"
-    ];
-    
     return [
-        'message' => $fallbacks[array_rand($fallbacks)],
+        'message' => "I'm sorry, I couldn't generate a response at this time. Please try asking about:\n• Your bookings (type 'my bookings')\n• Your food orders (type 'my orders')\n• Your loyalty points (type 'my points')",
         'intent' => 'fallback'
     ];
 }
 
 /**
- * Call Google Gemini API
+ * Call Groq API
  */
-function callGeminiAPI($userMessage) {
-    $apiKey = GEMINI_API_KEY;
+function callGroqAPI($userMessage) {
+    $apiKey = GROQ_API_KEY;
     
     // Check if API key is set
-    if ($apiKey === 'YOUR_GEMINI_API_KEY_HERE' || empty($apiKey)) {
-        throw new Exception("Gemini API key not configured. Set GEMINI_API_KEY in config.php");
+    if ($apiKey === 'gsk_YOUR_GROQ_API_KEY_HERE' || empty($apiKey)) {
+        throw new Exception("Groq API key not configured. Set GROQ_API_KEY in config.php");
     }
     
     // Build the system prompt with hotel context
@@ -177,54 +175,72 @@ function callGeminiAPI($userMessage) {
 - Hotel policies and guidelines
 - Local attractions and information
 
+This system was developed by Kylle Ian D. Acibron (Contact: kylleacibron@gmail.com).
+
 Be friendly, professional, and concise in your responses. Keep replies under 200 words. If asked about something outside your scope, politely redirect to appropriate hotel services.";
     
     // Prepare API request
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . urlencode($apiKey);
+    $url = 'https://api.groq.com/openai/v1/chat/completions';
     
     $payload = [
-        'contents' => [
+        'model' => 'llama-3.3-70b-versatile',
+        'messages' => [
             [
-                'parts' => [
-                    [
-                        'text' => $systemPrompt . "\n\nUser: " . $userMessage
-                    ]
-                ]
+                'role' => 'system',
+                'content' => $systemPrompt
+            ],
+            [
+                'role' => 'user',
+                'content' => $userMessage
             ]
         ],
-        'generationConfig' => [
-            'temperature' => 0.7,
-            'topK' => 40,
-            'topP' => 0.95,
-            'maxOutputTokens' => 1024
-        ]
+        'temperature' => 0.7,
+        'max_tokens' => 1024
     ];
     
     // Make API call
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $apiKey
+    ]);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
     
+    if ($curlError) {
+        error_log("Groq API cURL Error: " . $curlError);
+        throw new Exception("cURL Error: " . $curlError);
+    }
+    
     if ($httpCode !== 200) {
-        throw new Exception("Gemini API returned HTTP $httpCode");
+        error_log("Groq API Error: HTTP $httpCode - URL: $url - Response: $response");
+        throw new Exception("Groq API returned HTTP $httpCode - Response: " . substr($response, 0, 500));
     }
     
     $result = json_decode($response, true);
     
-    // Extract the text response
-    if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
-        return $result['candidates'][0]['content']['parts'][0]['text'];
+    if (isset($result['error'])) {
+        error_log("Groq API Error: " . json_encode($result['error']));
+        throw new Exception("Groq API error: " . ($result['error']['message'] ?? 'Unknown error'));
     }
     
-    throw new Exception("Invalid response from Gemini API");
+    // Extract the text response
+    if (isset($result['choices'][0]['message']['content'])) {
+        return $result['choices'][0]['message']['content'];
+    }
+    
+    // Log unexpected response format for debugging
+    error_log("Groq API unexpected response: " . json_encode($result));
+    throw new Exception("Invalid response from Groq API");
 }
 
 /**
