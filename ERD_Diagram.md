@@ -4,7 +4,7 @@
 
 ```mermaid
 erDiagram
-    directuon TB
+    direction TB
     %% ==================== CORE TABLES ====================
     
     USERS {
