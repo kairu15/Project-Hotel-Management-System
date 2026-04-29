@@ -334,6 +334,137 @@ function getPaymentStatusBadge($status) {
         color: #dc3545;
     }
     
+    /* Floating Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .modal-window {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 420px;
+        transform: scale(0.9) translateY(20px);
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .modal-overlay.active .modal-window {
+        transform: scale(1) translateY(0);
+    }
+    
+    .modal-header {
+        padding: 24px 24px 16px;
+        text-align: center;
+    }
+    
+    .modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+    }
+    
+    .modal-icon.trash {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+    
+    .modal-header h3 {
+        margin: 0 0 8px;
+        font-size: 20px;
+        color: var(--dark-color);
+    }
+    
+    .modal-header p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .modal-body {
+        padding: 0 24px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .reservation-preview {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .reservation-preview .item-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 8px;
+    }
+    
+    .reservation-preview .item-meta {
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    .modal-footer {
+        padding: 16px 24px 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .modal-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 100px;
+    }
+    
+    .modal-btn-secondary {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .modal-btn-secondary:hover {
+        background: #dee2e6;
+    }
+    
+    .modal-btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .modal-btn-danger:hover {
+        background: #c82333;
+    }
+    
     @media (max-width: 768px) {
         .inbox-item {
             flex-wrap: wrap;
@@ -400,14 +531,10 @@ function getPaymentStatusBadge($status) {
             </div>
             
             <div class="item-actions">
-                <form method="POST" style="display: inline;" onsubmit="return confirm('Move this cancelled reservation to trash?');">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="<?php echo $reservation['id']; ?>">
-                    <input type="hidden" name="type" value="<?php echo $reservation['type']; ?>">
-                    <button type="submit" class="action-btn" title="Delete">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </form>
+                <button type="button" class="action-btn delete" title="Delete"
+                    onclick="openTrashModal(<?php echo $reservation['id']; ?>, '<?php echo $reservation['type']; ?>', '<?php echo htmlspecialchars(addslashes($reservation['item_name'])); ?>', '<?php echo formatDate($reservation['check_in']); ?>')">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </div>
         </div>
         <?php endforeach; ?>
@@ -423,5 +550,71 @@ function getPaymentStatusBadge($status) {
     </div>
     <?php endif; ?>
 </div>
+
+<!-- Trash Modal -->
+<div class="modal-overlay" id="trashModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <div class="modal-icon trash">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h3>Move this reservation to trash?</h3>
+            <p>Items in trash will be automatically deleted after 30 days. You can restore them before then.</p>
+        </div>
+        <div class="modal-body">
+            <div class="reservation-preview">
+                <div class="item-title" id="trashItemTitle"></div>
+                <div class="item-meta" id="trashItemMeta"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('trashModal')">Cancel</button>
+            <button type="button" class="modal-btn modal-btn-danger" onclick="confirmTrash()">Move to Trash</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Form for Submission -->
+<form method="POST" id="trashForm" style="display: none;">
+    <input type="hidden" name="action" value="delete">
+    <input type="hidden" name="id" id="trashFormId">
+    <input type="hidden" name="type" id="trashFormType">
+</form>
+
+<script>
+function openTrashModal(id, type, title, date) {
+    document.getElementById('trashFormId').value = id;
+    document.getElementById('trashFormType').value = type;
+    document.getElementById('trashItemTitle').textContent = title;
+    document.getElementById('trashItemMeta').innerHTML = '<i class="fas fa-calendar"></i> ' + date;
+    document.getElementById('trashModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+function confirmTrash() {
+    document.getElementById('trashForm').submit();
+}
+
+// Close modal when clicking overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+});
+</script>
 
 <?php require_once '../includes/user-footer.php'; ?>

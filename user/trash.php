@@ -360,6 +360,151 @@ function getStatusBadge($status) {
         font-style: italic;
     }
     
+    /* Floating Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .modal-window {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 420px;
+        transform: scale(0.9) translateY(20px);
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .modal-overlay.active .modal-window {
+        transform: scale(1) translateY(0);
+    }
+    
+    .modal-header {
+        padding: 24px 24px 16px;
+        text-align: center;
+    }
+    
+    .modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+    }
+    
+    .modal-icon.restore {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .modal-icon.perm-delete {
+        background: #721c24;
+        color: white;
+    }
+    
+    .modal-header h3 {
+        margin: 0 0 8px;
+        font-size: 20px;
+        color: var(--dark-color);
+    }
+    
+    .modal-header p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .modal-body {
+        padding: 0 24px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .reservation-preview {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .reservation-preview .item-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 8px;
+    }
+    
+    .reservation-preview .item-meta {
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    .modal-footer {
+        padding: 16px 24px 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .modal-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 100px;
+    }
+    
+    .modal-btn-secondary {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .modal-btn-secondary:hover {
+        background: #dee2e6;
+    }
+    
+    .modal-btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .modal-btn-success:hover {
+        background: #218838;
+    }
+    
+    .modal-btn-danger {
+        background: #721c24;
+        color: white;
+    }
+    
+    .modal-btn-danger:hover {
+        background: #5a1a1e;
+    }
+    
     @media (max-width: 768px) {
         .inbox-item {
             flex-wrap: wrap;
@@ -424,23 +569,15 @@ function getStatusBadge($status) {
             </div>
             
             <div class="item-actions">
-                <form method="POST" style="display: inline;" onsubmit="return confirm('Restore this reservation to inbox?');">
-                    <input type="hidden" name="action" value="restore">
-                    <input type="hidden" name="id" value="<?php echo $reservation['id']; ?>">
-                    <input type="hidden" name="type" value="<?php echo $reservation['type']; ?>">
-                    <button type="submit" class="action-btn restore" title="Restore to Inbox">
-                        <i class="fas fa-undo"></i>
-                    </button>
-                </form>
+                <button type="button" class="action-btn restore" title="Restore to Inbox"
+                    onclick="openRestoreModal(<?php echo $reservation['id']; ?>, '<?php echo $reservation['type']; ?>', '<?php echo htmlspecialchars(addslashes($reservation['item_name'])); ?>', '<?php echo formatDate($reservation['check_in']); ?>')">
+                    <i class="fas fa-undo"></i>
+                </button>
                 
-                <form method="POST" style="display: inline;" onsubmit="return confirm('Permanently delete this reservation? This action cannot be undone.');">
-                    <input type="hidden" name="action" value="permanent_delete">
-                    <input type="hidden" name="id" value="<?php echo $reservation['id']; ?>">
-                    <input type="hidden" name="type" value="<?php echo $reservation['type']; ?>">
-                    <button type="submit" class="action-btn perm-delete" title="Delete Permanently">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </form>
+                <button type="button" class="action-btn perm-delete" title="Delete Permanently"
+                    onclick="openPermDeleteModal(<?php echo $reservation['id']; ?>, '<?php echo $reservation['type']; ?>', '<?php echo htmlspecialchars(addslashes($reservation['item_name'])); ?>', '<?php echo formatDate($reservation['check_in']); ?>')">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         </div>
         <?php endforeach; ?>
@@ -456,5 +593,112 @@ function getStatusBadge($status) {
     </div>
     <?php endif; ?>
 </div>
+
+<!-- Restore Modal -->
+<div class="modal-overlay" id="restoreModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <div class="modal-icon restore">
+                <i class="fas fa-undo"></i>
+            </div>
+            <h3>Restore this reservation to inbox?</h3>
+            <p>This will move the reservation back to your active inbox.</p>
+        </div>
+        <div class="modal-body">
+            <div class="reservation-preview">
+                <div class="item-title" id="restoreItemTitle"></div>
+                <div class="item-meta" id="restoreItemMeta"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('restoreModal')">Cancel</button>
+            <button type="button" class="modal-btn modal-btn-success" onclick="confirmRestore()">Restore</button>
+        </div>
+    </div>
+</div>
+
+<!-- Permanent Delete Modal -->
+<div class="modal-overlay" id="permDeleteModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <div class="modal-icon perm-delete">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Permanently delete this reservation?</h3>
+            <p>This action cannot be undone. The reservation will be permanently removed from your account.</p>
+        </div>
+        <div class="modal-body">
+            <div class="reservation-preview">
+                <div class="item-title" id="permDeleteItemTitle"></div>
+                <div class="item-meta" id="permDeleteItemMeta"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('permDeleteModal')">Cancel</button>
+            <button type="button" class="modal-btn modal-btn-danger" onclick="confirmPermDelete()">Delete Permanently</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Forms for Submission -->
+<form method="POST" id="restoreForm" style="display: none;">
+    <input type="hidden" name="action" value="restore">
+    <input type="hidden" name="id" id="restoreFormId">
+    <input type="hidden" name="type" id="restoreFormType">
+</form>
+
+<form method="POST" id="permDeleteForm" style="display: none;">
+    <input type="hidden" name="action" value="permanent_delete">
+    <input type="hidden" name="id" id="permDeleteFormId">
+    <input type="hidden" name="type" id="permDeleteFormType">
+</form>
+
+<script>
+function openRestoreModal(id, type, title, date) {
+    document.getElementById('restoreFormId').value = id;
+    document.getElementById('restoreFormType').value = type;
+    document.getElementById('restoreItemTitle').textContent = title;
+    document.getElementById('restoreItemMeta').innerHTML = '<i class="fas fa-calendar"></i> ' + date;
+    document.getElementById('restoreModal').classList.add('active');
+}
+
+function openPermDeleteModal(id, type, title, date) {
+    document.getElementById('permDeleteFormId').value = id;
+    document.getElementById('permDeleteFormType').value = type;
+    document.getElementById('permDeleteItemTitle').textContent = title;
+    document.getElementById('permDeleteItemMeta').innerHTML = '<i class="fas fa-calendar"></i> ' + date;
+    document.getElementById('permDeleteModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+function confirmRestore() {
+    document.getElementById('restoreForm').submit();
+}
+
+function confirmPermDelete() {
+    document.getElementById('permDeleteForm').submit();
+}
+
+// Close modal when clicking overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+});
+</script>
 
 <?php require_once '../includes/user-footer.php'; ?>

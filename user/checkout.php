@@ -293,6 +293,137 @@ function getTypeIcon($type) {
         color: #e2e3e5;
     }
     
+    /* Floating Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .modal-window {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 420px;
+        transform: scale(0.9) translateY(20px);
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .modal-overlay.active .modal-window {
+        transform: scale(1) translateY(0);
+    }
+    
+    .modal-header {
+        padding: 24px 24px 16px;
+        text-align: center;
+    }
+    
+    .modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+    }
+    
+    .modal-icon.archive {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .modal-header h3 {
+        margin: 0 0 8px;
+        font-size: 20px;
+        color: var(--dark-color);
+    }
+    
+    .modal-header p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .modal-body {
+        padding: 0 24px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .reservation-preview {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .reservation-preview .item-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 8px;
+    }
+    
+    .reservation-preview .item-meta {
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    .modal-footer {
+        padding: 16px 24px 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .modal-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 100px;
+    }
+    
+    .modal-btn-secondary {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .modal-btn-secondary:hover {
+        background: #dee2e6;
+    }
+    
+    .modal-btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .modal-btn-primary:hover {
+        background: #1e3a5f;
+    }
+    
     @media (max-width: 768px) {
         .inbox-item {
             flex-wrap: wrap;
@@ -369,14 +500,10 @@ function getTypeIcon($type) {
                     </a>
                 <?php endif; ?>
                 
-                <form method="POST" style="display: inline;" onsubmit="return confirm('Archive this reservation?');">
-                    <input type="hidden" name="action" value="archive">
-                    <input type="hidden" name="id" value="<?php echo $reservation['id']; ?>">
-                    <input type="hidden" name="type" value="<?php echo $reservation['type']; ?>">
-                    <button type="submit" class="action-btn" title="Archive">
-                        <i class="fas fa-archive"></i>
-                    </button>
-                </form>
+                <button type="button" class="action-btn archive" title="Archive"
+                    onclick="openArchiveModal(<?php echo $reservation['id']; ?>, '<?php echo $reservation['type']; ?>', '<?php echo htmlspecialchars(addslashes($reservation['item_name'])); ?>', '<?php echo formatDate($reservation['check_in']); ?>')">
+                    <i class="fas fa-archive"></i>
+                </button>
             </div>
         </div>
         <?php endforeach; ?>
@@ -392,5 +519,71 @@ function getTypeIcon($type) {
     </div>
     <?php endif; ?>
 </div>
+
+<!-- Archive Modal -->
+<div class="modal-overlay" id="archiveModal">
+    <div class="modal-window">
+        <div class="modal-header">
+            <div class="modal-icon archive">
+                <i class="fas fa-archive"></i>
+            </div>
+            <h3>Archive this reservation?</h3>
+            <p>Archived reservations are moved to your archive folder and can be restored anytime.</p>
+        </div>
+        <div class="modal-body">
+            <div class="reservation-preview">
+                <div class="item-title" id="archiveItemTitle"></div>
+                <div class="item-meta" id="archiveItemMeta"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('archiveModal')">Cancel</button>
+            <button type="button" class="modal-btn modal-btn-primary" onclick="confirmArchive()">Archive</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Form for Submission -->
+<form method="POST" id="archiveForm" style="display: none;">
+    <input type="hidden" name="action" value="archive">
+    <input type="hidden" name="id" id="archiveFormId">
+    <input type="hidden" name="type" id="archiveFormType">
+</form>
+
+<script>
+function openArchiveModal(id, type, title, date) {
+    document.getElementById('archiveFormId').value = id;
+    document.getElementById('archiveFormType').value = type;
+    document.getElementById('archiveItemTitle').textContent = title;
+    document.getElementById('archiveItemMeta').innerHTML = '<i class="fas fa-calendar"></i> ' + date;
+    document.getElementById('archiveModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+function confirmArchive() {
+    document.getElementById('archiveForm').submit();
+}
+
+// Close modal when clicking overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+});
+</script>
 
 <?php require_once '../includes/user-footer.php'; ?>
