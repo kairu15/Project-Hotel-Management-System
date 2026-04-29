@@ -1630,7 +1630,12 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
                             <i class="fas fa-concierge-bell"></i> My Service Requests
                         </a>
                     </li>
-                    
+                    <li>
+                        <a href="maintenance-request.php" class="<?php echo $currentPage === 'maintenance-request' ? 'active' : ''; ?>">
+                            <i class="fas fa-tools"></i> Maintenance Request
+                        </a>
+                    </li>
+
                     <!-- Manage -->
                     <li class="nav-section">Manage</li>
                     <li>

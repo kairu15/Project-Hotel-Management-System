@@ -247,3 +247,5 @@
 [2026-04-24 16:54:24] [User: 2] 2 - service_request_updated
 [2026-04-26 16:22:45] [User: guest] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 2)
 [2026-04-28 04:18:49] [User: 28] User login - User ID: 28
+[2026-04-29 04:38:09] [User: 28] Payment processed - Booking ID: 69, Method: gcash, Status: paid
+[2026-04-29 04:43:28] [User: 28] Payment processed - Booking ID: 70, Method: gcash, Status: paid

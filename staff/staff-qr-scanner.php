@@ -178,10 +178,71 @@ $paymentStatusColors = [
         width: 100%;
         max-width: 500px;
         margin: 0 auto 20px;
-        border: 3px dashed var(--primary-color);
+        background: #0a0a0f;
         border-radius: 10px;
-        padding: 20px;
-        background: #f8f9fa;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #reader::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 250px;
+        height: 250px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        pointer-events: none;
+        z-index: 10;
+    }
+    
+    .scanner-frame {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 250px;
+        height: 250px;
+        pointer-events: none;
+        z-index: 10;
+    }
+    
+    .scanner-corner {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-color: #fff;
+        border-style: solid;
+        border-width: 0;
+    }
+    
+    .scanner-corner.top-left {
+        top: 0;
+        left: 0;
+        border-top-width: 4px;
+        border-left-width: 4px;
+    }
+    
+    .scanner-corner.top-right {
+        top: 0;
+        right: 0;
+        border-top-width: 4px;
+        border-right-width: 4px;
+    }
+    
+    .scanner-corner.bottom-left {
+        bottom: 0;
+        left: 0;
+        border-bottom-width: 4px;
+        border-left-width: 4px;
+    }
+    
+    .scanner-corner.bottom-right {
+        bottom: 0;
+        right: 0;
+        border-bottom-width: 4px;
+        border-right-width: 4px;
     }
     
     .manual-input-section {
@@ -420,7 +481,14 @@ $paymentStatusColors = [
             <h2 class="scanner-title">Scan Booking QR Code</h2>
             <p class="scanner-subtitle">Position the QR code within the frame to scan<br><small>Reference format: BBHYYYYMMDDXXXXXX</small></p>
             
-            <div id="reader"></div>
+            <div id="reader">
+                <div class="scanner-frame">
+                    <div class="scanner-corner top-left"></div>
+                    <div class="scanner-corner top-right"></div>
+                    <div class="scanner-corner bottom-left"></div>
+                    <div class="scanner-corner bottom-right"></div>
+                </div>
+            </div>
             
             <button class="scan-again-btn" onclick="startScanning()" style="display: none;" id="startScanBtn">
                 <i class="fas fa-camera"></i> Start Camera
