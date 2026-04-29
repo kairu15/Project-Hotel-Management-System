@@ -1,0 +1,30 @@
+# Environment variables
+.env
+
+# Composer vendor directory
+/vendor/
+
+# Logs
+/logs/
+*.log
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cache
+/cache/
+*.cache
+
+# Uploads (uncomment if you don't want to track uploads)
+# /uploads/
+
+# Session files
+/sessions/
