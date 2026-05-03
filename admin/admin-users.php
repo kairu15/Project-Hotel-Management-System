@@ -33,9 +33,8 @@ if (isset($_POST['save_user'])) {
             if ($userId) {
                 // Update existing user
                 if ($password) {
-                    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $stmt = $db->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ?, city = ?, country = ?, role = ?, password = ? WHERE user_id = ?");
-                    $stmt->execute([$firstName, $lastName, $email, $phone, $address, $city, $country, $role, $hashedPassword, $userId]);
+                    $stmt->execute([$firstName, $lastName, $email, $phone, $address, $city, $country, $role, $password, $userId]);
                 } else {
                     $stmt = $db->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ?, city = ?, country = ?, role = ? WHERE user_id = ?");
                     $stmt->execute([$firstName, $lastName, $email, $phone, $address, $city, $country, $role, $userId]);
@@ -46,9 +45,8 @@ if (isset($_POST['save_user'])) {
                 if (!$password) {
                     $_SESSION['error'] = 'Password is required for new users';
                 } else {
-                    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $stmt = $db->prepare("INSERT INTO users (first_name, last_name, email, password, phone, address, city, country, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    if ($stmt->execute([$firstName, $lastName, $email, $hashedPassword, $phone, $address, $city, $country, $role])) {
+                    if ($stmt->execute([$firstName, $lastName, $email, $password, $phone, $address, $city, $country, $role])) {
                         $_SESSION['success'] = 'User ' . $firstName . ' ' . $lastName . ' added successfully';
                     } else {
                         $_SESSION['error'] = 'Failed to add user';
@@ -154,7 +152,7 @@ require_once '../includes/admin-header.php';
             <button type="button" onclick="openUserModal()" class="btn btn-primary">Add New User</button>
         </div>
         <!-- Role Cards -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
             <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #6c757d;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -164,13 +162,22 @@ require_once '../includes/admin-header.php';
                     <i class="fas fa-users" style="font-size: 40px; color: #6c757d;"></i>
                 </div>
             </div>
+            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #17a2b8;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 32px; margin: 0;"><?php echo $roleCounts['receptionist'] ?? 0; ?></h3>
+                        <p style="color: #666; margin: 5px 0 0;">Receptionists</p>
+                    </div>
+                    <i class="fas fa-user-tie" style="font-size: 40px; color: #17a2b8;"></i>
+                </div>
+            </div>
             <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--primary-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h3 style="font-size: 32px; margin: 0;"><?php echo $roleCounts['staff'] ?? 0; ?></h3>
-                        <p style="color: #666; margin: 5px 0 0;">Staff</p>
+                        <h3 style="font-size: 32px; margin: 0;"><?php echo $roleCounts['manager'] ?? 0; ?></h3>
+                        <p style="color: #666; margin: 5px 0 0;">Managers</p>
                     </div>
-                    <i class="fas fa-user-tie" style="font-size: 40px; color: var(--primary-color);"></i>
+                    <i class="fas fa-briefcase" style="font-size: 40px; color: var(--primary-color);"></i>
                 </div>
             </div>
             <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #dc3545;">
@@ -196,7 +203,8 @@ require_once '../includes/admin-header.php';
                     <select name="role" style="width: 100%; padding: 10px; border: 1px solid var(--gray-light); border-radius: 5px;">
                         <option value="">All Roles</option>
                         <option value="guest" <?php echo $roleFilter === 'guest' ? 'selected' : ''; ?>>Guest</option>
-                        <option value="staff" <?php echo $roleFilter === 'staff' ? 'selected' : ''; ?>>Staff</option>
+                        <option value="receptionist" <?php echo $roleFilter === 'receptionist' ? 'selected' : ''; ?>>Receptionist</option>
+                        <option value="manager" <?php echo $roleFilter === 'manager' ? 'selected' : ''; ?>>Manager</option>
                         <option value="admin" <?php echo $roleFilter === 'admin' ? 'selected' : ''; ?>>Admin</option>
                     </select>
                 </div>
@@ -228,10 +236,11 @@ require_once '../includes/admin-header.php';
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($users as $user): 
+                        <?php foreach ($users as $user):
                             $roleColors = [
                                 'guest' => ['#d4edda', '#155724'],
-                                'staff' => ['#cce5ff', '#004085'],
+                                'receptionist' => ['#d1ecf1', '#0c5460'],
+                                'manager' => ['#cce5ff', '#004085'],
                                 'admin' => ['#f8d7da', '#721c24']
                             ];
                             $color = $roleColors[$user['role']] ?? ['#fff3cd', '#856404'];
@@ -368,13 +377,19 @@ require_once '../includes/admin-header.php';
                     <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">Role</label>
                     <select name="role" id="role" style="width: 100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px; font-size: 14px;">
                         <option value="guest">Guest</option>
-                        <option value="staff">Staff</option>
+                        <option value="receptionist">Receptionist</option>
+                        <option value="manager">Manager</option>
                         <option value="admin">Admin</option>
                     </select>
                 </div>
                 <div>
                     <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">Password <span id="passwordHint" style="font-weight: normal; color: #666;">(leave blank to keep current)</span></label>
-                    <input type="password" name="password" id="password" style="width: 100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px; font-size: 14px;">
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="password" style="width: 100%; padding: 12px; padding-right: 40px; border: 1px solid var(--gray-light); border-radius: 5px; font-size: 14px;">
+                        <button type="button" onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px; color: #666;">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -423,6 +438,20 @@ function editUser(user) {
 
 function closeUserModal() {
     document.getElementById('userModal').style.display = 'none';
+}
+
+function togglePassword() {
+    var passwordInput = document.getElementById('password');
+    var toggleIcon = document.getElementById('toggleIcon');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
 }
 
 // Close modal when clicking outside

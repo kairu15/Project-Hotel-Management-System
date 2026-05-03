@@ -17,6 +17,16 @@ $db = getDB();
 // ============================================
 
 // ============================================
+// MAXIMUM TARGETS FOR DASHBOARD METRICS (100% = TARGET ACHIEVED)
+// ============================================
+$MAX_TARGETS = [
+    'users' => 100,           // Total Users max = 100
+    'bookings' => 100,        // Bookings (30 Days) max = 100
+    'revenue' => 300000,      // Revenue (This Month) max = ₱300,000
+    'events' => 50            // Total Events (This Month) max = 50
+];
+
+// ============================================
 // HELPER FUNCTION FOR PERCENTAGE CALCULATION
 // ============================================
 function calculatePercentageChange($current, $previous) {
@@ -31,6 +41,21 @@ function calculatePercentageChange($current, $previous) {
 }
 
 // ============================================
+// HELPER FUNCTION: CALCULATE ACHIEVEMENT PERCENTAGE (0-100%)
+// Based on absolute value against maximum target
+// 0% = 0 value, 100% = max target reached
+// ============================================
+function calculateAchievementPercentage($current, $maxTarget) {
+    if ($maxTarget <= 0) {
+        return ['value' => 0, 'label' => '0%'];
+    }
+    $percentage = ($current / $maxTarget) * 100;
+    // Cap at 100% (can't exceed target)
+    $cappedPercentage = min(100, max(0, $percentage));
+    return ['value' => $cappedPercentage, 'label' => round($cappedPercentage) . '%'];
+}
+
+// ============================================
 // CORE STATISTICS WITH MONTH-OVER-MONTH COMPARISON
 // ============================================
 
@@ -41,22 +66,39 @@ $previousMonth = date('Y-m', strtotime('-1 month'));
 // Current Month Users (guests registered this month)
 $currentUsers = $db->query("SELECT COUNT(*) FROM users WHERE role = 'guest' AND DATE_FORMAT(created_at, '%Y-%m') = '$currentMonth'")->fetchColumn();
 $previousUsers = $db->query("SELECT COUNT(*) FROM users WHERE role = 'guest' AND DATE_FORMAT(created_at, '%Y-%m') = '$previousMonth'")->fetchColumn();
-$usersChange = calculatePercentageChange($currentUsers, $previousUsers);
+$usersMoMChange = calculatePercentageChange($currentUsers, $previousUsers);
 
 // Current Month Bookings (last 30 days equivalent)
 $currentBookings = $db->query("SELECT COUNT(*) FROM bookings WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)")->fetchColumn();
 $previousBookings = $db->query("SELECT COUNT(*) FROM bookings WHERE created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)")->fetchColumn();
-$bookingsChange = calculatePercentageChange($currentBookings, $previousBookings);
+$bookingsMoMChange = calculatePercentageChange($currentBookings, $previousBookings);
 
 // Current Month Revenue
 $currentRevenue = $db->query("SELECT COALESCE(SUM(total_amount), 0) FROM bookings WHERE status = 'checked_out' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
 $previousRevenue = $db->query("SELECT COALESCE(SUM(total_amount), 0) FROM bookings WHERE status = 'checked_out' AND MONTH(created_at) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) AND YEAR(created_at) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))")->fetchColumn();
-$revenueChange = calculatePercentageChange($currentRevenue, $previousRevenue);
+$revenueMoMChange = calculatePercentageChange($currentRevenue, $previousRevenue);
 
 // Current Month Events
 $currentEvents = $db->query("SELECT COUNT(*) FROM event_bookings WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
 $previousEvents = $db->query("SELECT COUNT(*) FROM event_bookings WHERE MONTH(created_at) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) AND YEAR(created_at) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))")->fetchColumn();
-$eventsChange = calculatePercentageChange($currentEvents, $previousEvents);
+$eventsMoMChange = calculatePercentageChange($currentEvents, $previousEvents);
+
+// ============================================
+// ACHIEVEMENT PERCENTAGES FOR DASHBOARD CARDS (0-100% based on targets)
+// ============================================
+
+// Total Users Achievement (100 users = 100%)
+$totalUsers = $db->query("SELECT COUNT(*) FROM users WHERE role = 'guest'")->fetchColumn();
+$usersChange = calculateAchievementPercentage($totalUsers, $MAX_TARGETS['users']);
+
+// Bookings (30 Days) Achievement (100 bookings = 100%)
+$bookingsChange = calculateAchievementPercentage($currentBookings, $MAX_TARGETS['bookings']);
+
+// Revenue (This Month) Achievement (₱300,000 = 100%)
+$revenueChange = calculateAchievementPercentage($currentRevenue, $MAX_TARGETS['revenue']);
+
+// Total Events (This Month) Achievement (50 events = 100%)
+$eventsChange = calculateAchievementPercentage($currentEvents, $MAX_TARGETS['events']);
 
 // Current Month Food Orders
 $currentFoodOrders = $db->query("SELECT COUNT(*) FROM food_orders WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
@@ -267,6 +309,111 @@ $revenueData = $db->query("
     ORDER BY month
 ")->fetchAll();
 
+// ============================================
+// CHART DATA QUERIES
+// ============================================
+
+// Bookings by Status (for pie chart)
+$bookingsByStatus = $db->query("
+    SELECT status, COUNT(*) as count 
+    FROM bookings 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    GROUP BY status
+")->fetchAll();
+
+// Daily bookings for the last 14 days (for line chart)
+$dailyBookings = $db->query("
+    SELECT DATE(created_at) as date, COUNT(*) as count 
+    FROM bookings 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+    GROUP BY DATE(created_at)
+    ORDER BY date
+")->fetchAll();
+
+// Fill in missing dates with zero values
+$dailyBookingsData = [];
+for ($i = 13; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $found = false;
+    foreach ($dailyBookings as $booking) {
+        if ($booking['date'] === $date) {
+            $dailyBookingsData[] = ['date' => $date, 'count' => $booking['count']];
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) {
+        $dailyBookingsData[] = ['date' => $date, 'count' => 0];
+    }
+}
+
+// Event bookings vs Room bookings comparison (last 30 days)
+$eventBookingsMonthly = $db->query("
+    SELECT COUNT(*) as count 
+    FROM event_bookings 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+")->fetchColumn();
+
+$roomBookingsMonthly = $db->query("
+    SELECT COUNT(*) as count 
+    FROM bookings 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+")->fetchColumn();
+
+// Room category occupancy distribution
+$roomCategoryData = $db->query("
+    SELECT rc.category_name, 
+           COUNT(r.room_id) as total_rooms,
+           SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END) as occupied
+    FROM room_categories rc
+    LEFT JOIN rooms r ON rc.category_id = r.category_id
+    GROUP BY rc.category_id
+    ORDER BY total_rooms DESC
+")->fetchAll();
+
+// Food orders by status (for doughnut chart)
+$foodOrdersByStatus = $db->query("
+    SELECT status, COUNT(*) as count 
+    FROM food_orders 
+    WHERE DATE(created_at) = CURDATE()
+    GROUP BY status
+")->fetchAll();
+
+// Revenue comparison (Room bookings vs Event bookings vs Food orders) - last 30 days
+$revenueBreakdown = [
+    'rooms' => $db->query("
+        SELECT COALESCE(SUM(total_amount), 0) 
+        FROM bookings 
+        WHERE status IN ('confirmed', 'checked_out') 
+        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ")->fetchColumn(),
+    'events' => $db->query("
+        SELECT COALESCE(SUM(quoted_price), 0) 
+        FROM event_bookings 
+        WHERE status IN ('confirmed', 'completed') 
+        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ")->fetchColumn(),
+    'food' => $db->query("
+        SELECT COALESCE(SUM(total_price), 0) 
+        FROM food_orders 
+        WHERE status IN ('ready', 'delivered') 
+        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ")->fetchColumn()
+];
+
+// Weekly guest check-ins (last 4 weeks)
+$weeklyCheckins = $db->query("
+    SELECT 
+        CONCAT('Week ', FLOOR(DATEDIFF(NOW(), created_at) / 7) + 1) as week_label,
+        COUNT(*) as checkins
+    FROM bookings 
+    WHERE status = 'checked_in' 
+    AND created_at >= DATE_SUB(NOW(), INTERVAL 28 DAY)
+    GROUP BY FLOOR(DATEDIFF(NOW(), created_at) / 7)
+    ORDER BY FLOOR(DATEDIFF(NOW(), created_at) / 7) DESC
+    LIMIT 4
+")->fetchAll();
+
 // Status color mapping helper
 $statusColors = [
     'pending' => ['bg' => '#fff3cd', 'text' => '#856404', 'label' => 'Pending'],
@@ -353,255 +500,146 @@ function getStatusBadge($status, $statusColors) {
             </div>
         </div>
 
-        <!-- Secondary Stats Row - Room Status -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
-            <!-- Occupied Rooms -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-bed" style="font-size: 24px; color: var(--warning-color);"></i>
-                    <?php
-                    $occColor = $stats['occupied_rooms_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $occColor['text']; ?>; background: <?php echo $occColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['occupied_rooms_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['occupied_rooms']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Occupied Rooms</p>
-            </div>
-            
-            <!-- Available Rooms -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-door-open" style="font-size: 24px; color: var(--success-color);"></i>
-                    <?php
-                    $availColor = $stats['available_rooms_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $availColor['text']; ?>; background: <?php echo $availColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['available_rooms_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['available_rooms']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Available Rooms</p>
-            </div>
-            
-            <!-- Rooms Under Maintenance -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-tools" style="font-size: 24px; color: var(--danger-color);"></i>
-                    <?php
-                    $maintColor = $stats['maintenance_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $maintColor['text']; ?>; background: <?php echo $maintColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['maintenance_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['maintenance_rooms']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Rooms Under Maintenance</p>
-            </div>
-            
-            <!-- Food Orders Today -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-utensils" style="font-size: 24px; color: #ff9800;"></i>
-                    <?php
-                    $foodColor = $stats['food_orders_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $foodColor['text']; ?>; background: <?php echo $foodColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['food_orders_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo number_format($stats['total_food_orders']); ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Food Orders (Today)</p>
-            </div>
-        </div>
-
-        <!-- Tertiary Stats Row - Event Spaces & Food Orders Detail -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
-            <!-- Occupied Event Spaces -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-champagne-glasses" style="font-size: 24px; color: #e91e63;"></i>
-                    <?php
-                    $occEventColor = $stats['occupied_event_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $occEventColor['text']; ?>; background: <?php echo $occEventColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['occupied_event_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['occupied_event_spaces']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Occupied Event Spaces</p>
-            </div>
-            
-            <!-- Available Event Spaces -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-house-chimney" style="font-size: 24px; color: #4caf50;"></i>
-                    <?php
-                    $availEventColor = $stats['available_event_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $availEventColor['text']; ?>; background: <?php echo $availEventColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['available_event_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['available_event_spaces']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Available Event Spaces</p>
-            </div>
-            
-            <!-- Pending Food Orders -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-clock" style="font-size: 24px; color: #ff5722;"></i>
-                    <?php
-                    $pendingColor = $stats['pending_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $pendingColor['text']; ?>; background: <?php echo $pendingColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['pending_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['pending_food_orders']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Pending Food Orders</p>
-            </div>
-            
-            <!-- Preparing Food Orders -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-fire-burner" style="font-size: 24px; color: #ff9800;"></i>
-                    <?php
-                    $preparingColor = $stats['preparing_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da'];
-                    ?>
-                    <span style="font-size: 11px; color: <?php echo $preparingColor['text']; ?>; background: <?php echo $preparingColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['preparing_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['preparing_food_orders']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Preparing Orders</p>
-            </div>
-        </div>
-
-        <!-- ADDITIONAL STATS - Staff & Operations -->
-        <h2 style="font-size: 16px; color: var(--dark-color); margin-bottom: 15px; font-weight: 600;">
-            <i class="fas fa-users-gear" style="margin-right: 8px; color: var(--primary-color);"></i>Staff & Operations
+        <!-- CHARTS & ANALYTICS SECTION -->
+        <h2 style="font-size: 18px; color: var(--dark-color); margin: 30px 0 20px; font-weight: 600;">
+            <i class="fas fa-chart-pie" style="margin-right: 8px; color: var(--primary-color);"></i>Charts & Analytics
         </h2>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
-            <!-- Staff on Duty Today -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-user-clock" style="font-size: 24px; color: #17a2b8;"></i>
-                    <?php $staffColor = $stats['staff_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $staffColor['text']; ?>; background: <?php echo $staffColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['staff_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['staff_on_duty']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Staff on Duty Today</p>
-            </div>
-            
-            <!-- Pending Maintenance -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-wrench" style="font-size: 24px; color: #fd7e14;"></i>
-                    <?php $maintReqColor = $stats['maintenance_req_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $maintReqColor['text']; ?>; background: <?php echo $maintReqColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['maintenance_req_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['pending_maintenance']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Pending Maintenance</p>
-            </div>
-            
-            <!-- Inventory Alerts -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-boxes-stacked" style="font-size: 24px; color: #6f42c1;"></i>
-                    <?php $invColor = $stats['inventory_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $invColor['text']; ?>; background: <?php echo $invColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['inventory_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['inventory_alerts']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Inventory Alerts</p>
-            </div>
-            
-            <!-- Placeholder for spacing -->
-            <div style="background-color: transparent; padding: 20px; border-radius: 10px;"></div>
-        </div>
 
-        <!-- ADDITIONAL STATS - Guest Services & Financial -->
-        <h2 style="font-size: 16px; color: var(--dark-color); margin-bottom: 15px; font-weight: 600;">
-            <i class="fas fa-star" style="margin-right: 8px; color: var(--primary-color);"></i>Guest Services & Financial
-        </h2>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
-            <!-- Pending Reviews -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-comments" style="font-size: 24px; color: #20c997;"></i>
-                    <?php $revColor = $stats['reviews_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $revColor['text']; ?>; background: <?php echo $revColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['reviews_change']['label']; ?></span>
+        <!-- Charts Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
+            <!-- Revenue Trend Chart -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin: 0; font-weight: 600; color: var(--dark-color);">
+                        <i class="fas fa-chart-line" style="margin-right: 8px; color: var(--success-color);"></i>Revenue Trend (6 Months)
+                    </h3>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['pending_reviews']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Pending Reviews</p>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
             </div>
-            
-            <!-- Average Rating -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-star" style="font-size: 24px; color: #ffc107;"></i>
+
+            <!-- Daily Bookings Trend -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin: 0; font-weight: 600; color: var(--dark-color);">
+                        <i class="fas fa-chart-area" style="margin-right: 8px; color: var(--info-color);"></i>Daily Bookings (Last 14 Days)
+                    </h3>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo number_format($stats['average_rating'], 1); ?>/5</h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Average Rating</p>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="dailyBookingsChart"></canvas>
+                </div>
             </div>
-            
-            <!-- Active Promotions -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-tags" style="font-size: 24px; color: #e83e8c;"></i>
-                    <?php $promoColor = $stats['promotions_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $promoColor['text']; ?>; background: <?php echo $promoColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['promotions_change']['label']; ?></span>
+
+            <!-- Bookings by Status -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin: 0; font-weight: 600; color: var(--dark-color);">
+                        <i class="fas fa-chart-pie" style="margin-right: 8px; color: var(--warning-color);"></i>Bookings by Status
+                    </h3>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['active_promotions']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Active Promotions</p>
+                <div style="height: 250px; position: relative; display: flex; justify-content: center;">
+                    <canvas id="bookingsStatusChart"></canvas>
+                </div>
             </div>
-            
-            <!-- Today's Revenue -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-coins" style="font-size: 24px; color: #28a745;"></i>
-                    <?php $todayRevColor = $stats['today_revenue_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $todayRevColor['text']; ?>; background: <?php echo $todayRevColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['today_revenue_change']['label']; ?></span>
+
+            <!-- Revenue Breakdown -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin: 0; font-weight: 600; color: var(--dark-color);">
+                        <i class="fas fa-coins" style="margin-right: 8px; color: #9c27b0;"></i>Revenue Breakdown (30 Days)
+                    </h3>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;">₱<?php echo number_format($stats['today_revenue']); ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Today's Revenue</p>
+                <div style="height: 250px; position: relative; display: flex; justify-content: center;">
+                    <canvas id="revenueBreakdownChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- ADDITIONAL STATS - Content Management -->
-        <h2 style="font-size: 16px; color: var(--dark-color); margin-bottom: 15px; font-weight: 600;">
-            <i class="fas fa-images" style="margin-right: 8px; color: var(--primary-color);"></i>Content Management
+        <!-- COMPREHENSIVE CHARTS DASHBOARD -->
+        <h2 style="font-size: 18px; color: var(--dark-color); margin: 30px 0 20px; font-weight: 600;">
+            <i class="fas fa-chart-simple" style="margin-right: 8px; color: var(--primary-color);"></i>System Overview Charts
         </h2>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
-            <!-- Gallery Images -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-images" style="font-size: 24px; color: #6610f2;"></i>
-                    <?php $galColor = $stats['gallery_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $galColor['text']; ?>; background: <?php echo $galColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['gallery_change']['label']; ?></span>
+
+        <!-- Charts Grid - First Row -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 30px;">
+            <!-- Room Status Distribution -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-bed" style="margin-right: 8px; color: var(--warning-color);"></i>Room Status
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="roomStatusChart"></canvas>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['gallery_images']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Gallery Images</p>
             </div>
-            
-            <!-- Active FAQs -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-circle-question" style="font-size: 24px; color: #0dcaf0;"></i>
-                    <?php $faqColor = $stats['faqs_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $faqColor['text']; ?>; background: <?php echo $faqColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['faqs_change']['label']; ?></span>
+
+            <!-- Event Spaces Status -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-champagne-glasses" style="margin-right: 8px; color: #e91e63;"></i>Event Spaces
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="eventSpacesChart"></canvas>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['active_faqs']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Active FAQs</p>
             </div>
-            
-            <!-- Virtual Tours -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-vr-cardboard" style="font-size: 24px; color: #d63384;"></i>
-                    <?php $tourColor = $stats['tours_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $tourColor['text']; ?>; background: <?php echo $tourColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['tours_change']['label']; ?></span>
+
+            <!-- Food Orders Status -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-utensils" style="margin-right: 8px; color: #ff9800;"></i>Food Orders (Today)
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="foodOrdersChart"></canvas>
                 </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['virtual_tours']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Virtual Tours</p>
-            </div>
-            
-            <!-- Pending Payments -->
-            <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <i class="fas fa-credit-card" style="font-size: 24px; color: #dc3545;"></i>
-                    <?php $payColor = $stats['payments_change']['value'] >= 0 ? ['text' => '#28a745', 'bg' => '#d4edda'] : ['text' => '#dc3545', 'bg' => '#f8d7da']; ?>
-                    <span style="font-size: 11px; color: <?php echo $payColor['text']; ?>; background: <?php echo $payColor['bg']; ?>; padding: 2px 6px; border-radius: 10px;"><?php echo $stats['payments_change']['label']; ?></span>
-                </div>
-                <h3 style="font-size: 24px; margin-bottom: 5px;"><?php echo $stats['pending_payments']; ?></h3>
-                <p style="font-size: 13px; color: #666; margin: 0;">Pending Payments</p>
             </div>
         </div>
+
+        <!-- Charts Grid - Second Row -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
+            <!-- Staff & Operations -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-users-gear" style="margin-right: 8px; color: #17a2b8;"></i>Staff & Operations
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="staffOperationsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Guest Services Metrics -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-star" style="margin-right: 8px; color: #ffc107;"></i>Guest Services
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="guestServicesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid - Third Row -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px;">
+            <!-- Content Management -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-images" style="margin-right: 8px; color: #6610f2;"></i>Content Management
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="contentChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Key Performance Indicators -->
+            <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 16px; margin: 0 0 15px 0; font-weight: 600; color: var(--dark-color);">
+                    <i class="fas fa-chart-column" style="margin-right: 8px; color: var(--success-color);"></i>Key Metrics Comparison
+                </h3>
+                <div style="height: 200px; position: relative;">
+                    <canvas id="kpiChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         
         <!-- RECENT ACTIVITY SECTION -->
         <h2 style="font-size: 18px; color: var(--dark-color); margin-bottom: 20px; font-weight: 600;">
@@ -933,5 +971,414 @@ function getStatusBadge($status, $statusColors) {
         </div>
     </div>
 </section>
+
+<!-- Chart.js Initialization -->
+<script>
+// Common chart options
+const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'bottom',
+            labels: {
+                padding: 15,
+                font: { size: 12 }
+            }
+        }
+    }
+};
+
+// Revenue Trend Chart (Line Chart)
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: <?php echo json_encode(array_map(function($item) { return date('M Y', strtotime($item['month'] . '-01')); }, $revenueData)); ?>,
+        datasets: [{
+            label: 'Revenue (₱)',
+            data: <?php echo json_encode(array_map(function($item) { return $item['revenue']; }, $revenueData)); ?>,
+            borderColor: '#367D8A',
+            backgroundColor: 'rgba(54, 125, 138, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#367D8A',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        ...commonOptions,
+        plugins: {
+            ...commonOptions.plugins,
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Revenue: ₱' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₱' + (value / 1000).toFixed(0) + 'k';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Daily Bookings Chart (Area Chart)
+const dailyCtx = document.getElementById('dailyBookingsChart').getContext('2d');
+new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+        labels: <?php echo json_encode(array_map(function($item) { return date('M d', strtotime($item['date'])); }, $dailyBookingsData)); ?>,
+        datasets: [{
+            label: 'Bookings',
+            data: <?php echo json_encode(array_map(function($item) { return $item['count']; }, $dailyBookingsData)); ?>,
+            borderColor: '#17a2b8',
+            backgroundColor: 'rgba(23, 162, 184, 0.15)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: '#17a2b8',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 4
+        }]
+    },
+    options: {
+        ...commonOptions,
+        plugins: {
+            ...commonOptions.plugins,
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// Bookings by Status Chart (Pie Chart)
+const statusCtx = document.getElementById('bookingsStatusChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: <?php echo json_encode(array_map(function($item) { return ucfirst($item['status']); }, $bookingsByStatus)); ?>,
+        datasets: [{
+            data: <?php echo json_encode(array_map(function($item) { return $item['count']; }, $bookingsByStatus)); ?>,
+            backgroundColor: [
+                '#ffc107', // Pending - Yellow
+                '#28a745', // Confirmed - Green
+                '#007bff', // Checked In - Blue
+                '#6c757d', // Checked Out - Gray
+                '#dc3545', // Cancelled - Red
+                '#17a2b8'  // Other - Cyan
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        ...commonOptions,
+        cutout: '60%',
+        plugins: {
+            ...commonOptions.plugins,
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Revenue Breakdown Chart (Doughnut Chart)
+const breakdownCtx = document.getElementById('revenueBreakdownChart').getContext('2d');
+new Chart(breakdownCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Room Bookings', 'Event Bookings', 'Food Orders'],
+        datasets: [{
+            data: [
+                <?php echo $revenueBreakdown['rooms']; ?>,
+                <?php echo $revenueBreakdown['events']; ?>,
+                <?php echo $revenueBreakdown['food']; ?>
+            ],
+            backgroundColor: [
+                '#367D8A', // Room Bookings - Primary
+                '#9c27b0', // Event Bookings - Purple
+                '#ff9800'  // Food Orders - Orange
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        ...commonOptions,
+        cutout: '55%',
+        plugins: {
+            ...commonOptions.plugins,
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const value = context.parsed;
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return context.label + ': ₱' + value.toLocaleString() + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Room Status Distribution Chart
+const roomStatusCtx = document.getElementById('roomStatusChart').getContext('2d');
+new Chart(roomStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Occupied', 'Available', 'Maintenance'],
+        datasets: [{
+            data: [
+                <?php echo $stats['occupied_rooms']; ?>,
+                <?php echo $stats['available_rooms']; ?>,
+                <?php echo $stats['maintenance_rooms']; ?>
+            ],
+            backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        ...commonOptions,
+        cutout: '60%',
+        plugins: {
+            ...commonOptions.plugins,
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = <?php echo $stats['occupied_rooms'] + $stats['available_rooms'] + $stats['maintenance_rooms']; ?>;
+                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Event Spaces Chart
+const eventSpacesCtx = document.getElementById('eventSpacesChart').getContext('2d');
+new Chart(eventSpacesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Occupied', 'Available'],
+        datasets: [{
+            data: [
+                <?php echo $stats['occupied_event_spaces']; ?>,
+                <?php echo $stats['available_event_spaces']; ?>
+            ],
+            backgroundColor: ['#e91e63', '#4caf50'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        ...commonOptions,
+        cutout: '60%',
+        plugins: {
+            ...commonOptions.plugins,
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = <?php echo $stats['occupied_event_spaces'] + $stats['available_event_spaces']; ?>;
+                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Food Orders Status Chart
+const foodOrdersCtx = document.getElementById('foodOrdersChart').getContext('2d');
+new Chart(foodOrdersCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pending', 'Preparing', 'Completed'],
+        datasets: [{
+            data: [
+                <?php echo $stats['pending_food_orders']; ?>,
+                <?php echo $stats['preparing_food_orders']; ?>,
+                <?php echo $stats['completed_food_orders']; ?>
+            ],
+            backgroundColor: ['#ff5722', '#ff9800', '#28a745'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        ...commonOptions,
+        cutout: '55%',
+        plugins: {
+            ...commonOptions.plugins,
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = <?php echo $stats['pending_food_orders'] + $stats['preparing_food_orders'] + $stats['completed_food_orders']; ?>;
+                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Staff & Operations Chart
+const staffOperationsCtx = document.getElementById('staffOperationsChart').getContext('2d');
+new Chart(staffOperationsCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Staff on Duty', 'Pending Maintenance', 'Inventory Alerts'],
+        datasets: [{
+            label: 'Count',
+            data: [
+                <?php echo $stats['staff_on_duty']; ?>,
+                <?php echo $stats['pending_maintenance']; ?>,
+                <?php echo $stats['inventory_alerts']; ?>
+            ],
+            backgroundColor: ['#17a2b8', '#fd7e14', '#6f42c1'],
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...commonOptions,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+    }
+});
+
+// Guest Services Chart
+const guestServicesCtx = document.getElementById('guestServicesChart').getContext('2d');
+new Chart(guestServicesCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Pending Reviews', 'Avg Rating (×10)', 'Active Promos', "Today's Revenue (÷1000)"],
+        datasets: [{
+            label: 'Value',
+            data: [
+                <?php echo $stats['pending_reviews']; ?>,
+                <?php echo $stats['average_rating'] * 10; ?>,
+                <?php echo $stats['active_promotions']; ?>,
+                <?php echo $stats['today_revenue'] / 1000; ?>
+            ],
+            backgroundColor: ['#20c997', '#ffc107', '#e83e8c', '#28a745'],
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...commonOptions,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const labels = [
+                            'Pending Reviews: <?php echo $stats['pending_reviews']; ?>',
+                            'Average Rating: <?php echo number_format($stats['average_rating'], 1); ?>/5',
+                            'Active Promotions: <?php echo $stats['active_promotions']; ?>',
+                            "Today's Revenue: ₱<?php echo number_format($stats['today_revenue']); ?>"
+                        ];
+                        return labels[context.dataIndex];
+                    }
+                }
+            }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// Content Management Chart
+const contentCtx = document.getElementById('contentChart').getContext('2d');
+new Chart(contentCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Gallery Images', 'Active FAQs', 'Virtual Tours', 'Pending Payments'],
+        datasets: [{
+            label: 'Count',
+            data: [
+                <?php echo $stats['gallery_images']; ?>,
+                <?php echo $stats['active_faqs']; ?>,
+                <?php echo $stats['virtual_tours']; ?>,
+                <?php echo $stats['pending_payments']; ?>
+            ],
+            backgroundColor: ['#6610f2', '#0dcaf0', '#d63384', '#dc3545'],
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...commonOptions,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+    }
+});
+
+// Key Performance Indicators Chart
+const kpiCtx = document.getElementById('kpiChart').getContext('2d');
+new Chart(kpiCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Total Users', 'Bookings (30d)', 'Events (Mo)', 'Food Orders (Today)'],
+        datasets: [{
+            label: 'Current Period',
+            data: [
+                <?php echo $stats['total_users']; ?>,
+                <?php echo $stats['total_bookings']; ?>,
+                <?php echo $stats['total_events']; ?>,
+                <?php echo $stats['total_food_orders']; ?>
+            ],
+            backgroundColor: '#367D8A',
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...commonOptions,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
 
 <?php require_once '../includes/admin-footer.php'; ?>
