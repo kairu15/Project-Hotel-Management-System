@@ -188,14 +188,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 
 <!-- Map Section -->
-<section style="padding: 0; height: 400px; background-color: var(--gray-light);">
-    <div style="width: 100%; height: 100%; background: linear-gradient(rgba(54,125,138,0.1), rgba(54,125,138,0.1)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; display: flex; align-items: center; justify-content: center;">
-        <div style="text-align: center; color: var(--dark-color);">
-            <i class="fas fa-map-marked-alt" style="font-size: 60px; margin-bottom: 20px; color: var(--primary-color);"></i>
-            <h3 style="font-size: 28px; margin-bottom: 10px;">Find Us in Bayawan City</h3>
-            <p style="font-size: 18px; margin-bottom: 20px;">Negros Oriental, Philippines</p>
-            <a href="https://maps.google.com/?q=Bayawan+City+Negros+Oriental" target="_blank" class="btn btn-primary">
-                <i class="fas fa-directions"></i> Get Directions
+<section style="padding: 0; height: 450px; position: relative;">
+    <!-- Google Maps Embed -->
+    <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d251260.25526696823!2d122.63643545!3d9.63333555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab233fee0c1bc7%3A0x39c1f17ed0d8c6d6!2sBayawan%20City%2C%20Negros%20Oriental!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph"
+        width="100%"
+        height="100%"
+        style="border:0; filter: sepia(20%) saturate(80%);"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+
+    <!-- Overlay Content -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(54,125,138,0.3), rgba(54,125,138,0.5)); display: flex; align-items: center; justify-content: center; pointer-events: none;">
+        <div style="text-align: center; color: white; pointer-events: auto;">
+            <i class="fas fa-map-marker-alt" style="font-size: 70px; margin-bottom: 15px; color: var(--primary-color); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);"></i>
+            <h3 style="font-size: 36px; margin-bottom: 10px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Find Us in Bayawan City</h3>
+            <p style="font-size: 20px; margin-bottom: 25px; color: rgba(255,255,255,0.95); text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">Negros Oriental, Philippines</p>
+            <a href="https://maps.google.com/?q=Bayawan+City+Negros+Oriental" target="_blank" class="btn btn-primary" style="background-color: var(--primary-color); border: none; padding: 15px 35px; font-size: 16px;">
+                <i class="fas fa-location-arrow"></i> Get Directions
             </a>
         </div>
     </div>

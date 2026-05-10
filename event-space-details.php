@@ -139,24 +139,21 @@ $eventImages = array_slice($eventImages, 0, 7);
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start;">
             <!-- Image Gallery with Lightbox -->
             <div>
-                <div style="background-color: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="background-color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; margin-bottom: 12px;">
                         <!-- Main Large Image -->
-                        <div style="border-radius: 10px; overflow: hidden; height: 350px; cursor: pointer; position: relative;" onclick="openLightbox(0)">
-                            <img src="<?php echo isset($eventImages[0]) ? htmlspecialchars(trim($eventImages[0])) : ''; ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                            <div style="position: absolute; top: 15px; right: 15px; background-color: var(--primary-color); color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: 600;">
-                                Up to <?php echo $space['capacity']; ?> guests
-                            </div>
+                        <div style="border-radius: 8px; overflow: hidden; height: 360px; cursor: pointer;" onclick="openLightbox(0)">
+                            <img id="mainImage" src="<?php echo isset($eventImages[0]) ? htmlspecialchars(trim($eventImages[0])) : ''; ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                         </div>
                         <!-- Side Thumbnails (3 images) -->
-                        <div style="display: grid; grid-template-rows: repeat(3, 1fr); gap: 10px;">
+                        <div style="display: grid; grid-template-rows: repeat(3, 1fr); gap: 12px;">
                             <?php for ($i = 1; $i <= 3; $i++): ?>
                             <?php if (isset($eventImages[$i])): ?>
-                            <div style="border-radius: 10px; overflow: hidden; cursor: pointer; position: relative;" onclick="openLightbox(<?php echo $i; ?>)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="<?php echo htmlspecialchars(trim($eventImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="border-radius: 8px; overflow: hidden; cursor: pointer; position: relative; height: 112px;" onclick="openLightbox(<?php echo $i; ?>)">
+                                <img src="<?php echo htmlspecialchars(trim($eventImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                                 <?php if ($i === 3 && count($eventImages) > 4): ?>
-                                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
-                                    +<?php echo count($eventImages) - 4; ?> More
+                                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 600; cursor: pointer;" onclick="openLightbox(<?php echo $i; ?>)" >
+                                    +<?php echo count($eventImages) - 4; ?> more
                                 </div>
                                 <?php endif; ?>
                             </div>
@@ -164,17 +161,17 @@ $eventImages = array_slice($eventImages, 0, 7);
                             <?php endfor; ?>
                         </div>
                     </div>
-                    <!-- Bottom Thumbnail Row (4 images) -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                    <!-- Bottom Thumbnail Row (up to 4 images) -->
+                    <?php if (count($eventImages) > 4): ?>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
                         <?php for ($i = 4; $i < min(8, count($eventImages)); $i++): ?>
-                        <div style="border-radius: 8px; overflow: hidden; height: 100px; cursor: pointer;" onclick="openLightbox(<?php echo $i; ?>)">
-                            <img src="<?php echo htmlspecialchars(trim($eventImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        </div>
+                        <div style="border-radius: 8px; overflow: hidden; height: 80px; cursor: pointer;" onclick="openLightbox(<?php echo $i; ?>)" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"><img src="<?php echo htmlspecialchars(trim($eventImages[$i])); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"></div>
                         <?php endfor; ?>
                     </div>
-                    <p style="text-align: center; color: #666; font-size: 13px; margin-top: 10px;">
+                    <?php endif; ?>
+                    <p style="text-align: center; color: #888; font-size: 12px; margin-top: 12px;">
                         <i class="fas fa-images" style="color: var(--primary-color); margin-right: 5px;"></i>
-                        Click any image to view in fullscreen gallery
+                        Click any image to view fullscreen gallery
                     </p>
                 </div>
             </div>
@@ -341,12 +338,25 @@ $eventImages = array_slice($eventImages, 0, 7);
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
-            <?php foreach ($otherSpaces as $index => $otherSpace): ?>
+            <?php foreach ($otherSpaces as $index => $otherSpace):
+                // Get primary image or use default (same logic as events.php)
+                $otherPrimaryImage = $otherSpace['image_primary'] ?? '';
+                if ($otherPrimaryImage) {
+                    // Add assets/ prefix if not already there
+                    if (strpos($otherPrimaryImage, 'http') !== 0 && strpos($otherPrimaryImage, 'assets/') !== 0) {
+                        $otherPrimaryImage = 'assets/' . $otherPrimaryImage;
+                    }
+                } else {
+                    // Default placeholder images
+                    $defaultOtherImages = ['1540575462033-afcf0b7f5a67','1531058020387-3be67869e66f','1464369063991-193918d63341'];
+                    $otherPrimaryImage = 'https://images.unsplash.com/photo-' . $defaultOtherImages[$index % 3] . '?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                }
+            ?>
             <div style="background-color: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08); transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
                 <div style="position: relative; height: 200px; overflow: hidden;">
-                    <img src="https://images.unsplash.com/photo-<?php echo ['1540575462033-afcf0b7f5a67','1531058020387-3be67869e66f','1464369063991-193918d63341'][$index % 3] ?>?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" 
-                         onmouseover="this.style.transform='scale(1.1)'" 
+                    <img src="<?php echo htmlspecialchars($otherPrimaryImage); ?>"
+                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
+                         onmouseover="this.style.transform='scale(1.1)'"
                          onmouseout="this.style.transform='scale(1)'">
                     <div style="position: absolute; top: 15px; right: 15px; background-color: var(--primary-color); color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: 600;">
                         <?php echo $otherSpace['capacity']; ?> guests

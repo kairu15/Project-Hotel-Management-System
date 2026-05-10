@@ -253,3 +253,4 @@
 [2026-04-30 11:33:24] [User: 1] User login - User ID: 1
 [2026-04-30 11:36:31] [User: 2] User login - User ID: 2
 [2026-05-01 03:45:22] [User: 1] User login - User ID: 1
+[2026-05-07 12:00:01] [User: 28] Payment processed - Booking ID: 71, Method: gcash, Status: pending
