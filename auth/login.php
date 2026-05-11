@@ -22,6 +22,13 @@ if ($redirectAfterLogin) {
 }
 
 $error = '';
+$timeoutMessage = '';
+
+// Check for session timeout message
+if (isset($_GET['timeout']) && isset($_SESSION['timeout_message'])) {
+    $timeoutMessage = $_SESSION['timeout_message'];
+    unset($_SESSION['timeout_message']);
+}
 
 // Get remembered email if exists
 $rememberedEmail = $_COOKIE['remember_email'] ?? '';
@@ -47,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['first_name'] = $user['first_name'];
             $_SESSION['last_name'] = $user['last_name'];
             $_SESSION['role'] = $user['role'];
+            $_SESSION['last_activity'] = time(); // Initialize session activity timestamp
             
             // Handle Remember Me cookie
             if ($remember) {
@@ -445,6 +453,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2>Sign In</h2>
                 <p>Please enter your credentials to continue</p>
                 
+                <?php if ($timeoutMessage): ?>
+                <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">
+                    <i class="fas fa-clock"></i>
+                    <?php echo htmlspecialchars($timeoutMessage); ?>
+                </div>
+                <?php endif; ?>
+
                 <?php if ($error): ?>
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>

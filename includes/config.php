@@ -76,6 +76,10 @@ use PHPMailer\PHPMailer\SMTP;
 define('CURRENCY', 'PHP');
 define('CURRENCY_SYMBOL', '₱');
 
+// Session Settings - Timeout after 30 minutes of inactivity (in seconds)
+define('SESSION_TIMEOUT', 1800);
+define('SESSION_WARNING_TIME', 300); // Warning 5 minutes before timeout
+
 // Database Connection Class
 class Database {
     private $host = DB_HOST;
@@ -135,6 +139,93 @@ function getUserRole() {
 
 function getUserName() {
     return $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] ?? 'Guest';
+}
+
+/**
+ * Check and handle session timeout
+ * Returns true if session is valid, false if expired (and logs user out)
+ */
+function checkSessionTimeout() {
+    // Only check for logged-in users
+    if (!isLoggedIn()) {
+        return true;
+    }
+
+    $currentTime = time();
+
+    // Check if last_activity is set
+    if (!isset($_SESSION['last_activity'])) {
+        $_SESSION['last_activity'] = $currentTime;
+        return true;
+    }
+
+    $inactiveTime = $currentTime - $_SESSION['last_activity'];
+
+    // Check if session has expired
+    if ($inactiveTime > SESSION_TIMEOUT) {
+        // Session expired - log user out
+        $userId = getUserId();
+
+        // Update database to mark user offline
+        try {
+            $db = getDB();
+            if ($db && $userId) {
+                $stmt = $db->prepare("UPDATE users SET active_status = 0 WHERE user_id = ?");
+                $stmt->execute([$userId]);
+
+                // Remove session record
+                $sessionStmt = $db->prepare("DELETE FROM user_sessions WHERE session_id = ?");
+                $sessionStmt->execute([session_id()]);
+            }
+        } catch (Exception $e) {
+            error_log('Session timeout cleanup error: ' . $e->getMessage());
+        }
+
+        // Store timeout message
+        $_SESSION['timeout_message'] = 'Your session has expired due to inactivity. Please sign in again.';
+
+        // Clear session data
+        $_SESSION = array();
+
+        // Destroy session cookie
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time() - 3600, '/');
+        }
+
+        // Destroy session
+        session_destroy();
+
+        return false;
+    }
+
+    // Update last activity time
+    $_SESSION['last_activity'] = $currentTime;
+    return true;
+}
+
+/**
+ * Get remaining session time in seconds
+ * Returns 0 if not logged in or session expired
+ */
+function getSessionRemainingTime() {
+    if (!isLoggedIn() || !isset($_SESSION['last_activity'])) {
+        return 0;
+    }
+
+    $remaining = SESSION_TIMEOUT - (time() - $_SESSION['last_activity']);
+    return max(0, $remaining);
+}
+
+/**
+ * Check if session warning should be shown (within 5 minutes of timeout)
+ */
+function shouldShowSessionWarning() {
+    if (!isLoggedIn()) {
+        return false;
+    }
+
+    $remaining = getSessionRemainingTime();
+    return $remaining > 0 && $remaining <= SESSION_WARNING_TIME;
 }
 
 function redirect($url) {
@@ -808,6 +899,17 @@ function isItemRated($serviceType, $itemId, $userId = null) {
         WHERE user_id = ? AND {$idColumn} = ?
     ");
     $stmt->execute([$userId, $itemId]);
-    
+
     return (bool) $stmt->fetch();
+}
+
+// Check session timeout for logged-in users (must be at end after constants/functions are defined)
+if (isLoggedIn()) {
+    if (!checkSessionTimeout()) {
+        // Session expired - redirect to login with timeout message
+        if (!headers_sent()) {
+            header("Location: " . SITE_URL . "/auth/login.php?timeout=1");
+            exit;
+        }
+    }
 }

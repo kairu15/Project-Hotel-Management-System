@@ -254,3 +254,13 @@
 [2026-04-30 11:36:31] [User: 2] User login - User ID: 2
 [2026-05-01 03:45:22] [User: 1] User login - User ID: 1
 [2026-05-07 12:00:01] [User: 28] Payment processed - Booking ID: 71, Method: gcash, Status: pending
+[2026-05-11 16:10:33] [User: guest] New user registration - Email: suruizkatelindsay@gmail.com
+[2026-05-11 16:10:52] [User: 33] User login - User ID: 33
+[2026-05-11 16:14:03] [User: guest] Password reset OTP sent - Email: kylleacibron@gmail.com
+[2026-05-11 16:14:56] [User: 33] Payment processed - Booking ID: 72, Method: pay_at_hotel, Status: paid
+[2026-05-11 16:18:43] [User: guest] Password reset successful - Email: kylleacibron@gmail.com
+[2026-05-11 16:19:09] [User: 28] User login - User ID: 28
+[2026-05-11 16:20:00] [User: 28] User login - User ID: 28
+[2026-05-11 16:21:31] [User: 28] Password changed - User ID: 28
+[2026-05-11 16:21:53] [User: 28] User login - User ID: 28
+[2026-05-11 16:24:36] [User: 33] Profile updated - User ID: 33

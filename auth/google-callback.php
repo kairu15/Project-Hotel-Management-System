@@ -94,6 +94,7 @@ try {
     $_SESSION['user_name'] = $name;
     $_SESSION['user_email'] = $email;
     $_SESSION['role'] = empty($user) ? 'user' : $user['role'];
+    $_SESSION['last_activity'] = time(); // Initialize session activity timestamp
 
     // Split name into first and last name for header compatibility
     $nameParts = explode(' ', $name, 2);
