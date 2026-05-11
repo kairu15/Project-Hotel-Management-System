@@ -658,8 +658,11 @@ function addMessage(text, type) {
     scrollToBottom();
 }
 
-// Format message (convert newlines to <br>)
+// Format message (convert newlines to <br> and **text** to bold)
 function formatMessage(text) {
+    // Convert **text** to bold
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Convert newlines to <br>
     return text.replace(/\n/g, '<br>');
 }
 

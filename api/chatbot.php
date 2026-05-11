@@ -177,7 +177,15 @@ function callGroqAPI($userMessage) {
 
 This system was developed by Kylle Ian D. Acibron (Contact: kylleacibron@gmail.com).
 
-Be friendly, professional, and concise in your responses. Keep replies under 200 words. If asked about something outside your scope, politely redirect to appropriate hotel services.";
+Be friendly, professional, and concise in your responses. Keep replies under 200 words. If asked about something outside your scope, politely redirect to appropriate hotel services.
+
+IMPORTANT FORMATTING: When listing room types and prices, use **bold** formatting like this:
+- **Deluxe Room** (PHP 2,500/night)
+- **Superior Room** (PHP 2,000/night)
+- **Standard Room** (PHP 1,500/night)
+- **Suite** (PHP 5,000/night)
+
+Also bold important headings and key information using **text** syntax.";
     
     // Prepare API request
     $url = 'https://api.groq.com/openai/v1/chat/completions';

@@ -18,11 +18,35 @@ flowchart TB
     PUBLIC --> BROWSE[Browse Information]
     BROWSE --> ACTION{Action?}
     
-    ACTION -->|View Rooms| ROOM_FLOW[Room Booking Flow]
-    ACTION -->|View Events| EVENT_FLOW[Event Booking Flow]
-    ACTION -->|Order Food| FOOD_FLOW[Food Order Flow]
-    ACTION -->|Contact| CONTACT[Contact Form]
+    ACTION -->|View Rooms| VIEW_ROOMS[View Rooms Page]
+    ACTION -->|View Events| VIEW_EVENTS[View Events Page]
+    ACTION -->|View Menu| VIEW_MENU[View Dining/Menu]
+    ACTION -->|Contact| CONTACT[Contact Form - Public]
     ACTION -->|Virtual Tour| VIRTUAL_TOUR[Virtual Tour]
+    
+    VIEW_ROOMS --> BOOKING_ACTION{Want to Book?}
+    VIEW_EVENTS --> EVENT_ACTION{Want to Book Event?}
+    VIEW_MENU --> ORDER_ACTION{Want to Order?}
+    
+    BOOKING_ACTION -->|No| END1([End])
+    EVENT_ACTION -->|No| END2([End])
+    ORDER_ACTION -->|No| END3([End])
+    
+    BOOKING_ACTION -->|Yes| LOGIN_CHECK1{Logged In?}
+    EVENT_ACTION -->|Yes| EVENT_FLOW[Event Booking Flow]
+    ORDER_ACTION -->|Yes| LOGIN_CHECK2{Logged In?}
+    
+    LOGIN_CHECK1 -->|No| PROMPT_LOGIN1[Show Login Overlay]
+    LOGIN_CHECK1 -->|Yes| ROOM_FLOW[Room Booking Flow]
+    
+    LOGIN_CHECK2 -->|No| PROMPT_LOGIN2[Show Login Overlay]
+    LOGIN_CHECK2 -->|Yes| FOOD_FLOW[Food Order Flow]
+    
+    PROMPT_LOGIN1 --> AUTH_REDIRECT1[Login/Register]
+    PROMPT_LOGIN2 --> AUTH_REDIRECT2[Login/Register]
+    
+    AUTH_REDIRECT1 -->|Success| ROOM_FLOW
+    AUTH_REDIRECT2 -->|Success| FOOD_FLOW
     
     AUTH -->|Success| USER_PORTAL[User Portal]
     AUTH -->|Failure| RETRY[Retry Login]
@@ -49,6 +73,9 @@ flowchart TB
     SUCCESS --> END([End])
     CONTACT --> END
     VIRTUAL_TOUR --> END
+    END1 --> END
+    END2 --> END
+    END3 --> END
 ```
 
 ---
