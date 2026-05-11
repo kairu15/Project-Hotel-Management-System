@@ -66,6 +66,7 @@ $recentReviewsStmt = $db->prepare("
         r.created_at,
         u.first_name,
         u.last_name,
+        u.profile_picture,
         eb.event_type
     FROM ratings r
     INNER JOIN event_bookings eb ON r.event_booking_id = eb.event_booking_id
@@ -295,9 +296,13 @@ $eventImages = array_slice($eventImages, 0, 7);
                         <?php foreach ($recentReviews as $review): ?>
                         <div style="padding: 20px; border-bottom: 1px solid var(--gray-light);">
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                                <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
-                                    <?php echo strtoupper(substr($review['first_name'], 0, 1)); ?>
-                                </div>
+                                <?php if (!empty($review['profile_picture']) && file_exists($review['profile_picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($review['profile_picture']); ?>" alt="<?php echo htmlspecialchars($review['first_name']); ?>" style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; aspect-ratio: 1;">
+                                <?php else: ?>
+                                    <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
+                                        <?php echo strtoupper(substr($review['first_name'], 0, 1)); ?>
+                                    </div>
+                                <?php endif; ?>
                                 <div>
                                     <div style="font-weight: 600;"><?php echo htmlspecialchars($review['first_name'] . ' ' . substr($review['last_name'], 0, 1) . '.'); ?></div>
                                     <div style="font-size: 12px; color: #666;"><?php echo date('M d, Y', strtotime($review['created_at'])); ?></div>

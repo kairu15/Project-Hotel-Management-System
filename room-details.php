@@ -73,7 +73,8 @@ $recentReviewsStmt = $db->prepare("
         r.comment,
         r.created_at,
         u.first_name,
-        u.last_name
+        u.last_name,
+        u.profile_picture
     FROM ratings r
     INNER JOIN bookings b ON r.booking_id = b.booking_id
     INNER JOIN users u ON r.user_id = u.user_id
@@ -121,7 +122,7 @@ $roomImages = array_slice($roomImages, 0, 7);
 ?>
 
 <!-- Page Header -->
-<div style="height: 500px; position: relative; background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1631049307260-da0c0f11336a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
+<div style="height: 500px; position: relative; background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('<?php echo isset($roomImages[0]) ? htmlspecialchars(trim($roomImages[0])) : 'https://images.unsplash.com/photo-1631049307260-da0c0f11336a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'; ?>') center/cover no-repeat;">
     <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 60px 0;">
         <div class="container">
             <h1 style="color: white; font-size: 48px; margin-bottom: 10px;"><?php echo htmlspecialchars($room['category_name']); ?></h1>
@@ -286,9 +287,13 @@ $roomImages = array_slice($roomImages, 0, 7);
                         <?php foreach ($recentReviews as $review): ?>
                         <div style="padding: 20px; border-bottom: 1px solid var(--gray-light);">
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                                <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
-                                    <?php echo strtoupper(substr($review['first_name'], 0, 1)); ?>
-                                </div>
+                                <?php if (!empty($review['profile_picture']) && file_exists($review['profile_picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($review['profile_picture']); ?>" alt="<?php echo htmlspecialchars($review['first_name']); ?>" style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; aspect-ratio: 1;">
+                                <?php else: ?>
+                                    <div style="width: 40px; height: 40px; min-width: 40px; min-height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;">
+                                        <?php echo strtoupper(substr($review['first_name'], 0, 1)); ?>
+                                    </div>
+                                <?php endif; ?>
                                 <div>
                                     <div style="font-weight: 600;"><?php echo htmlspecialchars($review['first_name'] . ' ' . substr($review['last_name'], 0, 1) . '.'); ?></div>
                                     <div style="font-size: 12px; color: #666;"><?php echo date('M d, Y', strtotime($review['created_at'])); ?></div>

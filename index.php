@@ -28,7 +28,7 @@ $happyGuests = $guestsStmt->fetch()['total_guests'];
 
 // 4. Get featured testimonials (approved and featured reviews) - max 3 displayed
 $testimonialsStmt = $db->query("
-    SELECT r.*, u.first_name, u.last_name, u.city, u.country
+    SELECT r.*, u.first_name, u.last_name, u.city, u.country, u.profile_picture
     FROM reviews r
     JOIN users u ON r.user_id = u.user_id
     WHERE r.is_approved = 1 AND r.is_featured = 1
@@ -591,6 +591,7 @@ $testimonials = $testimonialsStmt->fetchAll();
                 $initials = strtoupper(substr($testimonial['first_name'], 0, 1) . substr($testimonial['last_name'], 0, 1));
                 $color = $colors[$colorIndex % count($colors)];
                 $colorIndex++;
+                $profilePic = $testimonial['profile_picture'] ?? null;
             ?>
             <div style="background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
                 <div style="color: var(--warning-color); margin-bottom: 20px;">
@@ -610,7 +611,11 @@ $testimonials = $testimonialsStmt->fetchAll();
                     "<?php echo htmlspecialchars($testimonial['review_text']); ?>"
                 </p>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; background-color: <?php echo $color; ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;"><?php echo $initials; ?></div>
+                    <?php if (!empty($profilePic) && file_exists($profilePic)): ?>
+                        <img src="<?php echo htmlspecialchars($profilePic); ?>" alt="<?php echo htmlspecialchars($testimonial['first_name']); ?>" style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; border-radius: 50%; object-fit: cover; flex-shrink: 0; aspect-ratio: 1;">
+                    <?php else: ?>
+                        <div style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; background-color: <?php echo $color; ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 600; flex-shrink: 0; aspect-ratio: 1;"><?php echo $initials; ?></div>
+                    <?php endif; ?>
                     <div>
                         <h4 style="font-size: 18px; margin-bottom: 3px;"><?php echo htmlspecialchars($testimonial['first_name'] . ' ' . $testimonial['last_name']); ?></h4>
                         <p style="font-size: 14px; color: #999;">
