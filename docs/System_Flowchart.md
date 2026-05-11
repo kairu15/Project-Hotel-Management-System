@@ -28,9 +28,9 @@ flowchart TB
     VIEW_EVENTS --> EVENT_ACTION{Want to Book Event?}
     VIEW_MENU --> ORDER_ACTION{Want to Order?}
     
-    BOOKING_ACTION -->|No| END1([End])
-    EVENT_ACTION -->|No| END2([End])
-    ORDER_ACTION -->|No| END3([End])
+    BOOKING_ACTION -->|No| END([End])
+    EVENT_ACTION -->|No| END
+    ORDER_ACTION -->|No| END
     
     BOOKING_ACTION -->|Yes| LOGIN_CHECK1{Logged In?}
     EVENT_ACTION -->|Yes| EVENT_FLOW[Event Booking Flow]
@@ -70,12 +70,9 @@ flowchart TB
     PAYMENT -->|Failure| RETRY_PAYMENT[Retry Payment]
     RETRY_PAYMENT --> PAYMENT
     
-    SUCCESS --> END([End])
+    SUCCESS --> END
     CONTACT --> END
     VIRTUAL_TOUR --> END
-    END1 --> END
-    END2 --> END
-    END3 --> END
 ```
 
 ---
