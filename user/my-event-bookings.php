@@ -16,19 +16,28 @@ if (isset($_POST['cancel_booking'])) {
     $bookingId = $_POST['booking_id'] ?? 0;
     if ($bookingId) {
         // Verify booking belongs to user and can be cancelled
-        $checkStmt = $db->prepare("SELECT status FROM event_bookings WHERE event_booking_id = ? AND user_id = ?");
+        $checkStmt = $db->prepare("SELECT status, created_at FROM event_bookings WHERE event_booking_id = ? AND user_id = ?");
         $checkStmt->execute([$bookingId, $userId]);
         $booking = $checkStmt->fetch();
 
         if ($booking && in_array($booking['status'], ['pending', 'confirmed'])) {
-            // Get event name before cancelling
-            $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
-            $nameStmt->execute([$bookingId]);
-            $eventName = $nameStmt->fetchColumn() ?? 'Event';
+            // Check if booking can be cancelled (within 1 hour of creation)
+            $bookingTime = strtotime($booking['created_at']);
+            $currentTime = time();
+            $hoursSinceBooking = ($currentTime - $bookingTime) / 3600; // Convert to hours
             
-            $stmt = $db->prepare("UPDATE event_bookings SET status = 'cancelled' WHERE event_booking_id = ?");
-            $stmt->execute([$bookingId]);
-            $_SESSION['success'] = 'Event booking "' . $eventName . '" cancelled successfully';
+            if ($hoursSinceBooking > 1) {
+                $_SESSION['error'] = 'You can only cancel your event booking within 1 hour of booking. Your booking was made ' . floor($hoursSinceBooking) . ' hour(s) ago.';
+            } else {
+                // Get event name before cancelling
+                $nameStmt = $db->prepare("SELECT event_type FROM event_bookings WHERE event_booking_id = ?");
+                $nameStmt->execute([$bookingId]);
+                $eventName = $nameStmt->fetchColumn() ?? 'Event';
+                
+                $stmt = $db->prepare("UPDATE event_bookings SET status = 'cancelled' WHERE event_booking_id = ?");
+                $stmt->execute([$bookingId]);
+                $_SESSION['success'] = 'Event booking "' . $eventName . '" cancelled successfully';
+            }
         } else {
             $_SESSION['error'] = 'Cannot cancel this booking';
         }
@@ -175,7 +184,14 @@ require_once '../includes/user-header.php'; ?>
                                     <i class="fas fa-credit-card" style="margin-right: 5px;"></i> Pay Now
                                 </button>
                                 <?php endif; ?>
-                                <?php if (in_array($booking['status'], ['pending']) || ($booking['status'] === 'confirmed' && $booking['payment_status'] !== 'paid')): ?>
+                                <?php 
+                                // Check if booking can be cancelled (within 1 hour of creation)
+                                $bookingTime = strtotime($booking['created_at']);
+                                $currentTime = time();
+                                $hoursSinceBooking = ($currentTime - $bookingTime) / 3600;
+                                $canCancelEvent = (in_array($booking['status'], ['pending']) || ($booking['status'] === 'confirmed' && $booking['payment_status'] !== 'paid')) && $hoursSinceBooking <= 1;
+                                ?>
+                                <?php if ($canCancelEvent): ?>
                                 <form method="POST" action="" style="display: inline;" id="cancelEventForm<?php echo $booking['event_booking_id']; ?>">
                                     <input type="hidden" name="booking_id" value="<?php echo $booking['event_booking_id']; ?>">
                                     <button type="button" onclick="openDeleteModal('cancelEventForm<?php echo $booking['event_booking_id']; ?>', 'Cancel Event Booking', 'Are you sure you want to cancel this event booking?', null, 'cancel_booking')" class="btn btn-danger" style="padding: 10px 20px;">Cancel Booking</button>

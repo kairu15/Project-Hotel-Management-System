@@ -30,7 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Booking not found or unauthorized.';
     } else {
         if ($action === 'cancel' && $booking['status'] === 'pending') {
-            // Process cancellation with refund
+            // Check if booking can be cancelled (within 1 hour of creation)
+            $bookingTime = strtotime($booking['created_at']);
+            $currentTime = time();
+            $hoursSinceBooking = ($currentTime - $bookingTime) / 3600; // Convert to hours
+            
+            if ($hoursSinceBooking > 1) {
+                $error = 'You can only cancel your reservation within 1 hour of booking. Your booking was made ' . floor($hoursSinceBooking) . ' hour(s) ago.';
+            } else {
+                // Process cancellation with refund
             $paymentMethod = $_POST['refund_method'] ?? '';
             $refundAmount = (float)($booking['total_amount']);
             
@@ -67,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Exception $e) {
                 $db->rollBack();
                 $error = 'Failed to cancel booking. Please try again.';
+            }
             }
         }
         
@@ -240,8 +249,11 @@ if ($filter === 'upcoming') {
         ];
         $status = $statusColors[$booking['status']] ?? $statusColors['pending'];
         
-        // Check if actions available (only for pending status)
-        $canCancel = $booking['status'] === 'pending';
+        // Check if actions available (only for pending status and within 1 hour of booking)
+        $bookingTime = strtotime($booking['created_at']);
+        $currentTime = time();
+        $hoursSinceBooking = ($currentTime - $bookingTime) / 3600;
+        $canCancel = $booking['status'] === 'pending' && $hoursSinceBooking <= 1;
         $canReschedule = $booking['status'] === 'pending';
         $canRate = $booking['status'] === 'checked_out' && !isItemRated('room', $booking['booking_id'], $userId);
         $isRated = $booking['status'] === 'checked_out' && isItemRated('room', $booking['booking_id'], $userId);

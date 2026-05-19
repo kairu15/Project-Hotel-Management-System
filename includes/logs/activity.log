@@ -264,3 +264,17 @@
 [2026-05-11 16:21:31] [User: 28] Password changed - User ID: 28
 [2026-05-11 16:21:53] [User: 28] User login - User ID: 28
 [2026-05-11 16:24:36] [User: 33] Profile updated - User ID: 33
+[2026-05-11 16:45:03] [User: guest] New user registration - Email: rycrzd@gmail.com
+[2026-05-11 16:45:23] [User: 34] User login - User ID: 34
+[2026-05-12 05:47:33] [User: 28] Payment processed - Booking ID: 73, Method: pay_at_hotel, Status: paid
+[2026-05-12 07:15:27] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-05-12 07:15:45] [User: 35] User login - User ID: 35
+[2026-05-12 07:27:28] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-05-12 07:27:41] [User: 36] User login - User ID: 36
+[2026-05-12 07:28:14] [User: 36] Payment processed - Booking ID: 74, Method: gcash, Status: paid
+[2026-05-12 08:07:59] [User: guest] New user registration - Email: kylleacibron@gmail.com
+[2026-05-12 08:08:12] [User: 37] User login - User ID: 37
+[2026-05-19 03:27:35] [User: guest] Contact form submitted - From: kylleacibron@gmail.com (Message ID: 2)
+[2026-05-19 03:29:45] [User: 28] User login - User ID: 28
+[2026-05-19 03:30:37] [User: 28] Payment processed - Booking ID: 69, Method: gcash, Status: paid
+[2026-05-19 03:37:02] [User: 28] Payment processed - Booking ID: 70, Method: gcash, Status: paid

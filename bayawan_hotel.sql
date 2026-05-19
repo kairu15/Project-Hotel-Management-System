@@ -6,6 +6,11 @@
 -- Generation Time: Apr 24, 2026 at 05:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
+-- Create Database
+
+CREATE DATABASE IF NOT EXISTS bayawan_hotel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE bayawan_hotel;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
