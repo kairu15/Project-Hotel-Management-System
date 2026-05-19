@@ -27,6 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = __('Please enter a valid email address');
     } else {
         try {
+            require_once 'includes/email_notifications.php';
+            if (!isSmtpConnectionAvailable()) {
+                throw new RuntimeException(getEmailConnectionErrorMessage());
+            }
+
             // Check if user is logged in
             $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
             
@@ -59,9 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $refStmt = $db->prepare("UPDATE event_bookings SET event_ref = ? WHERE event_booking_id = ?");
             $refStmt->execute([$eventRef, $eventBookingId]);
             
-            // Send event inquiry confirmation email
-            require_once 'includes/email_notifications.php';
-            
             // Get space name if selected
             $spaceName = 'To be determined';
             if ($spaceId) {
@@ -91,6 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (PDOException $e) {
             $error = 'An error occurred while saving your inquiry. Please try again.';
             error_log('Event booking error: ' . $e->getMessage());
+        } catch (RuntimeException $e) {
+            $error = $e->getMessage();
         }
     }
 }
@@ -98,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get event spaces from database
 $db = getDB();
 $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDER BY capacity")->fetchAll();
+$showConnectionModal = $error === 'No internet connection detected. Please connect to the internet and try again so we can send your confirmation email.';
 ?>
 
 <!-- Page Header -->
@@ -264,7 +269,7 @@ $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDE
             </div>
             
             <div style="background-color: white; padding: 50px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;" id="quotationFormContainer">
-                <?php if ($error): ?>
+                <?php if ($error && !$showConnectionModal): ?>
                 <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
                     <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
                 </div>
@@ -384,7 +389,45 @@ $spaces = $db->query("SELECT * FROM event_spaces WHERE status = 'available' ORDE
     </div>
 </section>
 
+<?php if ($showConnectionModal): ?>
+<div id="emailConnectionModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); z-index:10001; justify-content:center; align-items:center; padding:20px;">
+    <div style="background:white; border-radius:20px; max-width:440px; width:100%; padding:36px; text-align:center; box-shadow:0 25px 80px rgba(0,0,0,0.35); animation:modalPop 0.35s ease;">
+        <div style="width:82px; height:82px; background:linear-gradient(135deg, #dc3545, #b02a37); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 22px; box-shadow:0 10px 28px rgba(220,53,69,0.28);">
+            <i class="fas fa-wifi" style="font-size:34px; color:white;"></i>
+        </div>
+        <h3 style="font-size:24px; margin:0 0 12px; color:#333; font-weight:700;">Connection Required</h3>
+        <p style="font-size:16px; color:#666; margin:0 0 28px; line-height:1.55;"><?php echo htmlspecialchars($error); ?></p>
+        <button type="button" onclick="closeEmailConnectionModal()" style="width:100%; padding:15px; background:linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color:white; border:none; border-radius:10px; font-size:16px; cursor:pointer; font-weight:600;">
+            OK
+        </button>
+    </div>
+</div>
+<?php endif; ?>
+
+<style>
+@keyframes modalPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style>
+
 <script>
+function closeEmailConnectionModal() {
+    var modal = document.getElementById('emailConnectionModal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('emailConnectionModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeEmailConnectionModal();
+        });
+    }
+});
+
 function prefillSpace(spaceId, spaceName) {
     document.querySelector('select[name="space_id"]').value = spaceId;
     var textarea = document.querySelector('textarea[name="message"]');

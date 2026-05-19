@@ -675,8 +675,13 @@ function submitOrderPayment(method, paymentData) {
         if (data.success) {
             showReceipt(data);
         } else {
-            alert(data.message || 'Payment processing failed. Please try again.');
-            closePaymentModal();
+            const message = data.message || 'Payment processing failed. Please try again.';
+            if (isEmailConnectionMessage(message)) {
+                showEmailConnectionModal(message);
+            } else {
+                alert(message);
+                closePaymentModal();
+            }
         }
     })
     .catch(error => {
@@ -684,6 +689,45 @@ function submitOrderPayment(method, paymentData) {
         alert('An error occurred while processing your order. Please try again.');
         closePaymentModal();
     });
+}
+
+function isEmailConnectionMessage(message) {
+    return message.toLowerCase().includes('no internet connection detected');
+}
+
+function showEmailConnectionModal(message) {
+    closePaymentModal();
+
+    let modal = document.getElementById('emailConnectionModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'emailConnectionModal';
+        modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); z-index:1001; justify-content:center; align-items:center; padding:20px;';
+        modal.innerHTML = `
+            <div style="background:white; border-radius:20px; max-width:440px; width:100%; padding:36px; text-align:center; box-shadow:0 25px 80px rgba(0,0,0,0.35); animation:modalPop 0.35s ease;">
+                <div style="width:82px; height:82px; background:linear-gradient(135deg, #dc3545, #b02a37); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 22px; box-shadow:0 10px 28px rgba(220,53,69,0.28);">
+                    <i class="fas fa-wifi" style="font-size:34px; color:white;"></i>
+                </div>
+                <h3 style="font-size:24px; margin:0 0 12px; color:#333; font-weight:700;">Connection Required</h3>
+                <p id="emailConnectionMessage" style="font-size:16px; color:#666; margin:0 0 28px; line-height:1.55;"></p>
+                <button type="button" onclick="closeEmailConnectionModal()" style="width:100%; padding:15px; background:linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color:white; border:none; border-radius:10px; font-size:16px; cursor:pointer; font-weight:600;">
+                    OK
+                </button>
+            </div>
+        `;
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeEmailConnectionModal();
+        });
+        document.body.appendChild(modal);
+    }
+
+    document.getElementById('emailConnectionMessage').textContent = message;
+    modal.style.display = 'flex';
+}
+
+function closeEmailConnectionModal() {
+    const modal = document.getElementById('emailConnectionModal');
+    if (modal) modal.style.display = 'none';
 }
 
 function showReceipt(data) {
@@ -870,6 +914,11 @@ function showReceipt(data) {
 </div>
 
 <style>
+@keyframes modalPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
+}
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }

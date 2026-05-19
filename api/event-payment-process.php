@@ -48,6 +48,11 @@ $userId = getUserId();
 
 try {
     $db->beginTransaction();
+
+    require_once '../includes/email_notifications.php';
+    if (!isSmtpConnectionAvailable()) {
+        throw new RuntimeException(getEmailConnectionErrorMessage());
+    }
     
     // Get event booking details and verify it belongs to the current user
     $bookingStmt = $db->prepare("

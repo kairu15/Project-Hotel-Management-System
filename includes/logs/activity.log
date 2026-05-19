@@ -278,3 +278,5 @@
 [2026-05-19 03:29:45] [User: 28] User login - User ID: 28
 [2026-05-19 03:30:37] [User: 28] Payment processed - Booking ID: 69, Method: gcash, Status: paid
 [2026-05-19 03:37:02] [User: 28] Payment processed - Booking ID: 70, Method: gcash, Status: paid
+[2026-05-19 12:12:48] [User: 28] Payment processed - Booking ID: 71, Method: gcash, Status: paid
+[2026-05-19 12:26:56] [User: 28] Payment processed - Booking ID: 72, Method: gcash, Status: paid

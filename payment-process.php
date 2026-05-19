@@ -40,6 +40,11 @@ $db = getDB();
 
 try {
     $db->beginTransaction();
+
+    require_once 'includes/email_notifications.php';
+    if (!isSmtpConnectionAvailable()) {
+        throw new RuntimeException(getEmailConnectionErrorMessage());
+    }
     
     // Extract booking data
     $checkIn = $bookingData['check_in'];

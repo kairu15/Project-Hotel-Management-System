@@ -38,6 +38,12 @@ if (empty($foodId) || $quantity < 1) {
     exit;
 }
 
+require_once 'includes/email_notifications.php';
+if (!isSmtpConnectionAvailable()) {
+    echo json_encode(['success' => false, 'message' => getEmailConnectionErrorMessage()]);
+    exit;
+}
+
 $db = getDB();
 
 try {
@@ -113,9 +119,6 @@ try {
     
     // Generate transaction reference (different from order_ref)
     $transactionRef = 'TXN' . date('Ymd') . strtoupper(substr(uniqid(), -6));
-    
-    // Send food order confirmation email
-    require_once 'includes/email_notifications.php';
     
     // Get user email
     $userStmt = $db->prepare("SELECT email, first_name, last_name FROM users WHERE user_id = ?");

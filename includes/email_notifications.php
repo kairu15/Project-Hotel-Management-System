@@ -11,6 +11,36 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 
+function getEmailConnectionErrorMessage() {
+    return 'No internet connection detected. Please connect to the internet and try again so we can send your confirmation email.';
+}
+
+function isSmtpConnectionAvailable($timeoutSeconds = 5) {
+    static $connectionCache = [];
+
+    $host = SMTP_HOST;
+    $port = (int)SMTP_PORT;
+    $cacheKey = $host . ':' . $port . ':' . (int)$timeoutSeconds;
+
+    if (array_key_exists($cacheKey, $connectionCache)) {
+        return $connectionCache[$cacheKey];
+    }
+
+    $errorNumber = 0;
+    $errorMessage = '';
+    $connection = @fsockopen($host, $port, $errorNumber, $errorMessage, $timeoutSeconds);
+
+    if ($connection) {
+        fclose($connection);
+        $connectionCache[$cacheKey] = true;
+        return true;
+    }
+
+    error_log("SMTP connection check failed for {$host}:{$port} - {$errorNumber} {$errorMessage}");
+    $connectionCache[$cacheKey] = false;
+    return false;
+}
+
 /**
  * Send Room Booking Confirmation Email
  * 
